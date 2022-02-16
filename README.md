@@ -7,7 +7,7 @@
 <p align="center">
   <a href="https://github.com/NuLink-network"><img src="https://img.shields.io/badge/Playground-NuLink_Network-brightgreen?logo=Parity%20Substrate" /></a>
   <a href="http://nulink.org/"><img src="https://img.shields.io/badge/made%20by-NuLink%20Foundation-blue.svg?style=flat-square" /></a>
-  <a href="https://github.com/NuLink-network/nulink-near"><img src="https://img.shields.io/badge/project-Nulink_Near-yellow.svg?style=flat-square" /></a>
+  <a href="https://github.com/NuLink-network/nulink-node"><img src="https://img.shields.io/badge/project-Nulink_Node-yellow.svg?style=flat-square" /></a>
 </p>
 
 
