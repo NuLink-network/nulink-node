@@ -21,6 +21,10 @@ type RevokeApplyRequest struct {
 	ApplyIDs []uint64 `json:"apply_ids" binding:"required"`
 }
 
+type ApproveApplyRequest struct {
+	ApplyID uint64 `json:"apply_id" binding:"required,gt=0"`
+}
+
 // ========================= response =========================
 
 type ApplyFileListResponse struct {

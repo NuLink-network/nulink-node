@@ -50,3 +50,9 @@ func RevokeApply(applyID []uint64) error {
 	af := &dao.AppleFile{}
 	return af.BatchDelete(applyID)
 }
+
+func ApproveApply(applyID uint64) error {
+	af := &dao.AppleFile{ID: applyID}
+	newAf := &dao.AppleFile{Status: dao.StatusApprove}
+	return af.Updates(newAf)
+}
