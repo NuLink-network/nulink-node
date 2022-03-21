@@ -1,0 +1,25 @@
+package controller
+
+import (
+	"github.com/gin-gonic/gin"
+
+	"github.com/NuLink-network/nulink-node/controller/resp"
+	"github.com/NuLink-network/nulink-node/entity"
+	"github.com/NuLink-network/nulink-node/logic"
+)
+
+func ApplyFile(c *gin.Context) {
+	req := &entity.ApplyFileRequest{}
+	if err := c.ShouldBindJSON(req); err != nil {
+		// todo log
+		resp.ParameterErr(c)
+		return
+	}
+
+	if err := logic.ApplyFile(req.FileIDs, req.ProposerID, req.Signature, req.StartAt, req.FinishAt); err != nil {
+		// todo log
+		resp.InternalServerError(c)
+		return
+	}
+	resp.SuccessNil(c)
+}
