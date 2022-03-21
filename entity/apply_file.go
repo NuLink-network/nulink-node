@@ -12,4 +12,19 @@ type ApplyFileRequest struct {
 	FinishAt   time.Time `json:"finish_at" binding:"required"`
 }
 
+type ApplyFileListRequest struct {
+	ProposerID uint64 `json:"proposer_id" binding:"required,gt=0"`
+	Status     int8   `json:"status" binding:"required,gt=-2lt=3"`
+}
+
 // ========================= response =========================
+
+type ApplyFileListResponse struct {
+	ApplyID    uint64 `json:"apply_id"`
+	FileID     uint64 `json:"file_ids"`
+	ProposerID uint64 `json:"proposer_id"`
+	//Signature string    `json:"signature"`
+	StartAt   time.Time `json:"start_at"`
+	FinishAt  time.Time `json:"finish_at"`
+	CreatedAt time.Time `json:"created_at"`
+}

@@ -1,6 +1,7 @@
 package logic
 
 import (
+	"github.com/NuLink-network/nulink-node/entity"
 	"time"
 
 	"github.com/NuLink-network/nulink-node/dao"
@@ -19,4 +20,28 @@ func ApplyFile(fileIDs []uint64, proposerID uint64, signature string, startAt, f
 		})
 	}
 	return af.BatchCreate(afs)
+}
+
+func ApplyFileList(proposerID uint64, status int8) ([]*entity.ApplyFileListResponse, error) {
+	af := &dao.AppleFile{ProposerID: proposerID}
+	if status != -1 {
+		af.Status = status
+	}
+	afs, err := af.Find()
+	if err != nil {
+		return nil, err
+	}
+
+	resp := make([]*entity.ApplyFileListResponse, 0, len(afs))
+	for _, af := range afs {
+		resp = append(resp, &entity.ApplyFileListResponse{
+			ApplyID:    af.ID,
+			FileID:     af.FileID,
+			ProposerID: af.ProposerID,
+			StartAt:    af.StartAt,
+			FinishAt:   af.FinishAt,
+			CreatedAt:  af.CreatedAt,
+		})
+	}
+	return resp, nil
 }

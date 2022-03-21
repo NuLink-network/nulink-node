@@ -23,3 +23,20 @@ func ApplyFile(c *gin.Context) {
 	}
 	resp.SuccessNil(c)
 }
+
+func ApplyFileList(c *gin.Context) {
+	req := &entity.ApplyFileListRequest{}
+	if err := c.ShouldBindJSON(req); err != nil {
+		// todo log
+		resp.ParameterErr(c)
+		return
+	}
+
+	response, err := logic.ApplyFileList(req.ProposerID, req.Status)
+	if err != nil {
+		// todo log
+		resp.InternalServerError(c)
+		return
+	}
+	resp.Success(c, response)
+}
