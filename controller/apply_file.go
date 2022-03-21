@@ -72,3 +72,19 @@ func ApproveApply(c *gin.Context) {
 	}
 	resp.SuccessNil(c)
 }
+
+func RejectApply(c *gin.Context) {
+	req := &entity.RejectApplyRequest{}
+	if err := c.ShouldBindJSON(req); err != nil {
+		// todo log
+		resp.ParameterErr(c)
+		return
+	}
+
+	if err := logic.RejectApply(req.ApplyID); err != nil {
+		// todo log
+		resp.InternalServerError(c)
+		return
+	}
+	resp.SuccessNil(c)
+}

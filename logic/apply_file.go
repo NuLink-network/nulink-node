@@ -56,3 +56,9 @@ func ApproveApply(applyID uint64) error {
 	newAf := &dao.AppleFile{Status: dao.StatusApprove}
 	return af.Updates(newAf)
 }
+
+func RejectApply(applyID uint64) error {
+	af := &dao.AppleFile{ID: applyID}
+	newAf := &dao.AppleFile{Status: dao.StatusReject}
+	return af.Updates(newAf)
+}
