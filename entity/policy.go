@@ -12,6 +12,12 @@ type CreatePolicyRequest struct {
 	Signature   string `json:"signature" binding:"required"`
 }
 
+type RevokePolicyRequest struct {
+	AccountID uint64 `json:"account_id" binding:"required,gt=0"`
+	PolicyID  uint64 `json:"policy_id" binding:"required,gt=0"`
+	Signature string `json:"signature" binding:"required"`
+}
+
 // ========================= response =========================
 
 //type CreatePolicyListResponse struct {

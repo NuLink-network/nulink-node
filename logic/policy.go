@@ -18,3 +18,9 @@ func CreatePolicy(accountID uint64, label, encryptedPK, verifyPK, signature stri
 	}
 	return nil
 }
+
+func RevokePolicy(accountID, policyID uint64, signature string) error {
+	policy := &dao.Policy{ID: policyID}
+	newPolicy := &dao.Policy{IsPublish: false}
+	return policy.Updates(newPolicy)
+}

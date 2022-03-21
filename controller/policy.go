@@ -21,3 +21,18 @@ func CreatePolicy(c *gin.Context) {
 	}
 	resp.SuccessNil(c)
 }
+
+func RevokePolicy(c *gin.Context) {
+	req := &entity.RevokePolicyRequest{}
+	if err := c.ShouldBindJSON(req); err != nil {
+		resp.ParameterErr(c)
+		return
+	}
+
+	err := logic.RevokePolicy(req.AccountID, req.PolicyID, req.Signature)
+	if err != nil {
+		resp.InternalServerError(c)
+		return
+	}
+	resp.SuccessNil(c)
+}
