@@ -23,3 +23,20 @@ func CreateAccount(c *gin.Context) {
 	}
 	resp.Success(c, response)
 }
+
+func GetAccount(c *gin.Context) {
+	req := &entity.GetAccountRequest{}
+	if err := c.ShouldBindJSON(req); err != nil {
+		// todo log
+		resp.ParameterErr(c)
+		return
+	}
+
+	response, err := logic.GetAccount(req.AccountID)
+	if err != nil {
+		// todo log
+		resp.InternalServerError(c)
+		return
+	}
+	resp.Success(c, response)
+}
