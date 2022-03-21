@@ -21,6 +21,12 @@ type GetOthersFileListRequest struct {
 	// todo ...
 }
 
+type DeleteFileRequest struct {
+	FileID    uint64 `json:"file_id" binding:"required,gt=0"`
+	AccountID uint64 `json:"account_id" binding:"required,gt=0"`
+	Signature string `json:"signature"`
+}
+
 // ========================= response =========================
 
 type GetFileListResponse struct {

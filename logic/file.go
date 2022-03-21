@@ -55,3 +55,13 @@ func GetOthersFileList(accountID uint64) ([]*entity.GetOthersFileListResponse, e
 	}
 	return resp, nil
 }
+
+func DeleteFile(accountID, fileID uint64, signature string) error {
+	file := &dao.File{
+		ID:        fileID,
+		AccountID: accountID,
+		Signature: signature,
+	}
+	// todo signature verification
+	return file.Delete()
+}

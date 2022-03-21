@@ -55,3 +55,17 @@ func GetOthersFileList(c *gin.Context) {
 	}
 	resp.Success(c, response)
 }
+
+func DeleteFile(c *gin.Context) {
+	req := &entity.DeleteFileRequest{}
+	if err := c.ShouldBindJSON(req); err != nil {
+		resp.ParameterErr(c)
+		return
+	}
+
+	if err := logic.DeleteFile(req.FileID, req.AccountID, req.Signature); err != nil {
+		resp.InternalServerError(c)
+		return
+	}
+	resp.SuccessNil(c)
+}
