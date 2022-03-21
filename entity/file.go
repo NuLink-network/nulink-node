@@ -16,9 +16,20 @@ type GetFileListRequest struct {
 	// todo ...
 }
 
+type GetOthersFileListRequest struct {
+	AccountID uint64 `json:"account_id" binding:"required,gt=0"`
+	// todo ...
+}
+
 // ========================= response =========================
 
 type GetFileListResponse struct {
+	AccountID uint64    `json:"account_id"`
+	Address   string    `json:"address"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+type GetOthersFileListResponse struct {
 	AccountID uint64    `json:"account_id"`
 	Address   string    `json:"address"`
 	CreatedAt time.Time `json:"created_at"`

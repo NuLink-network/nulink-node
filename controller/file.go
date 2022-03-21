@@ -40,3 +40,18 @@ func GetFileList(c *gin.Context) {
 	}
 	resp.Success(c, response)
 }
+
+func GetOthersFileList(c *gin.Context) {
+	req := &entity.GetOthersFileListRequest{}
+	if err := c.ShouldBindJSON(req); err != nil {
+		resp.ParameterErr(c)
+		return
+	}
+
+	response, err := logic.GetOthersFileList(req.AccountID)
+	if err != nil {
+		resp.InternalServerError(c)
+		return
+	}
+	resp.Success(c, response)
+}

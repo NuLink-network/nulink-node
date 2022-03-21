@@ -37,3 +37,21 @@ func GetFileList(accountID uint64, address string) ([]*entity.GetFileListRespons
 	}
 	return resp, nil
 }
+
+func GetOthersFileList(accountID uint64) ([]*entity.GetOthersFileListResponse, error) {
+	file := &dao.File{}
+	files, err := file.FindNotAccountID(accountID)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := make([]*entity.GetOthersFileListResponse, 0, len(files))
+	for _, f := range files {
+		resp = append(resp, &entity.GetOthersFileListResponse{
+			AccountID: f.AccountID,
+			Address:   f.Address,
+			CreatedAt: f.CreatedAt,
+		})
+	}
+	return resp, nil
+}
