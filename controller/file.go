@@ -25,3 +25,18 @@ func UploadFile(c *gin.Context) {
 	}
 	resp.SuccessNil(c)
 }
+
+func GetFileList(c *gin.Context) {
+	req := &entity.GetFileListRequest{}
+	if err := c.ShouldBindJSON(req); err != nil {
+		resp.ParameterErr(c)
+		return
+	}
+
+	response, err := logic.GetFileList(req.AccountID, req.Address)
+	if err != nil {
+		resp.InternalServerError(c)
+		return
+	}
+	resp.Success(c, response)
+}
