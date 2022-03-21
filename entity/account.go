@@ -16,6 +16,14 @@ type GetAccountRequest struct {
 	AccountID uint64 `json:"account_id" binding:"required,gt=0"`
 }
 
+type AccountIsExistRequest struct {
+	AccountID    uint64 `json:"account_id" binding:"required,gt=0"`
+	Name         string `json:"name" binding:"required"`
+	EthereumAddr string `json:"ethereum_addr" binding:"required"`
+	EncryptedPK  string `json:"encrypted_pk" binding:"required"`
+	VerifyPK     string `json:"verify_pk" binding:"required"`
+}
+
 // ========================= response =========================
 
 type CreateAccountResponse struct {
@@ -30,4 +38,8 @@ type GetAccountResponse struct {
 	VerifyPK     string    `json:"verify_pk"`
 	Signature    string    `json:"signature"`
 	CreatedAt    time.Time `json:"created_at"`
+}
+
+type AccountIsExistResponse struct {
+	IsExist bool `json:"is_exist"`
 }

@@ -30,3 +30,18 @@ func GetAccount(accountID uint64) (*entity.GetAccountResponse, error) {
 		CreatedAt:    a.CreatedAt,
 	}, nil
 }
+
+func AccountIsExist(accountID uint64, name, ethereumAddr, encryptedPK, verifyPK string) (*entity.AccountIsExistResponse, error) {
+	account := &dao.Account{
+		ID:           accountID,
+		Name:         name,
+		EthereumAddr: ethereumAddr,
+		EncryptedPK:  encryptedPK,
+		VerifyPK:     verifyPK,
+	}
+	n, err := account.Count()
+	if err != nil {
+		return nil, err
+	}
+	return &entity.AccountIsExistResponse{IsExist: n > 0}, nil
+}

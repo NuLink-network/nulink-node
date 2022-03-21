@@ -40,3 +40,20 @@ func GetAccount(c *gin.Context) {
 	}
 	resp.Success(c, response)
 }
+
+func AccountIsExist(c *gin.Context) {
+	req := &entity.AccountIsExistRequest{}
+	if err := c.ShouldBindJSON(req); err != nil {
+		// todo log
+		resp.ParameterErr(c)
+		return
+	}
+
+	response, err := logic.AccountIsExist(req.AccountID, req.Name, req.EthereumAddr, req.EncryptedPK, req.VerifyPK)
+	if err != nil {
+		// todo log
+		resp.InternalServerError(c)
+		return
+	}
+	resp.Success(c, response)
+}
