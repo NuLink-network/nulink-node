@@ -17,6 +17,10 @@ type ApplyFileListRequest struct {
 	Status     int8   `json:"status" binding:"required,gt=-2lt=3"`
 }
 
+type RevokeApplyRequest struct {
+	ApplyIDs []uint64 `json:"apply_ids" binding:"required"`
+}
+
 // ========================= response =========================
 
 type ApplyFileListResponse struct {

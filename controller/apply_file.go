@@ -40,3 +40,19 @@ func ApplyFileList(c *gin.Context) {
 	}
 	resp.Success(c, response)
 }
+
+func RevokeApply(c *gin.Context) {
+	req := &entity.RevokeApplyRequest{}
+	if err := c.ShouldBindJSON(req); err != nil {
+		// todo log
+		resp.ParameterErr(c)
+		return
+	}
+
+	if err := logic.RevokeApply(req.ApplyIDs); err != nil {
+		// todo log
+		resp.InternalServerError(c)
+		return
+	}
+	resp.SuccessNil(c)
+}

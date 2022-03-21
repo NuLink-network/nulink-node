@@ -45,3 +45,8 @@ func ApplyFileList(proposerID uint64, status int8) ([]*entity.ApplyFileListRespo
 	}
 	return resp, nil
 }
+
+func RevokeApply(applyID []uint64) error {
+	af := &dao.AppleFile{}
+	return af.BatchDelete(applyID)
+}
