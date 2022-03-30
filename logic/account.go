@@ -5,13 +5,13 @@ import (
 	"github.com/NuLink-network/nulink-node/entity"
 )
 
-func CreateAccount(name, ethereumAddr, encryptedPK, verifyPK, signature string) (*entity.CreateAccountResponse, error) {
-	account := dao.NewAccount(name, ethereumAddr, encryptedPK, verifyPK, signature)
-	accountID, err := account.Create()
+func CreateAccount(name, account, ethereumAddr, encryptedPK, verifyPK string) error {
+	acc := dao.NewAccount(name, account, ethereumAddr, encryptedPK, verifyPK)
+	_, err := acc.Create()
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return &entity.CreateAccountResponse{AccountID: accountID}, nil
+	return nil
 }
 
 func GetAccount(accountID uint64) (*entity.GetAccountResponse, error) {
@@ -26,7 +26,6 @@ func GetAccount(accountID uint64) (*entity.GetAccountResponse, error) {
 		EthereumAddr: a.EthereumAddr,
 		EncryptedPK:  a.EncryptedPK,
 		VerifyPK:     a.VerifyPK,
-		Signature:    a.Signature,
 		CreatedAt:    a.CreatedAt,
 	}, nil
 }

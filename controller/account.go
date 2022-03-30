@@ -15,13 +15,12 @@ func CreateAccount(c *gin.Context) {
 		return
 	}
 
-	response, err := logic.CreateAccount(req.Name, req.EthereumAddr, req.EncryptedPK, req.VerifyPK, req.Signature)
-	if err != nil {
+	if err := logic.CreateAccount(req.Name, req.Account, req.EthereumAddr, req.EncryptedPK, req.VerifyPK); err != nil {
 		// todo log
 		resp.InternalServerError(c)
 		return
 	}
-	resp.Success(c, response)
+	resp.SuccessNil(c)
 }
 
 func GetAccount(c *gin.Context) {
