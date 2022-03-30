@@ -17,8 +17,8 @@ type GetAccountRequest struct {
 }
 
 type AccountIsExistRequest struct {
-	AccountID    uint64 `json:"account_id" binding:"required,gt=0"`
 	Name         string `json:"name" binding:"required"`
+	Account      string `json:"account"`
 	EthereumAddr string `json:"ethereum_addr" binding:"required"`
 	EncryptedPK  string `json:"encrypted_pk" binding:"required"`
 	VerifyPK     string `json:"verify_pk" binding:"required"`

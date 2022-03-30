@@ -54,3 +54,15 @@ func (a *Account) Count() (n int64, err error) {
 	err = db.GetDB().Where(a).Count(&n).Error
 	return n, err
 }
+
+func (a *Account) IsExist() (isExist bool, err error) {
+	acc := Account{}
+	if err = db.GetDB().Where(a).Limit(1).First(&acc).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return false, nil
+		}
+		return false, err
+	}
+
+	return true, nil
+}

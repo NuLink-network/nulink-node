@@ -51,8 +51,12 @@ func AccountIsExist(c *gin.Context) {
 		resp.ParameterErr(c)
 		return
 	}
+	if len(req.Account) == 0 {
+		resp.ParameterErr(c)
+		return
+	}
 
-	response, err := logic.AccountIsExist(req.AccountID, req.Name, req.EthereumAddr, req.EncryptedPK, req.VerifyPK)
+	response, err := logic.AccountIsExist(req.Name, req.Account, req.EthereumAddr, req.EncryptedPK, req.VerifyPK)
 	if err != nil {
 		// todo log
 		resp.InternalServerError(c)

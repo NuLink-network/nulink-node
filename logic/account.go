@@ -31,17 +31,17 @@ func GetAccount(account string) (*entity.GetAccountResponse, error) {
 	}, nil
 }
 
-func AccountIsExist(accountID uint64, name, ethereumAddr, encryptedPK, verifyPK string) (*entity.AccountIsExistResponse, error) {
-	account := &dao.Account{
-		ID:           accountID,
+func AccountIsExist(name, account, ethereumAddr, encryptedPK, verifyPK string) (*entity.AccountIsExistResponse, error) {
+	acc := &dao.Account{
 		Name:         name,
+		Account:      account,
 		EthereumAddr: ethereumAddr,
 		EncryptedPK:  encryptedPK,
 		VerifyPK:     verifyPK,
 	}
-	n, err := account.Count()
+	isExist, err := acc.IsExist()
 	if err != nil {
 		return nil, err
 	}
-	return &entity.AccountIsExistResponse{IsExist: n > 0}, nil
+	return &entity.AccountIsExistResponse{IsExist: isExist}, nil
 }
