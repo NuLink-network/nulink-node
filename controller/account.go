@@ -30,8 +30,12 @@ func GetAccount(c *gin.Context) {
 		resp.ParameterErr(c)
 		return
 	}
+	if len(req.Account) == 0 {
+		resp.ParameterErr(c)
+		return
+	}
 
-	response, err := logic.GetAccount(req.AccountID)
+	response, err := logic.GetAccount(req.Account)
 	if err != nil {
 		// todo log
 		resp.InternalServerError(c)

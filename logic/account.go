@@ -14,18 +14,19 @@ func CreateAccount(name, account, ethereumAddr, encryptedPK, verifyPK string) er
 	return nil
 }
 
-func GetAccount(accountID uint64) (*entity.GetAccountResponse, error) {
-	account := &dao.Account{ID: accountID}
-	a, err := account.Get()
+func GetAccount(account string) (*entity.GetAccountResponse, error) {
+	acc := &dao.Account{Account: account}
+	a, err := acc.Get()
 	if err != nil {
 		return nil, err
 	}
 	return &entity.GetAccountResponse{
-		ID:           a.ID,
 		Name:         a.Name,
+		Account:      a.Account,
 		EthereumAddr: a.EthereumAddr,
 		EncryptedPK:  a.EncryptedPK,
 		VerifyPK:     a.VerifyPK,
+		Status:       a.Status,
 		CreatedAt:    a.CreatedAt,
 	}, nil
 }
