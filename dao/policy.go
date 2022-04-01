@@ -7,16 +7,24 @@ import (
 )
 
 type Policy struct {
-	ID          uint64         `gorm:"primarykey"`
-	AccountID   uint64         `gorm:"column:account_id" json:"account_id" sql:"bigint(20)"`
-	Label       string         `gorm:"column:label" json:"label" sql:"varchar()"`               // todo length?
-	EncryptedPK string         `gorm:"column:encrypted_pk" json:"encrypted_pk" sql:"varchar()"` // todo length?
-	VerifyPK    string         `gorm:"verify_pk:" json:"verify_pk" sql:"varchar()"`             // todo length?
-	Signature   string         `gorm:"column:signature" json:"signature" sql:"varchar()"`       // todo length?
-	IsPublish   bool           `gorm:"column:is_publish" json:"is_publish" sql:"tinyint(1)"`
-	CreatedAt   time.Time      `gorm:"column:created_at" json:"created_at" sql:"datetime"`
-	UpdatedAt   time.Time      `gorm:"column:updated_at" json:"updated_at" sql:"datetime"`
-	DeletedAt   gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at" sql:"datetime"`
+	ID               uint64         `gorm:"primarykey"`
+	Hrac             uint64         `gorm:"column:hrac" json:"hrac" sql:"varchar()"`
+	Label            string         `gorm:"column:label" json:"label" sql:"varchar()"` // todo length?
+	PolicyID         uint64         `gorm:"column:policy_id" json:"policy_id" sql:"char(36)"`
+	AccountID        uint64         `gorm:"column:account_id" json:"account_id" sql:"char(36)"`
+	Publisher        string         `gorm:"column:publisher" json:"publisher" sql:"varchar()"` // todo length?
+	PublisherID      string         `gorm:"column:publisher_id" json:"publisher_id" sql:"char(36)"`
+	Consumer         string         `gorm:"column:consumer" json:"consumer" sql:"varchar()"` // todo length?
+	ConsumerID       string         `gorm:"column:consumer_id" json:"consumer_id" sql:"char(36)"`
+	EncryptedPK      string         `gorm:"column:encrypted_pk" json:"encrypted_pk" sql:"varchar()"`           // todo length?
+	EncryptedAddress string         `gorm:"column:encrypted_address" json:"encrypted_address" sql:"varchar()"` // todo length?
+	VerifyPK         string         `gorm:"verify_pk:" json:"verify_pk" sql:"varchar()"`                       // todo length?
+	Status           int8           `gorm:"column:status" json:"status" sql:"tinyint(4)" comment:"1: default, "`
+	Gas              string         `gorm:"column:gas" json:"gas" sql:"varchar()"`
+	TxHash           string         `gorm:"column:tx_hash" json:"tx_hash" sql:"char(66)" comment:"1: default, "`
+	CreatedAt        time.Time      `gorm:"column:created_at" json:"created_at" sql:"datetime"`
+	UpdatedAt        time.Time      `gorm:"column:updated_at" json:"updated_at" sql:"datetime"`
+	DeletedAt        gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at" sql:"datetime"`
 }
 
 func NewPolicy() *Policy {
