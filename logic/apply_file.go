@@ -8,13 +8,12 @@ import (
 )
 
 func ApplyFile(fileIDs []uint64, proposerID uint64, signature string, startAt, finishAt time.Time) error {
-	af := &dao.AppleFile{}
-	afs := make([]*dao.AppleFile, 0, len(fileIDs))
+	af := &dao.ApplyFile{}
+	afs := make([]*dao.ApplyFile, 0, len(fileIDs))
 	for _, fid := range fileIDs {
-		afs = append(afs, &dao.AppleFile{
+		afs = append(afs, &dao.ApplyFile{
 			FileID:     fid,
 			ProposerID: proposerID,
-			Signature:  signature,
 			StartAt:    startAt,
 			FinishAt:   finishAt,
 		})
@@ -23,7 +22,7 @@ func ApplyFile(fileIDs []uint64, proposerID uint64, signature string, startAt, f
 }
 
 func ApplyFileList(proposerID uint64, status int8) ([]*entity.ApplyFileListResponse, error) {
-	af := &dao.AppleFile{ProposerID: proposerID}
+	af := &dao.ApplyFile{ProposerID: proposerID}
 	if status != -1 {
 		af.Status = status
 	}
@@ -47,18 +46,18 @@ func ApplyFileList(proposerID uint64, status int8) ([]*entity.ApplyFileListRespo
 }
 
 func RevokeApply(applyID []uint64) error {
-	af := &dao.AppleFile{}
+	af := &dao.ApplyFile{}
 	return af.BatchDelete(applyID)
 }
 
 func ApproveApply(applyID uint64) error {
-	af := &dao.AppleFile{ID: applyID}
-	newAf := &dao.AppleFile{Status: dao.StatusApprove}
+	af := &dao.ApplyFile{ID: applyID}
+	newAf := &dao.ApplyFile{Status: dao.StatusApprove}
 	return af.Updates(newAf)
 }
 
 func RejectApply(applyID uint64) error {
-	af := &dao.AppleFile{ID: applyID}
-	newAf := &dao.AppleFile{Status: dao.StatusReject}
+	af := &dao.ApplyFile{ID: applyID}
+	newAf := &dao.ApplyFile{Status: dao.StatusReject}
 	return af.Updates(newAf)
 }
