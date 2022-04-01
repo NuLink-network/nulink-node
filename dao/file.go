@@ -7,13 +7,15 @@ import (
 )
 
 type File struct {
-	ID        uint64         `gorm:"primarykey"`
-	AccountID uint64         `gorm:"column:account_id" json:"account_id" sql:"bigint(20)"`
-	Address   string         `gorm:"column:address" json:"addr" sql:"varchar(512)"`
-	Signature string         `gorm:"column:signature" json:"signature" sql:"varchar()"` // todo length?
-	CreatedAt time.Time      `gorm:"column:created_at" json:"created_at,omitempty" sql:"datetime"`
-	UpdatedAt time.Time      `gorm:"column:updated_at" json:"updated_at,omitempty" sql:"datetime"`
-	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at,index" json:"deleted_at,omitempty" sql:"datetime"`
+	ID             uint64         `gorm:"primarykey"`
+	Name           string         `gorm:"column:name" json:"name" sql:"varchar(512)"`
+	Address        string         `gorm:"column:address" json:"addr" sql:"varchar(512)"`
+	OwnerName      string         `gorm:"column:owner_name" json:"owner_name" sql:"varchar(512)"`
+	OwnerAccountID string         `gorm:"column:owner_account_id" json:"owner_account_id" sql:"char(36)"`
+	Thumbnail      string         `gorm:"column:thumbnail" json:"thumbnail" sql:"varchar(512)"`
+	CreatedAt      time.Time      `gorm:"column:created_at" json:"created_at,omitempty" sql:"datetime"`
+	UpdatedAt      time.Time      `gorm:"column:updated_at" json:"updated_at,omitempty" sql:"datetime"`
+	DeletedAt      gorm.DeletedAt `gorm:"column:deleted_at,index" json:"deleted_at,omitempty" sql:"datetime"`
 }
 
 func NewFile() *File {
