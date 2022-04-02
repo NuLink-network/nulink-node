@@ -10,8 +10,7 @@ type Policy struct {
 	ID               uint64         `gorm:"primarykey"`
 	Hrac             uint64         `gorm:"column:hrac" json:"hrac" sql:"varchar()"`
 	Label            string         `gorm:"column:label" json:"label" sql:"varchar()"` // todo length?
-	PolicyID         uint64         `gorm:"column:policy_id" json:"policy_id" sql:"char(36)"`
-	AccountID        uint64         `gorm:"column:account_id" json:"account_id" sql:"char(36)"`
+	PolicyID         string         `gorm:"column:policy_id" json:"policy_id" sql:"char(36)"`
 	Publisher        string         `gorm:"column:publisher" json:"publisher" sql:"varchar()"` // todo length?
 	PublisherID      string         `gorm:"column:publisher_id" json:"publisher_id" sql:"char(36)"`
 	Consumer         string         `gorm:"column:consumer" json:"consumer" sql:"varchar()"` // todo length?
@@ -47,4 +46,16 @@ func (p *Policy) Find() (ps []Policy, err error) {
 
 func (p *Policy) Updates(new *Policy) error {
 	return db.GetDB().Where(p).Updates(new).Error
+}
+
+func (p *Policy) IsExist() (isExist bool, err error) {
+	pl := Policy{}
+	if err = db.GetDB().Where(p).First(&pl).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return false, nil
+		}
+		return false, err
+	}
+
+	return true, nil
 }

@@ -1,20 +1,36 @@
 package logic
 
 import (
+	"github.com/NuLink-network/nulink-node/controller/resp"
 	"github.com/NuLink-network/nulink-node/dao"
 	"github.com/NuLink-network/nulink-node/entity"
 )
 
-func UploadFile(accountID uint64, addresses []string) error {
-	f := &dao.File{}
-	fs := make([]*dao.File, 0, len(addresses))
-	for _, addr := range addresses {
+func UploadFile(accountID, fileOwner, policyID string, files []entity.File) (code int) {
+	p := &dao.Policy{PolicyID: policyID}
+	isExist, err := p.IsExist()
+	if err != nil {
+		// todo log
+		return resp.CodeInternalServerError
+	}
+	if !isExist {
+		return resp.CodePolicyNotExist
+	}
+
+	file := &dao.File{}
+	fs := make([]*dao.File, 0, len(files))
+	for _, f := range files {
 		fs = append(fs, &dao.File{
-			AccountID: accountID,
-			Address:   addr,
+			Name:           f.Name,
+			Address:        f.Address,
+			Owner:          fileOwner,
+			OwnerAccountID: accountID,
 		})
 	}
-	return f.BatchCreate(fs)
+	if err := file.BatchCreate(fs); err != nil {
+		return resp.CodeInternalServerError
+	}
+	return resp.CodeSuccess
 }
 
 func GetFileList(accountID uint64, address string) ([]*entity.GetFileListResponse, error) {

@@ -14,13 +14,9 @@ func UploadFile(c *gin.Context) {
 		resp.ParameterErr(c)
 		return
 	}
-	if len(req.Addresses) < 1 {
-		resp.ParameterErr(c)
-		return
-	}
 
-	if err := logic.UploadFile(req.AccountID, req.Addresses); err != nil {
-		resp.InternalServerError(c)
+	if code := logic.UploadFile(req.AccountID, req.FileOwner, req.PolicyID, req.Files); code != resp.CodeSuccess {
+		resp.Error(c, code)
 		return
 	}
 	resp.SuccessNil(c)

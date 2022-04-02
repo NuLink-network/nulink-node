@@ -10,7 +10,7 @@ type File struct {
 	ID             uint64         `gorm:"primarykey"`
 	Name           string         `gorm:"column:name" json:"name" sql:"varchar(512)"`
 	Address        string         `gorm:"column:address" json:"addr" sql:"varchar(512)"`
-	OwnerName      string         `gorm:"column:owner_name" json:"owner_name" sql:"varchar(512)"`
+	Owner          string         `gorm:"column:owner" json:"owner" sql:"varchar(512)"`
 	OwnerAccountID string         `gorm:"column:owner_account_id" json:"owner_account_id" sql:"char(36)"`
 	Thumbnail      string         `gorm:"column:thumbnail" json:"thumbnail" sql:"varchar(512)"`
 	CreatedAt      time.Time      `gorm:"column:created_at" json:"created_at,omitempty" sql:"datetime"`

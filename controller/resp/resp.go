@@ -30,6 +30,14 @@ func Success(c *gin.Context, data interface{}) {
 	})
 }
 
+func Error(c *gin.Context, code int) {
+	c.JSON(http.StatusOK, Response{
+		Code: CodeSuccess,
+		Msg:  code2msg[code],
+		Data: EmptyStruct,
+	})
+}
+
 func Resp(c *gin.Context, code int, data interface{}) {
 	c.JSON(http.StatusOK, Response{
 		Code: code,

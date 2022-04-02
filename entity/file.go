@@ -4,10 +4,17 @@ import "time"
 
 // ========================= request =========================
 
+type File struct {
+	Name    string `json:"name" binding:"required"`
+	Address string `json:"address" binding:"required"`
+}
+
 type UploadFileRequest struct {
-	AccountID uint64   `json:"account_id" binding:"required,gt=0"`
-	Addresses []string `json:"address"`
-	// todo ...
+	Files     []File `json:"file" binding:"required"`
+	AccountID string `json:"account_id" binding:"required"`
+	FileOwner string `json:"file_owner" binding:"required"`
+	PolicyID  string `json:"policy_id" binding:"required"`
+	Signature string `json:"signature" binding:"required"`
 }
 
 type GetFileListRequest struct {

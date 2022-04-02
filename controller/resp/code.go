@@ -12,7 +12,16 @@ const (
 	MsgParameterErr        = "Invalid Parameter"
 )
 
+const (
+	CodePolicyNotExist = 4001
+)
+
+const (
+	MsgPolicyNotExist = "policy does not exist"
+)
+
 var code2msg = map[int]string{
-	CodeSuccess:      MsgSuccess,
-	CodeParameterErr: MsgParameterErr,
+	CodeSuccess:        MsgSuccess,
+	CodeParameterErr:   MsgParameterErr,
+	CodePolicyNotExist: MsgPolicyNotExist,
 }
