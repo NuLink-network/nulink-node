@@ -29,7 +29,7 @@ func GetFileList(c *gin.Context) {
 		return
 	}
 
-	response, err := logic.GetFileList(req.AccountID, req.Address)
+	response, err := logic.GetFileList(req.AccountID, req.FileName, req.Paginate.Page, req.Paginate.PageSize)
 	if err != nil {
 		resp.InternalServerError(c)
 		return

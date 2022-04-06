@@ -17,10 +17,16 @@ type UploadFileRequest struct {
 	Signature string `json:"signature" binding:"required"`
 }
 
+type Paginate struct {
+	Page     int `json:"page"`
+	PageSize int `json:"page_size"`
+}
+
 type GetFileListRequest struct {
-	AccountID uint64 `json:"account_id" binding:"required,gt=0"`
-	Address   string `json:"address"`
-	// todo ...
+	AccountID string `json:"account_id" binding:"required"`
+	FileName  string `json:"file_name"`
+	//UploadTime uint64   `json:"upload_time"`
+	Paginate Paginate `json:"paginate"`
 }
 
 type GetOthersFileListRequest struct {
@@ -37,8 +43,10 @@ type DeleteFileRequest struct {
 // ========================= response =========================
 
 type GetFileListResponse struct {
-	AccountID uint64    `json:"account_id"`
+	AccountID string    `json:"account_id"`
+	FileName  string    `json:"file_name"`
 	Address   string    `json:"address"`
+	Thumbnail string    `json:"thumbnail"`
 	CreatedAt time.Time `json:"created_at"`
 }
 

@@ -35,8 +35,8 @@ func (f *File) BatchCreate(fs []*File) error {
 	return db.GetDB().Create(fs).Error
 }
 
-func (f *File) Find() (files []File, err error) {
-	err = db.GetDB().Where(f).Find(&files).Error
+func (f *File) Find(page, pageSize int) (files []File, err error) {
+	err = db.GetDB().Where(f).Scopes(Paginate(page, pageSize)).Find(&files).Error
 	return files, err
 }
 

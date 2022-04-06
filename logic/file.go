@@ -33,25 +33,27 @@ func UploadFile(accountID, fileOwner, policyID string, files []entity.File) (cod
 	return resp.CodeSuccess
 }
 
-func GetFileList(accountID uint64, address string) ([]*entity.GetFileListResponse, error) {
+func GetFileList(accountID string, fileName string, page, pageSize int) ([]*entity.GetFileListResponse, error) {
 	file := &dao.File{
-		AccountID: accountID,
-		Address:   address,
+		OwnerAccountID: accountID,
+		Name:           fileName,
 	}
-	files, err := file.Find()
+	files, err := file.Find(page, pageSize)
 	if err != nil {
 		return nil, err
 	}
 
-	resp := make([]*entity.GetFileListResponse, 0, 10)
+	ret := make([]*entity.GetFileListResponse, 0, 10)
 	for _, f := range files {
-		resp = append(resp, &entity.GetFileListResponse{
-			AccountID: f.AccountID,
+		ret = append(ret, &entity.GetFileListResponse{
+			AccountID: f.OwnerAccountID,
+			FileName:  f.Name,
 			Address:   f.Address,
+			Thumbnail: f.Thumbnail,
 			CreatedAt: f.CreatedAt,
 		})
 	}
-	return resp, nil
+	return ret, nil
 }
 
 func GetOthersFileList(accountID uint64) ([]*entity.GetOthersFileListResponse, error) {
