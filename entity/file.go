@@ -30,8 +30,10 @@ type GetFileListRequest struct {
 }
 
 type GetOthersFileListRequest struct {
-	AccountID uint64 `json:"account_id" binding:"required,gt=0"`
-	// todo ...
+	AccountID string `json:"account_id" binding:"required,gt=0"`
+	FileName  string `json:"file_name"`
+	//UploadTime uint64   `json:"upload_time"`
+	Paginate Paginate `json:"paginate"`
 }
 
 type DeleteFileRequest struct {
@@ -51,7 +53,9 @@ type GetFileListResponse struct {
 }
 
 type GetOthersFileListResponse struct {
-	AccountID uint64    `json:"account_id"`
+	AccountID string    `json:"account_id"`
+	FileName  string    `json:"file_name"`
 	Address   string    `json:"address"`
+	Thumbnail string    `json:"thumbnail"`
 	CreatedAt time.Time `json:"created_at"`
 }

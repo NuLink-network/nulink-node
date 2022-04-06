@@ -56,22 +56,26 @@ func GetFileList(accountID string, fileName string, page, pageSize int) ([]*enti
 	return ret, nil
 }
 
-func GetOthersFileList(accountID uint64) ([]*entity.GetOthersFileListResponse, error) {
-	file := &dao.File{}
-	files, err := file.FindNotAccountID(accountID)
+func GetOthersFileList(accountID string, fileName string, page, pageSize int) ([]*entity.GetOthersFileListResponse, error) {
+	file := &dao.File{
+		Name: fileName,
+	}
+	files, err := file.FindNotAccountID(accountID, page, pageSize)
 	if err != nil {
 		return nil, err
 	}
 
-	resp := make([]*entity.GetOthersFileListResponse, 0, len(files))
+	ret := make([]*entity.GetOthersFileListResponse, 0, len(files))
 	for _, f := range files {
-		resp = append(resp, &entity.GetOthersFileListResponse{
-			AccountID: f.AccountID,
+		ret = append(ret, &entity.GetOthersFileListResponse{
+			AccountID: f.OwnerAccountID,
+			FileName:  f.Name,
 			Address:   f.Address,
+			Thumbnail: f.Thumbnail,
 			CreatedAt: f.CreatedAt,
 		})
 	}
-	return resp, nil
+	return ret, nil
 }
 
 func DeleteFile(accountID, fileID uint64, signature string) error {

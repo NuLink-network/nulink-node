@@ -40,8 +40,8 @@ func (f *File) Find(page, pageSize int) (files []File, err error) {
 	return files, err
 }
 
-func (f *File) FindNotAccountID(accountID uint64) (files []*File, err error) {
-	err = db.GetDB().Where(f).Where("account_id != ?", accountID).Find(&files).Error
+func (f *File) FindNotAccountID(accountID string, page, pageSize int) (files []*File, err error) {
+	err = db.GetDB().Where(f).Where("owner_account_id != ?", accountID).Scopes(Paginate(page, pageSize)).Find(&files).Error
 	return files, err
 }
 

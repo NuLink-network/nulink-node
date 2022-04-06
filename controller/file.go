@@ -44,7 +44,7 @@ func GetOthersFileList(c *gin.Context) {
 		return
 	}
 
-	response, err := logic.GetOthersFileList(req.AccountID)
+	response, err := logic.GetOthersFileList(req.AccountID, req.FileName, req.Paginate.Page, req.Paginate.PageSize)
 	if err != nil {
 		resp.InternalServerError(c)
 		return
