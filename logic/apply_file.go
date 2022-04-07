@@ -21,12 +21,17 @@ func ApplyFile(fileIDs []uint64, proposerID uint64, signature string, startAt, f
 	return af.BatchCreate(afs)
 }
 
-func ApplyFileList(proposerID uint64, status int8) ([]*entity.ApplyFileListResponse, error) {
-	af := &dao.ApplyFile{ProposerID: proposerID}
-	if status != -1 {
+func ApplyFileList(fileID uint64, status uint8, proposerAccountID, proprietorAccountID string, page, pageSize int) ([]*entity.ApplyFileListResponse, error) {
+	af := &dao.ApplyFile{
+		FileID:              fileID,
+		ProposerAccountID:   proposerAccountID,
+		ProprietorAccountID: proprietorAccountID,
+		Status:              status,
+	}
+	if status != dao.StatusAll {
 		af.Status = status
 	}
-	afs, err := af.Find()
+	afs, err := af.Find(page, pageSize)
 	if err != nil {
 		return nil, err
 	}
@@ -34,12 +39,15 @@ func ApplyFileList(proposerID uint64, status int8) ([]*entity.ApplyFileListRespo
 	resp := make([]*entity.ApplyFileListResponse, 0, len(afs))
 	for _, af := range afs {
 		resp = append(resp, &entity.ApplyFileListResponse{
-			ApplyID:    af.ID,
-			FileID:     af.FileID,
-			ProposerID: af.ProposerID,
-			StartAt:    af.StartAt,
-			FinishAt:   af.FinishAt,
-			CreatedAt:  af.CreatedAt,
+			ApplyID:             af.ID,
+			FileID:              af.FileID,
+			Proposer:            af.Proposer,
+			ProposerAccountID:   af.ProposerAccountID,
+			Proprietor:          af.Proprietor,
+			ProprietorAccountID: af.ProprietorAccountID,
+			StartAt:             af.StartAt,
+			FinishAt:            af.FinishAt,
+			CreatedAt:           af.CreatedAt,
 		})
 	}
 	return resp, nil

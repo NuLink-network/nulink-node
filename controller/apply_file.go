@@ -32,7 +32,7 @@ func ApplyFileList(c *gin.Context) {
 		return
 	}
 
-	response, err := logic.ApplyFileList(req.ProposerID, req.Status)
+	response, err := logic.ApplyFileList(req.FileID, req.Status, req.ProposerAccountID, req.ProprietorAccountID, req.Paginate.Page, req.Paginate.PageSize)
 	if err != nil {
 		// todo log
 		resp.InternalServerError(c)

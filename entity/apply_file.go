@@ -13,8 +13,11 @@ type ApplyFileRequest struct {
 }
 
 type ApplyFileListRequest struct {
-	ProposerID uint64 `json:"proposer_id" binding:"required,gt=0"`
-	Status     int8   `json:"status" binding:"required,gt=-2lt=3"`
+	FileID              uint64   `json:"file_id" binding:"required,gt=0"`
+	Status              int8     `json:"status" binding:"required,gt=0 lt=3"`
+	ProposerAccountID   string   `json:"proposer_account_id"`
+	ProprietorAccountID string   `json:"proprietor_account_id"`
+	Paginate            Paginate `json:"paginate"`
 }
 
 type RevokeApplyRequest struct {
@@ -32,11 +35,13 @@ type RejectApplyRequest struct {
 // ========================= response =========================
 
 type ApplyFileListResponse struct {
-	ApplyID    uint64 `json:"apply_id"`
-	FileID     uint64 `json:"file_ids"`
-	ProposerID uint64 `json:"proposer_id"`
-	//Signature string    `json:"signature"`
-	StartAt   time.Time `json:"start_at"`
-	FinishAt  time.Time `json:"finish_at"`
-	CreatedAt time.Time `json:"created_at"`
+	ApplyID             uint64    `json:"apply_id"`
+	FileID              uint64    `json:"file_ids"`
+	Proposer            string    `json:"proposer"`
+	ProposerAccountID   string    `json:"proposer_account_id"`
+	Proprietor          string    `json:"proprietor"`
+	ProprietorAccountID string    `json:"proprietor_account_id"`
+	StartAt             time.Time `json:"start_at"`
+	FinishAt            time.Time `json:"finish_at"`
+	CreatedAt           time.Time `json:"created_at"`
 }
