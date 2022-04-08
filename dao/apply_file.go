@@ -52,7 +52,7 @@ func (a *ApplyFile) Find(page, pageSize int) (files []*ApplyFile, err error) {
 }
 
 func (a *ApplyFile) BatchDelete(ids []uint64) error {
-	return db.GetDB().Delete(a, ids).Error
+	return db.GetDB().Where(a).Delete(a, ids).Error
 }
 
 func (a *ApplyFile) Updates(new *ApplyFile) error {

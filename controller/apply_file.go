@@ -49,7 +49,7 @@ func RevokeApply(c *gin.Context) {
 		return
 	}
 
-	if err := logic.RevokeApply(req.ApplyIDs); err != nil {
+	if err := logic.RevokeApply(req.ProposerAccountID, req.ApplyIDs); err != nil {
 		// todo log
 		resp.InternalServerError(c)
 		return

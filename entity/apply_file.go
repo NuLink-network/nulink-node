@@ -14,14 +14,15 @@ type ApplyFileRequest struct {
 
 type ApplyFileListRequest struct {
 	FileID              uint64   `json:"file_id" binding:"required,gt=0"`
-	Status              int8     `json:"status" binding:"required,gt=0 lt=3"`
+	Status              uint8    `json:"status" binding:"required,gt=0 lt=3"`
 	ProposerAccountID   string   `json:"proposer_account_id"`
 	ProprietorAccountID string   `json:"proprietor_account_id"`
 	Paginate            Paginate `json:"paginate"`
 }
 
 type RevokeApplyRequest struct {
-	ApplyIDs []uint64 `json:"apply_ids" binding:"required"`
+	ProposerAccountID string   `json:"proposer_account_id"`
+	ApplyIDs          []uint64 `json:"apply_ids" binding:"required"`
 }
 
 type ApproveApplyRequest struct {
@@ -36,7 +37,7 @@ type RejectApplyRequest struct {
 
 type ApplyFileListResponse struct {
 	ApplyID             uint64    `json:"apply_id"`
-	FileID              uint64    `json:"file_ids"`
+	FileID              uint64    `json:"file_id"`
 	Proposer            string    `json:"proposer"`
 	ProposerAccountID   string    `json:"proposer_account_id"`
 	Proprietor          string    `json:"proprietor"`

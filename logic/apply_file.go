@@ -53,9 +53,11 @@ func ApplyFileList(fileID uint64, status uint8, proposerAccountID, proprietorAcc
 	return resp, nil
 }
 
-func RevokeApply(applyID []uint64) error {
-	af := &dao.ApplyFile{}
-	return af.BatchDelete(applyID)
+func RevokeApply(proposerAccountID string, applyIDs []uint64) error {
+	af := &dao.ApplyFile{
+		ProposerAccountID: proposerAccountID,
+	}
+	return af.BatchDelete(applyIDs)
 }
 
 func ApproveApply(applyID uint64) error {
