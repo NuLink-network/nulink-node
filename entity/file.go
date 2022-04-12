@@ -5,6 +5,7 @@ import "time"
 // ========================= request =========================
 
 type File struct {
+	ID      string `json:"id" binding:"required"`
 	Name    string `json:"name" binding:"required"`
 	Address string `json:"address" binding:"required"`
 }
