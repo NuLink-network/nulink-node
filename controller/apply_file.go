@@ -81,7 +81,7 @@ func RejectApply(c *gin.Context) {
 		return
 	}
 
-	if err := logic.RejectApply(req.ApplyID); err != nil {
+	if err := logic.RejectApply(req.AccountID, req.ApplyID); err != nil {
 		// todo log
 		resp.InternalServerError(c)
 		return

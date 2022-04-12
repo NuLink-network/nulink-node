@@ -66,8 +66,12 @@ func ApproveApply(applyID uint64) error {
 	return af.Updates(newAf)
 }
 
-func RejectApply(applyID uint64) error {
-	af := &dao.ApplyFile{ID: applyID}
+func RejectApply(accountID string, applyID uint64) error {
+	af := &dao.ApplyFile{
+		ID:                applyID,
+		ProposerAccountID: accountID,
+	}
+
 	newAf := &dao.ApplyFile{Status: dao.StatusReject}
 	return af.Updates(newAf)
 }

@@ -30,7 +30,9 @@ type ApproveApplyRequest struct {
 }
 
 type RejectApplyRequest struct {
-	ApplyID uint64 `json:"apply_id" binding:"required,gt=0"`
+	AccountID string `json:"accountID" binding:"required,gt=0"`
+	ApplyID   uint64 `json:"apply_id" binding:"required,gt=0"`
+	Signature string `json:"signature" binding:"required"`
 }
 
 // ========================= response =========================
