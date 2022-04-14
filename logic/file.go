@@ -21,6 +21,7 @@ func UploadFile(accountID, fileOwner, policyID string, files []entity.File) (cod
 	fs := make([]*dao.File, 0, len(files))
 	for _, f := range files {
 		fs = append(fs, &dao.File{
+			FileID:         f.ID,
 			Name:           f.Name,
 			Address:        f.Address,
 			Owner:          fileOwner,
@@ -30,6 +31,7 @@ func UploadFile(accountID, fileOwner, policyID string, files []entity.File) (cod
 	if err := file.BatchCreate(fs); err != nil {
 		return resp.CodeInternalServerError
 	}
+	// todo 添加文件月策略对应关系
 	return resp.CodeSuccess
 }
 

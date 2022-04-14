@@ -8,6 +8,7 @@ import (
 
 type File struct {
 	ID             uint64         `gorm:"primarykey"`
+	FileID         string         `gorm:"column:file_id" json:"file_id" sql:"char(36)"`
 	Name           string         `gorm:"column:name" json:"name" sql:"varchar(512)"`
 	Address        string         `gorm:"column:address" json:"addr" sql:"varchar(512)"`
 	Owner          string         `gorm:"column:owner" json:"owner" sql:"varchar(512)"`
