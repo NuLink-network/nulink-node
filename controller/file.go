@@ -22,6 +22,20 @@ func UploadFile(c *gin.Context) {
 	resp.SuccessNil(c)
 }
 
+func CreatePolicyAndUploadFile(c *gin.Context) {
+	req := &entity.CreatePolicyAndUploadFileRequest{}
+	if err := c.ShouldBindJSON(req); err != nil {
+		resp.ParameterErr(c)
+		return
+	}
+
+	if code := logic.CreatePolicyAndUploadFile(req.AccountID, req.FileOwner, req.PolicyID, req.PolicyLabel, req.EncryptedPK, req.Files); code != resp.CodeSuccess {
+		resp.Error(c, code)
+		return
+	}
+	resp.SuccessNil(c)
+}
+
 func GetFileList(c *gin.Context) {
 	req := &entity.GetFileListRequest{}
 	if err := c.ShouldBindJSON(req); err != nil {

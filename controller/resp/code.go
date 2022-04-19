@@ -13,15 +13,18 @@ const (
 )
 
 const (
-	CodePolicyNotExist = 4001
+	CodePolicyIsExist  = 4001
+	CodePolicyNotExist = 4002
 )
 
 const (
+	MsgPolicyIsExist  = "policy already exists"
 	MsgPolicyNotExist = "policy does not exist"
 )
 
 var code2msg = map[int]string{
 	CodeSuccess:        MsgSuccess,
 	CodeParameterErr:   MsgParameterErr,
+	CodePolicyIsExist:  MsgPolicyIsExist,
 	CodePolicyNotExist: MsgPolicyNotExist,
 }

@@ -18,6 +18,16 @@ type UploadFileRequest struct {
 	Signature string `json:"signature" binding:"required"`
 }
 
+type CreatePolicyAndUploadFileRequest struct {
+	Files       []File `json:"file" binding:"required"`
+	AccountID   string `json:"account_id" binding:"required"`
+	FileOwner   string `json:"file_owner" binding:"required"`
+	PolicyID    string `json:"policy_id" binding:"required"`
+	PolicyLabel string `json:"policy_label" binding:"required"`
+	EncryptedPK string `json:"encrypted_pk" binding:"required"`
+	Signature   string `json:"signature" binding:"required"`
+}
+
 type Paginate struct {
 	Page     int `json:"page"`
 	PageSize int `json:"page_size"`

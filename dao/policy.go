@@ -59,3 +59,15 @@ func (p *Policy) IsExist() (isExist bool, err error) {
 
 	return true, nil
 }
+
+func CreatePolicyAndFiles(policy *Policy, files []*File) error {
+	return db.GetDB().Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(policy).Error; err != nil {
+			return err
+		}
+		if err := tx.Create(files).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+}

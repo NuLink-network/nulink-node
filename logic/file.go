@@ -17,8 +17,8 @@ func UploadFile(accountID, fileOwner, policyID string, files []entity.File) (cod
 		return resp.CodePolicyNotExist
 	}
 
-	file := &dao.File{}
 	fs := make([]*dao.File, 0, len(files))
+	fps := make([]*dao.FilePolicy, 0, len(files))
 	for _, f := range files {
 		fs = append(fs, &dao.File{
 			FileID:         f.ID,
@@ -27,11 +27,60 @@ func UploadFile(accountID, fileOwner, policyID string, files []entity.File) (cod
 			Owner:          fileOwner,
 			OwnerAccountID: accountID,
 		})
+		fps = append(fps, &dao.FilePolicy{
+			FileID:   f.ID,
+			PolicyID: policyID,
+		})
 	}
-	if err := file.BatchCreate(fs); err != nil {
+	if err := dao.NewFile().BatchCreate(fs); err != nil {
 		return resp.CodeInternalServerError
 	}
-	// todo 添加文件月策略对应关系
+	if err := dao.NewFilePolicy().BatchCreate(fps); err != nil {
+		return resp.CodeInternalServerError
+	}
+	return resp.CodeSuccess
+}
+
+func CreatePolicyAndUploadFile(accountID, fileOwner, policyID, policyLabel, encryptedPK string, files []entity.File) (code int) {
+	p := &dao.Policy{PolicyID: policyID}
+	isExist, err := p.IsExist()
+	if err != nil {
+		// todo log
+		return resp.CodeInternalServerError
+	}
+	if isExist {
+		return resp.CodePolicyIsExist
+	}
+
+	policy := &dao.Policy{
+		PolicyID:    policyID,
+		Label:       policyLabel,
+		EncryptedPK: encryptedPK,
+	}
+
+	fs := make([]*dao.File, 0, len(files))
+	fps := make([]*dao.FilePolicy, 0, len(files))
+	for _, f := range files {
+		fs = append(fs, &dao.File{
+			FileID:         f.ID,
+			Name:           f.Name,
+			Address:        f.Address,
+			Owner:          fileOwner,
+			OwnerAccountID: accountID,
+		})
+		fps = append(fps, &dao.FilePolicy{
+			FileID:   f.ID,
+			PolicyID: policyID,
+		})
+	}
+	if err = dao.CreatePolicyAndFiles(policy, fs); err != nil {
+		return resp.CodeInternalServerError
+	}
+
+	if err := dao.NewFilePolicy().BatchCreate(fps); err != nil {
+		return resp.CodeInternalServerError
+	}
+
 	return resp.CodeSuccess
 }
 
