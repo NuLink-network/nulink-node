@@ -1,0 +1,365 @@
+# node api documentation
+
+## 创建用户
+
+创建用户记录
+
+### 请求参数
+
+| 参数            | 类型     | 说明   |
+| -------------- | -------- | ------- |
+|  name          |  string  |  账户名称 |
+|  account_id    |  string  |  账户ID(UUID v4) |
+|  ethereum_addr |  string  |  以太坊地址 |
+|  encrypted_pk  |  string  |  加密的公钥 |
+|  verify_pk     |  string  |  验证公钥 |
+
+### 响应参数
+
+| 参数      | 类型      | 说明   |
+| --------- | -------- | ----- |
+|  code     |  int     |       |
+|  msg      |  int     |       |
+|  data     |  object  |       |
+
+## 获取用户信息
+
+通过账户 ID 获取用户信息
+
+### 请求参数
+
+| 参数            | 类型     | 说明   |
+| -------------- | -------- | ------- |
+|  account_id    |  string  |  账户ID(UUID v4) |
+
+### 响应参数
+
+| 参数      | 类型      | 说明     |
+| --------- | -------- | ------- |
+|  code     |  int     |  响应码  |
+|  msg      |  int     |  响应信息 |
+|  data     |  object  |  响应数据 |
+
+#### data 结构
+
+| 参数      | 类型      | 说明     |
+| --------- | -------- | ------- |
+|  name          |  string  |  账户名称 |
+|  account_id    |  string  |  账户ID(UUID v4) |
+|  ethereum_addr |  string  |  以太坊地址 |
+|  encrypted_pk  |  string  |  加密的公钥 |
+|  status        |  int  |  账户状态 |
+|  created_at    |  date  |  账户创建时间 |
+
+## 判断用户是否存在
+
+判断用户是否存在
+
+### 请求参数
+
+| 参数            | 类型     | 必填    | 说明   |
+| -------------- | -------- | ------ | ------- |
+|  name          |  string  | 是     | 账户名称 |
+|  account_id    |  string  | 是     | 账户ID (UUID v4) |
+|  ethereum_addr |  string  | 是     | 以太坊地址 |
+|  encrypted_pk  |  string  | 是     | 加密的公钥 |
+|  verify_pk     |  string  | 是     | 验证公钥 |
+
+### 响应参数
+
+| 参数      | 类型      | 说明     |
+| --------- | -------- | ------- |
+|  code     |  int     |  响应码  |
+|  msg      |  int     |  响应信息 |
+|  data     |  object  |  响应数据 |
+
+#### data 结构
+
+| 参数      | 类型      | 说明     |       
+| --------- | -------- | ------- |  
+| is_exist  |  bool  |    账户是否存在   |      
+
+## 上传文件
+
+上传文件
+
+### 请求参数
+
+| 参数          |  类型     | 必填    | 说明   |
+| ------------ | -------- | ------ | ------- |
+|  file        |  [][File](#File-结构)  | 是     | 文件列表 |
+|  account_id  |  string  | 是     | 账户 ID (UUID V4) |
+|  policy_id   |  string  | 是     | 策略 ID (UUID V4) |
+|  signature   |  string  | 是     | 签名 |
+
+#### File 结构
+
+| 参数       | 类型     | 必填    | 说明   |
+| --------- | -------- | ------ | ------- |
+|  id       |  string  | 是     | 文件 ID (UUID V4) |
+|  name     |  string  | 是     | 文件名称 |
+|  address  |  string  | 是     | 文件地址 |
+
+### 响应参数
+
+| 参数      | 类型      | 说明     |
+| --------- | -------- | ------- |
+|  code     |  int     |  响应码  |
+|  msg      |  int     |  响应信息 |
+|  data     |  object  |  响应数据 |
+
+## 创建策略并上传文件
+
+创建策略并上传文件
+
+### 请求参数
+
+| 参数          |  类型     | 必填    | 说明   |
+| ------------ | -------- | ------ | ------- |
+|  file        |  [][File](#File-结构)  | 是     | 文件列表 |
+|  account_id  |  string  | 是     | 账户ID (UUID V4) |
+|  policy_id   |  string  | 是     | 策略 ID (UUID V4)|
+|  policy_label   |  string  | 是     | 策略标签 |
+|  encrypted_pk   |  string  | 是     | 加密的公钥 |
+|  signature   |  string  | 是     | 签名 |
+
+### 响应参数
+
+| 参数      | 类型      | 说明     |
+| --------- | -------- | ------- |
+|  code     |  number     |  响应码  |
+|  msg      |  string     |  响应信息 |
+|  data     |  object  |  响应数据 |
+
+## 文件列表
+
+返回符合条件的文件信息列表
+
+### 请求参数
+
+| 参数          |  类型     | 必填  | 默认值 | 说明   |
+| ------------ | -------- | ------ | ---- |------- |
+|  account_id  |  string  |  是    |      |  账户ID (UUID V4) |
+|  file_name   |  string  |  否    |      |  文件名称|
+|  paginate    |  [Paginate](#Paginate-结构) |  否  |      | 分页 |
+
+#### Paginate 结构
+
+| 参数       | 类型     | 必填  | 默认值 | 说明   |
+| --------- | -------- | ---- | ---- | ------- |
+|  page      |  number  | 否   |  1   |  页码 |
+|  page_size |  number  | 否   |  10  |  每页的数据量 |
+
+### 响应参数
+
+| 参数      | 类型      | 说明     |
+| --------- | -------- | ------- |
+|  code     |  number     |  响应码  |
+|  msg      |  string     |  响应信息 |
+|  data     |  object  |  响应数据 |
+
+#### data 结构
+
+| 参数      | 类型      | 说明     |
+| --------- | -------- | ------- |
+|  account_id          |  string  |  账户 ID |
+|  file_name          |  string  |  文件名称 |
+|  address            |  string  |  文件地址 |
+|  thumbnail          |  string  |  文件缩略图 |
+|  created_at          |  date  |  文件上传时间 |
+
+## 其他人的文件列表
+
+返回符合条件的其他人上传的文件信息列表 (不包含自己上传的文件)
+
+### 请求参数
+
+| 参数          |  类型     | 必填  | 默认值 | 说明   |
+| ------------ | -------- | ------ | ---- |------- |
+|  account_id  |  string  |  是    |      |  账户ID (UUID V4) |
+|  file_name   |  string  |  否    |      |  文件名称|
+|  paginate    |  [Paginate](#Paginate-结构) |  否  |      | 签名 |
+
+### 响应参数
+
+| 参数      | 类型      | 说明     |
+| --------- | -------- | ------- |
+|  code     |  number     |  响应码  |
+|  msg      |  string     |  响应信息 |
+|  data     |  object  |  响应数据 |
+
+#### data 结构
+
+| 参数      | 类型      | 说明     |
+| --------- | -------- | ------- |
+|  account_id          |  string  |  账户 ID |
+|  file_name          |  string  |  文件名称 |
+|  address            |  string  |  文件地址 |
+|  thumbnail          |  string  |  文件缩略图 |
+|  created_at          |  date  |  文件上传时间 |
+
+## 撤销策略
+
+撤销策略并删除文件和策略的关联关系及策略对应的所有文件的使用申请
+
+### 请求参数
+
+| 参数          |  类型     | 必填  | 默认值 | 说明   |
+| ------------ | -------- | ------ | ---- |------- |
+|  account_id  |  string  | 是     | 账户ID (UUID V4) |
+|  policy_id   |  string  | 是     | 策略 ID (UUID V4)|
+|  signature   |  string  | 是     | 签名 |
+
+### 响应参数
+
+| 参数      | 类型      | 说明     |
+| --------- | -------- | ------- |
+|  code     |  number     |  响应码  |
+|  msg      |  string     |  响应信息 |
+|  data     |  object  |  响应数据 |
+
+## 获取策略关联的文件信息 todo
+
+获取策略关联的文件信息
+
+### 请求参数
+
+| 参数          |  类型     | 必填  | 默认值 | 说明   |
+| ------------ | -------- | ------ | ---- |------- |
+|    |    |      |   |
+
+### 响应参数
+
+| 参数      | 类型      | 说明     |
+| --------- | -------- | ------- |
+|  code     |  number     |  响应码  |
+|  msg      |  string     |  响应信息 |
+|  data     |  object  |  响应数据 |
+
+## 申请文件使用
+
+申请文件使用
+
+### 请求参数
+
+| 参数          |  类型     | 必填  | 默认值 | 说明   |
+| ------------ | -------- | ------ | ---- |------- |
+|  file_ids  |  []string  |   是   |   |  文件 ID 列表 |
+|  proposer_id  |  string  |   是   |   |  申请人的账户 ID |
+|  start_at  |  date  |   是   |   |  开始时间 |
+|  proposer_id  |  string  |   是   |   |  结束时间 |
+|  signature   |  string  | 是     | 签名 |
+
+### 响应参数
+
+| 参数      | 类型      | 说明     |
+| --------- | -------- | ------- |
+|  code     |  number     |  响应码  |
+|  msg      |  string     |  响应信息 |
+|  data     |  object  |  响应数据 |
+
+## 申请文件使用列表
+
+申请文件使用信息列表
+
+### 请求参数
+
+| 参数          |  类型     | 必填  | 默认值 | 说明   |
+| ------------ | -------- | ------ | ---- |------- |
+|  file_id  |  string  |   否   |   |  文件 ID |
+|  proposer_id  |  string  |   否   |   |  申请人的账户 ID |
+|  file_owner_id  |  string  |   否   |   |  文件拥有者的账户 ID |
+|  status  |  number  |   否   |  0 (不区分状态) |  申请状态，1: 申请中，2: 已通过, 3: 已拒绝|
+|  paginate    |  [Paginate](#Paginate-结构) |  否  |      | 分页 |
+
+### 响应参数
+
+| 参数      | 类型      | 说明     |
+| --------- | -------- | ------- |
+|  code     |  number     |  响应码  |
+|  msg      |  string     |  响应信息 |
+|  data     |  object  |  响应数据 |
+
+#### data 结构
+
+| 参数      | 类型      | 说明     |
+| --------- | -------- | ------- |
+|  apply_id          |  number  |  申请记录 ID |
+|  file_id          |  string  |  文件 ID |
+|  proposer            |  string  |  申请人 |
+|  proposer_id          |  string  |  申请人账户 ID |
+|  file_owner          |  string  |  文件拥有者 |
+|  file_owner_id          |  string  |  文件拥有者账户 ID |
+|  start_at          |  date  |  使用开始时间 |
+|  finish_at          |  date  |  使用结束时间 |
+|  created_at          |  date  |  申请时间 |
+
+## 撤销文件使用申请
+
+撤销文件使用申请
+
+### 请求参数
+
+| 参数          |  类型     | 必填  | 默认值 | 说明   |
+| ------------ | -------- | ------ | ---- |------- |
+|  proposer_id  |  string  |   是   |   |  申请人的账户 ID |
+|  apply_ids  |  []number  |   是   |   |  申请记录 ID 列表 |
+
+### 响应参数
+
+| 参数      | 类型      | 说明     |
+| --------- | -------- | ------- |
+|  code     |  number     |  响应码  |
+|  msg      |  string     |  响应信息 |
+|  data     |  object  |  响应数据 |
+
+## 批准文件使用申请
+
+发布文件对应的策略并批准文件使用申请
+
+### 请求参数
+
+| 参数          |  类型     | 必填  | 默认值 | 说明   |
+| ------------ | -------- | ------ | ---- |------- |
+|  apply_id  |  number  |   是   |   |  申请记录 ID |
+|  policy  |  Policy  |   是   |   |  申请记录 ID |
+|  signature   |  string  | 是     | 签名 |
+
+#### Policy 结构
+
+| 参数      | 类型      | 说明     |
+| --------- | -------- | ------- |
+|  id          |  string  | 策略 ID  |
+|  hrac          |  string  |  hrac |
+|  gas          |  string  |  gas |
+|  tx_hash          |  string  |  交易 Hash |
+|  creator_id          |  string  | 交易创建者 ID  |
+|  encrypted_address          |  string  | encrypted ipfs address  |
+
+### 响应参数
+
+| 参数      | 类型      | 说明     |
+| --------- | -------- | ------- |
+|  code     |  number     |  响应码  |
+|  msg      |  string     |  响应信息 |
+|  data     |  object  |  响应数据 |
+
+## 拒绝文件使用申请
+
+拒绝文件使用申请
+
+### 请求参数
+
+| 参数          |  类型     | 必填  | 默认值 | 说明   |
+| ------------ | -------- | ------ | ---- |------- |
+|  proposer_id  |  string  |   是   |   |  申请人的账户 ID |
+|  apply_id  |  number  |   是   |   |  申请记录 ID |
+|  signature   |  string  | 是     | 签名 |
+
+### 响应参数
+
+| 参数      | 类型      | 说明     |
+| --------- | -------- | ------- |
+|  code     |  number     |  响应码  |
+|  msg      |  string     |  响应信息 |
+|  data     |  object  |  响应数据 |
