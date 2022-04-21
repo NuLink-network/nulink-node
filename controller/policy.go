@@ -1,26 +1,11 @@
 package controller
 
 import (
-	"github.com/NuLink-network/nulink-node/controller/resp"
 	"github.com/NuLink-network/nulink-node/entity"
 	"github.com/NuLink-network/nulink-node/logic"
+	"github.com/NuLink-network/nulink-node/resp"
 	"github.com/gin-gonic/gin"
 )
-
-func CreatePolicy(c *gin.Context) {
-	req := &entity.CreatePolicyRequest{}
-	if err := c.ShouldBindJSON(req); err != nil {
-		resp.ParameterErr(c)
-		return
-	}
-
-	err := logic.CreatePolicy(req.AccountID, req.Label, req.EncryptedPK, req.VerifyPK, req.Signature)
-	if err != nil {
-		resp.InternalServerError(c)
-		return
-	}
-	resp.SuccessNil(c)
-}
 
 func RevokePolicy(c *gin.Context) {
 	req := &entity.RevokePolicyRequest{}
@@ -29,10 +14,26 @@ func RevokePolicy(c *gin.Context) {
 		return
 	}
 
-	err := logic.RevokePolicy(req.AccountID, req.PolicyID, req.Signature)
-	if err != nil {
-		resp.InternalServerError(c)
+	if code := logic.RevokePolicy(req.AccountID, req.PolicyID); code != resp.CodeSuccess {
+		resp.Error(c, code)
 		return
 	}
 	resp.SuccessNil(c)
+}
+
+func PolicyList(c *gin.Context) {
+	req := &entity.PolicyListRequest{}
+	if err := c.ShouldBindJSON(req); err != nil {
+		resp.ParameterErr(c)
+		return
+	}
+
+	response, err := logic.PolicyList(req.PolicyID, req.CreatorID, req.ConsumerID, req.Status, req.Paginate.Page, req.Paginate.PageSize)
+	if err != nil {
+		// todo log
+		resp.InternalServerError(c)
+		return
+	}
+	resp.Success(c, response)
+
 }

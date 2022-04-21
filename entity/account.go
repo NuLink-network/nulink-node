@@ -13,7 +13,7 @@ type CreateAccountRequest struct {
 }
 
 type GetAccountRequest struct {
-	Account string `json:"account" binding:"required"`
+	AccountID string `json:"account_id" binding:"required"`
 }
 
 type AccountIsExistRequest struct {

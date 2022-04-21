@@ -1,10 +1,14 @@
 package controller
 
 import (
-	"github.com/NuLink-network/nulink-node/controller/resp"
+	"strings"
+
+	"github.com/gin-gonic/gin"
+
 	"github.com/NuLink-network/nulink-node/entity"
 	"github.com/NuLink-network/nulink-node/logic"
-	"github.com/gin-gonic/gin"
+	"github.com/NuLink-network/nulink-node/resource/log"
+	"github.com/NuLink-network/nulink-node/resp"
 )
 
 func CreateAccount(c *gin.Context) {
@@ -25,19 +29,19 @@ func CreateAccount(c *gin.Context) {
 
 func GetAccount(c *gin.Context) {
 	req := &entity.GetAccountRequest{}
+	//c.ShouldBindQuery()
 	if err := c.ShouldBindJSON(req); err != nil {
-		// todo log
 		resp.ParameterErr(c)
 		return
 	}
-	if len(req.Account) == 0 {
+	if len(strings.TrimSpace(req.AccountID)) == 0 {
 		resp.ParameterErr(c)
 		return
 	}
 
-	response, err := logic.GetAccount(req.Account)
+	response, err := logic.GetAccount(req.AccountID)
 	if err != nil {
-		// todo log
+		log.Logger().WithField("account_id", req.AccountID).Error("get account failed, error: ", err)
 		resp.InternalServerError(c)
 		return
 	}

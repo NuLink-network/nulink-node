@@ -1,34 +1,50 @@
 package logic
 
 import (
-	"github.com/NuLink-network/nulink-node/entity"
+	"errors"
 	"time"
 
+	"gorm.io/gorm"
+
 	"github.com/NuLink-network/nulink-node/dao"
+	"github.com/NuLink-network/nulink-node/entity"
+	"github.com/NuLink-network/nulink-node/resp"
 )
 
-func ApplyFile(fileIDs []uint64, proposerID uint64, signature string, startAt, finishAt time.Time) error {
-	af := &dao.ApplyFile{}
+func ApplyFile(fileIDs []string, proposerID string, startAt, finishAt time.Time) (code int) {
+	files, err := dao.NewFile().FindAny("file_id in ?", fileIDs)
+	if err != nil {
+		return resp.CodeInternalServerError
+	}
+	fileOwner := make(map[string]string, len(files))
+	for _, file := range files {
+		fileOwner[file.FileID] = file.OwnerID
+	}
+
 	afs := make([]*dao.ApplyFile, 0, len(fileIDs))
 	for _, fid := range fileIDs {
 		afs = append(afs, &dao.ApplyFile{
-			FileID:     fid,
-			ProposerID: proposerID,
-			StartAt:    startAt,
-			FinishAt:   finishAt,
+			FileID:      fid,
+			ProposerID:  proposerID,
+			FileOwnerID: fileOwner[fid],
+			StartAt:     startAt,
+			FinishAt:    finishAt,
 		})
 	}
-	return af.BatchCreate(afs)
+	if err := dao.NewAppleFile().BatchCreate(afs); err != nil {
+		return resp.CodeInternalServerError
+	}
+	return resp.CodeSuccess
 }
 
-func ApplyFileList(fileID uint64, status uint8, proposerAccountID, proprietorAccountID string, page, pageSize int) ([]*entity.ApplyFileListResponse, error) {
+func ApplyFileList(fileID string, status uint8, proposerID, fileOwnerID string, page, pageSize int) ([]*entity.ApplyFileListResponse, error) {
 	af := &dao.ApplyFile{
-		FileID:              fileID,
-		ProposerAccountID:   proposerAccountID,
-		ProprietorAccountID: proprietorAccountID,
-		Status:              status,
+		FileID:      fileID,
+		ProposerID:  proposerID,
+		FileOwnerID: fileOwnerID,
+		Status:      status,
 	}
-	if status != dao.StatusAll {
+	if status != dao.ApplyStatusAll {
 		af.Status = status
 	}
 	afs, err := af.Find(page, pageSize)
@@ -36,42 +52,108 @@ func ApplyFileList(fileID uint64, status uint8, proposerAccountID, proprietorAcc
 		return nil, err
 	}
 
-	resp := make([]*entity.ApplyFileListResponse, 0, len(afs))
+	ret := make([]*entity.ApplyFileListResponse, 0, len(afs))
 	for _, af := range afs {
-		resp = append(resp, &entity.ApplyFileListResponse{
-			ApplyID:             af.ID,
-			FileID:              af.FileID,
-			Proposer:            af.Proposer,
-			ProposerAccountID:   af.ProposerAccountID,
-			Proprietor:          af.Proprietor,
-			ProprietorAccountID: af.ProprietorAccountID,
-			StartAt:             af.StartAt,
-			FinishAt:            af.FinishAt,
-			CreatedAt:           af.CreatedAt,
+		ret = append(ret, &entity.ApplyFileListResponse{
+			ApplyID:     af.ID,
+			FileID:      af.FileID,
+			Proposer:    af.Proposer,
+			ProposerID:  af.ProposerID,
+			FileOwner:   af.FileOwner,
+			FileOwnerID: af.FileOwnerID,
+			StartAt:     af.StartAt,
+			FinishAt:    af.FinishAt,
+			CreatedAt:   af.CreatedAt,
 		})
 	}
-	return resp, nil
+	return ret, nil
 }
 
-func RevokeApply(proposerAccountID string, applyIDs []uint64) error {
+func RevokeApply(proposerID string, applyIDs []uint64) (code int) {
 	af := &dao.ApplyFile{
-		ProposerAccountID: proposerAccountID,
-	}
-	return af.BatchDelete(applyIDs)
-}
-
-func ApproveApply(applyID uint64) error {
-	af := &dao.ApplyFile{ID: applyID}
-	newAf := &dao.ApplyFile{Status: dao.StatusApprove}
-	return af.Updates(newAf)
-}
-
-func RejectApply(accountID string, applyID uint64) error {
-	af := &dao.ApplyFile{
-		ID:                applyID,
-		ProposerAccountID: accountID,
+		ProposerID: proposerID,
 	}
 
-	newAf := &dao.ApplyFile{Status: dao.StatusReject}
-	return af.Updates(newAf)
+	apply, err := af.Get()
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return resp.CodeApplyNotExist
+		}
+		return resp.CodeInternalServerError
+	}
+	if apply.Status != dao.ApplyStatusApplying {
+		return resp.CodeApplyIrrevocable
+	}
+
+	if err := af.BatchDelete(applyIDs); err != nil {
+		return resp.CodeInternalServerError
+	}
+
+	return resp.CodeSuccess
+}
+
+func ApproveApply(applyID uint64, policy entity.Policy) (code int) {
+	af := &dao.ApplyFile{
+		ID:          applyID,
+		FileOwnerID: policy.CreatorID,
+	}
+	apply, err := af.Get()
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return resp.CodeApplyNotExist
+		}
+		return resp.CodeInternalServerError
+	}
+	if apply.Status == dao.ApplyStatusRejected {
+		return resp.CodeApplyRejected
+	}
+	if apply.Status == dao.ApplyStatusApproved {
+		return resp.CodeSuccess
+	}
+
+	newPolicy := &dao.Policy{
+		PolicyID:         policy.ID,
+		Hrac:             policy.Hrac,
+		Gas:              policy.Gas,
+		TxHash:           policy.TxHash,
+		CreatorID:        policy.CreatorID,
+		EncryptedAddress: policy.EncryptedAddress,
+	}
+	if err := dao.NewPolicy().Updates(newPolicy); err != nil {
+		return resp.CodeInternalServerError
+	}
+
+	newAf := &dao.ApplyFile{Status: dao.ApplyStatusApproved}
+	if err := af.Updates(newAf); err != nil {
+		return resp.CodeInternalServerError
+	}
+
+	return resp.CodeSuccess
+}
+
+func RejectApply(accountID string, applyID uint64) (code int) {
+	af := &dao.ApplyFile{
+		ID:          applyID,
+		FileOwnerID: accountID,
+	}
+
+	apply, err := af.Get()
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return resp.CodeApplyNotExist
+		}
+		return resp.CodeInternalServerError
+	}
+	if apply.Status == dao.ApplyStatusApproved {
+		return resp.CodeApplyApproved
+	}
+	if apply.Status == dao.ApplyStatusRejected {
+		return resp.CodeSuccess
+	}
+
+	newAf := &dao.ApplyFile{Status: dao.ApplyStatusRejected}
+	if err := af.Updates(newAf); err != nil {
+		return resp.CodeInternalServerError
+	}
+	return resp.CodeSuccess
 }

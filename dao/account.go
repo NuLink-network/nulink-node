@@ -46,7 +46,7 @@ func (a *Account) Create() (id uint64, err error) {
 }
 
 func (a *Account) Get() (account *Account, err error) {
-	err = db.GetDB().Where(a).Limit(1).Find(account).Error
+	err = db.GetDB().Where(a).First(account).Error
 	return account, err
 }
 

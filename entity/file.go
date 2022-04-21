@@ -13,7 +13,6 @@ type File struct {
 type UploadFileRequest struct {
 	Files     []File `json:"file" binding:"required"`
 	AccountID string `json:"account_id" binding:"required"`
-	FileOwner string `json:"file_owner" binding:"required"`
 	PolicyID  string `json:"policy_id" binding:"required"`
 	Signature string `json:"signature" binding:"required"`
 }
@@ -41,16 +40,16 @@ type GetFileListRequest struct {
 }
 
 type GetOthersFileListRequest struct {
-	AccountID string `json:"account_id" binding:"required,gt=0"`
+	AccountID string `json:"account_id" binding:"required"`
 	FileName  string `json:"file_name"`
 	//UploadTime uint64   `json:"upload_time"`
 	Paginate Paginate `json:"paginate"`
 }
 
 type DeleteFileRequest struct {
-	FileID    uint64 `json:"file_id" binding:"required,gt=0"`
-	AccountID uint64 `json:"account_id" binding:"required,gt=0"`
-	Signature string `json:"signature"`
+	FileIDs   []string `json:"file_id" binding:"required"`
+	AccountID string   `json:"account_id" binding:"required"`
+	Signature string   `json:"signature"`
 }
 
 // ========================= response =========================

@@ -7,16 +7,16 @@ import (
 )
 
 type File struct {
-	ID             uint64         `gorm:"primarykey"`
-	FileID         string         `gorm:"column:file_id" json:"file_id" sql:"char(36)"`
-	Name           string         `gorm:"column:name" json:"name" sql:"varchar(512)"`
-	Address        string         `gorm:"column:address" json:"addr" sql:"varchar(512)"`
-	Owner          string         `gorm:"column:owner" json:"owner" sql:"varchar(512)"`
-	OwnerAccountID string         `gorm:"column:owner_account_id" json:"owner_account_id" sql:"char(36)"`
-	Thumbnail      string         `gorm:"column:thumbnail" json:"thumbnail" sql:"varchar(512)"`
-	CreatedAt      time.Time      `gorm:"column:created_at" json:"created_at,omitempty" sql:"datetime"`
-	UpdatedAt      time.Time      `gorm:"column:updated_at" json:"updated_at,omitempty" sql:"datetime"`
-	DeletedAt      gorm.DeletedAt `gorm:"column:deleted_at,index" json:"deleted_at,omitempty" sql:"datetime"`
+	ID        uint64         `gorm:"primarykey"`
+	FileID    string         `gorm:"column:file_id" json:"file_id" sql:"char(36)"`
+	Name      string         `gorm:"column:name" json:"name" sql:"varchar(512)"`
+	Address   string         `gorm:"column:address" json:"addr" sql:"varchar(512)"`
+	Owner     string         `gorm:"column:owner" json:"owner" sql:"varchar(512)"`
+	OwnerID   string         `gorm:"column:owner_id" json:"owner_id" sql:"char(36)"`
+	Thumbnail string         `gorm:"column:thumbnail" json:"thumbnail" sql:"varchar(512)"`
+	CreatedAt time.Time      `gorm:"column:created_at" json:"created_at,omitempty" sql:"datetime"`
+	UpdatedAt time.Time      `gorm:"column:updated_at" json:"updated_at,omitempty" sql:"datetime"`
+	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at,index" json:"deleted_at,omitempty" sql:"datetime"`
 }
 
 func NewFile() *File {
@@ -41,6 +41,11 @@ func (f *File) Find(page, pageSize int) (files []File, err error) {
 	return files, err
 }
 
+func (f *File) FindAny(query interface{}, args ...interface{}) (files []File, err error) {
+	err = db.GetDB().Where(query, args).Find(&files).Error
+	return files, err
+}
+
 func (f *File) FindNotAccountID(accountID string, page, pageSize int) (files []*File, err error) {
 	err = db.GetDB().Where(f).Where("owner_account_id != ?", accountID).Scopes(Paginate(page, pageSize)).Find(&files).Error
 	return files, err
@@ -48,4 +53,8 @@ func (f *File) FindNotAccountID(accountID string, page, pageSize int) (files []*
 
 func (f *File) Delete() error {
 	return db.GetDB().Delete(f).Error
+}
+
+func (f *File) BatchDelete(fs []*File) error {
+	return db.GetDB().Delete(fs).Error
 }
