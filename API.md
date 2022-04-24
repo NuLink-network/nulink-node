@@ -314,7 +314,8 @@ application/json
 | ------------ | -------- | ------ | ---- |------- |
 |  file_ids  |  []string  |   是   |   |  文件 ID 列表 |
 |  proposer_id  |  string  |   是   |   |  申请人的账户 ID |
-|  start_at  |  date  |   是   |   |  开始时间 |
+|  start_at  |  timestamp  |   是   |   |  开始时间 |
+|  finish_at  |  timestamp  |   是   |   |  结束时间 |
 |  proposer_id  |  string  |   是   |   |  结束时间 |
 |  signature   |  string  | 是     | 签名 |
 
