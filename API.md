@@ -70,8 +70,8 @@ application/json
 |  account_id    |  string  |  账户ID(UUID v4) |
 |  ethereum_addr |  string  |  以太坊地址 |
 |  encrypted_pk  |  string  |  加密的公钥 |
-|  status        |  int  |  账户状态 |
-|  created_at    |  date  |  账户创建时间 |
+|  status        |  number  |  账户状态 |
+|  created_at    |  number  |  账户创建时间戳 |
 
 ## 判断用户是否存在
 
@@ -184,6 +184,37 @@ application/json
 |  msg      |  string     |  响应信息 |
 |  data     |  object  |  响应数据 |
 
+## 删除文件
+
+删除文件
+
+### 请求路径
+/file/upload
+
+### 请求方法
+
+POST
+
+### 数据类型
+
+application/json
+
+### 请求参数
+
+| 参数          |  类型     | 必填    | 说明   |
+| ------------ | -------- | ------ | ------- |
+|  file_ids    |  []string  | 是     | 文件列表 |
+|  account_id  |  string  | 是     | 账户 ID (UUID V4) |
+|  signature   |  string  | 是     | 签名 |
+
+### 响应参数
+
+| 参数      | 类型      | 说明     |
+| --------- | -------- | ------- |
+|  code     |  number     |  响应码  |
+|  msg      |  string     |  响应信息 |
+|  data     |  object  |  响应数据 |
+
 ## 文件列表
 
 返回符合条件的文件信息列表
@@ -228,7 +259,7 @@ application/json
 |  file_name          |  string  |  文件名称 |
 |  address            |  string  |  文件地址 |
 |  thumbnail          |  string  |  文件缩略图 |
-|  created_at          |  date  |  文件上传时间 |
+|  created_at          |  number  |  文件上传时间戳 |
 
 ## 其他人的文件列表
 
@@ -257,7 +288,7 @@ application/json
 | --------- | -------- | ------- |
 |  code     |  number     |  响应码  |
 |  msg      |  string     |  响应信息 |
-|  data     |  object  |  响应数据 |
+|  data     |  array.object  |  响应数据 |
 
 #### data 结构
 
@@ -267,7 +298,7 @@ application/json
 |  file_name          |  string  |  文件名称 |
 |  address            |  string  |  文件地址 |
 |  thumbnail          |  string  |  文件缩略图 |
-|  created_at          |  date  |  文件上传时间 |
+|  created_at          |  number  |  文件上传时间戳 |
 
 ## 撤销策略
 
@@ -298,7 +329,7 @@ application/json
 |  msg      |  string     |  响应信息 |
 |  data     |  object  |  响应数据 |
 
-## 获取策略关联的文件信息 todo
+## 获取策略关联的文件信息列表
 
 获取策略关联的文件信息
 
@@ -315,7 +346,10 @@ application/json
 
 | 参数          |  类型     | 必填  | 默认值 | 说明   |
 | ------------ | -------- | ------ | ---- |------- |
-|    |    |      |   |
+|  creator_id  |  string  | 否     | 策略的创建者账户ID (UUID V4) |
+|  consumer_id  |  string  | 否     | 策略的使用者账户ID (UUID V4) |
+|  status  |  number  |   否   |  0 (不区分状态) |  策略状态，1: 未发布，2: 已发布|
+|  paginate    |  [Paginate](#Paginate-结构) |  否  |      | 分页 |
 
 ### 响应参数
 
@@ -323,7 +357,64 @@ application/json
 | --------- | -------- | ------- |
 |  code     |  number     |  响应码  |
 |  msg      |  string     |  响应信息 |
-|  data     |  object  |  响应数据 |
+|  data     |  array.object  |  响应数据 |
+
+#### data 结构
+
+| 参数      | 类型      | 说明     |
+| --------- | -------- | ------- |
+|  account_id          |  string  |  账户 ID |
+|  file_name          |  string  |  文件名称 |
+|  address            |  string  |  文件地址 |
+|  thumbnail          |  string  |  文件缩略图 |
+|  created_at          |  number  |  文件上传时间戳 |
+
+## 策略信息列表
+
+获取策略信息列表
+
+### 请求路径
+/policy/list
+
+### 请求方法
+GET
+
+### 数据类型
+application/json
+
+### 请求参数
+
+| 参数          |  类型     | 必填  | 默认值 | 说明   |
+| ------------ | -------- | ------ | ---- |------- |
+|  policy_id  |  string  | 否     | 策略ID (UUID V4) |
+|  creator_id  |  string  | 否     | 策略的创建者账户ID (UUID V4) |
+|  consumer_id  |  string  | 否     | 策略的使用者账户ID (UUID V4) |
+|  status  |  number  |   否   |  0 (不区分状态) |  策略状态，1: 未发布，2: 已发布|
+|  paginate    |  [Paginate](#Paginate-结构) |  否  |      | 分页 |
+
+### 响应参数
+
+| 参数      | 类型      | 说明     |
+| --------- | -------- | ------- |
+|  code     |  number     |  响应码  |
+|  msg      |  string     |  响应信息 |
+|  data     |  array.object  |  响应数据 |
+
+#### data 结构
+
+| 参数      | 类型      | 说明     |
+| --------- | -------- | ------- |
+|  hrac        |  string  |  hrac |
+|  label        |  string  | 策略 label  |
+|  policy_id        |  string  | 策略 ID  |
+|  creator        |  string  |  策略创建者 |
+|  creator_id       |  string  |  策略创建者 ID |
+|  consumer      |  string  | 策略使用者  |
+|  consumer_id       |  string  | 策略使用者 ID  |
+|  status      |  string  | 策略状态，1: 未发布，2: 已发布  |
+|  gas     |  string  |  gas |
+|  tx_hash     |  string  | 交易 hash  |
+|  created_at      |  string  | 策略创建时间  |
 
 ## 申请文件使用
 
@@ -344,8 +435,8 @@ application/json
 | ------------ | -------- | ------ | ---- |------- |
 |  file_ids  |  []string  |   是   |   |  文件 ID 列表 |
 |  proposer_id  |  string  |   是   |   |  申请人的账户 ID |
-|  start_at  |  timestamp  |   是   |   |  开始时间 |
-|  finish_at  |  timestamp  |   是   |   |  结束时间 |
+|  start_at  |  number  |   是   |   |  开始时间戳 |
+|  finish_at  |  number  |   是   |   |  结束时间戳 |
 |  proposer_id  |  string  |   是   |   |  结束时间 |
 |  signature   |  string  | 是     | 签名 |
 
@@ -386,7 +477,7 @@ application/json
 | --------- | -------- | ------- |
 |  code     |  number     |  响应码  |
 |  msg      |  string     |  响应信息 |
-|  data     |  object  |  响应数据 |
+|  data     |  array.object  |  响应数据 |
 
 #### data 结构
 
@@ -398,9 +489,9 @@ application/json
 |  proposer_id          |  string  |  申请人账户 ID |
 |  file_owner          |  string  |  文件拥有者 |
 |  file_owner_id          |  string  |  文件拥有者账户 ID |
-|  start_at          |  date  |  使用开始时间 |
-|  finish_at          |  date  |  使用结束时间 |
-|  created_at          |  date  |  申请时间 |
+|  start_at          |  number  |  使用开始时间戳 |
+|  finish_at          |  number  |  使用结束时间戳 |
+|  created_at          |  number  |  申请时间戳 |
 
 ## 撤销文件使用申请
 
