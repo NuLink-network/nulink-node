@@ -4,6 +4,9 @@
 
 创建用户记录
 
+### 请求路径
+/account/create
+
 ### 请求方法
 
 POST
@@ -33,6 +36,9 @@ application/json
 ## 获取用户信息
 
 通过账户 ID 获取用户信息
+
+### 请求路径
+/account/get
 
 ### 请求方法
 
@@ -71,6 +77,9 @@ application/json
 
 判断用户是否存在
 
+### 请求路径
+/account/isexist
+
 ### 请求方法
 
 GET
@@ -106,6 +115,9 @@ application/json
 ## 上传文件
 
 上传文件
+
+### 请求路径
+/file/upload
 
 ### 请求方法
 
@@ -144,6 +156,9 @@ application/json
 
 创建策略并上传文件
 
+### 请求路径
+/file/create-policy-and-upload
+
 ### 请求方法
 POST
 
@@ -172,6 +187,9 @@ application/json
 ## 文件列表
 
 返回符合条件的文件信息列表
+
+### 请求路径
+/file/list
 
 ### 请求方法
 GET
@@ -216,6 +234,9 @@ application/json
 
 返回符合条件的其他人上传的文件信息列表 (不包含自己上传的文件)
 
+### 请求路径
+/file/others-list
+
 ### 请求方法
 GET
 
@@ -252,6 +273,9 @@ application/json
 
 撤销策略并删除文件和策略的关联关系及策略对应的所有文件的使用申请
 
+### 请求路径
+/policy/revoke
+
 ### 请求方法
 POST
 
@@ -278,6 +302,9 @@ application/json
 
 获取策略关联的文件信息
 
+### 请求路径
+/policy/file-detail-list
+
 ### 请求方法
 GET
 
@@ -301,6 +328,9 @@ application/json
 ## 申请文件使用
 
 申请文件使用
+
+### 请求路径
+/apply/file
 
 ### 请求方法
 POST
@@ -330,6 +360,9 @@ application/json
 ## 申请文件使用列表
 
 申请文件使用信息列表
+
+### 请求路径
+/apply/list
 
 ### 请求方法
 GET
@@ -373,6 +406,9 @@ application/json
 
 撤销文件使用申请
 
+### 请求路径
+/apply/revoke
+
 ### 请求方法
 POST
 
@@ -397,6 +433,9 @@ application/json
 ## 批准文件使用申请
 
 发布文件对应的策略并批准文件使用申请
+
+### 请求路径
+/apply/approve
 
 ### 请求方法
 POST
@@ -435,6 +474,9 @@ application/json
 
 拒绝文件使用申请
 
+### 请求路径
+/apply/reject
+
 ### 请求方法
 POST
 
@@ -456,3 +498,13 @@ application/json
 |  code     |  number     |  响应码  |
 |  msg      |  string     |  响应信息 |
 |  data     |  object  |  响应数据 |
+
+
+## 常见响应码
+
+| Code      | MSG      |
+| --------- | -------- |
+|  2000     |  Success        |
+|  4000     |  Invalid Parameter       |
+|  5000     |  Internal Server Error       |
+
