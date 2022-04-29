@@ -244,7 +244,7 @@ application/json
 | 参数          |  类型     | 必填  | 默认值 | 说明   |
 | ------------ | -------- | ------ | ---- |------- |
 |  account_id  |  string  |  是    |      |  账户ID (UUID V4) |
-|  file_name   |  string  |  否    |      |  文件名称|
+|  file_name   |  string  |  否    |      |  文件名称, 支持模糊匹配|
 |  paginate    |  [Paginate](#Paginate-结构) |  否  |      | 分页 |
 
 #### Paginate 结构
@@ -302,7 +302,7 @@ application/json
 | 参数          |  类型     | 必填  | 默认值 | 说明   |
 | ------------ | -------- | ------ | ---- |------- |
 |  account_id  |  string  |  是    |      |  账户ID (UUID V4) |
-|  file_name   |  string  |  否    |      |  文件名称|
+|  file_name   |  string  |  否    |      |  文件名称, 支持模糊匹配|
 |  style   |  string  |  否    |      |  文件类型|
 |  format   |  string  |  否    |      |  文件格式|
 |  desc   |  bool  |  否    |  false    |  是否按照上传时间倒序 |
