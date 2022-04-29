@@ -5,6 +5,7 @@
 创建用户记录
 
 ### 请求路径
+
 /account/create
 
 ### 请求方法
@@ -38,6 +39,7 @@ application/json
 通过账户 ID 获取用户信息
 
 ### 请求路径
+
 /account/get
 
 ### 请求方法
@@ -78,6 +80,7 @@ application/json
 判断用户是否存在
 
 ### 请求路径
+
 /account/isexist
 
 ### 请求方法
@@ -117,6 +120,7 @@ application/json
 上传文件
 
 ### 请求路径
+
 /file/upload
 
 ### 请求方法
@@ -157,12 +161,15 @@ application/json
 创建策略并上传文件
 
 ### 请求路径
+
 /file/create-policy-and-upload
 
 ### 请求方法
+
 POST
 
 ### 数据类型
+
 application/json
 
 ### 请求参数
@@ -189,7 +196,8 @@ application/json
 删除文件
 
 ### 请求路径
-/file/upload
+
+/file/delete
 
 ### 请求方法
 
@@ -220,12 +228,15 @@ application/json
 返回符合条件的文件信息列表
 
 ### 请求路径
+
 /file/list
 
 ### 请求方法
+
 GET
 
 ### 数据类型
+
 application/json
 
 ### 请求参数
@@ -255,8 +266,17 @@ application/json
 
 | 参数      | 类型      | 说明     |
 | --------- | -------- | ------- |
-|  account_id          |  string  |  账户 ID |
+|  list     |  array.object     |  文件列表数据  |
+|  total     |  number     |  列表总数  |
+
+#### list 结构
+
+| 参数      | 类型      | 说明     |
+| --------- | -------- | ------- |
+|  file_id          |  string  |  文件 ID |
 |  file_name          |  string  |  文件名称 |
+|  owner          |  string  |  文件拥有者 |
+|  owner_id          |  string  |  文件拥有者账户 ID |
 |  address            |  string  |  文件地址 |
 |  thumbnail          |  string  |  文件缩略图 |
 |  created_at          |  number  |  文件上传时间戳 |
@@ -266,12 +286,15 @@ application/json
 返回符合条件的其他人上传的文件信息列表 (不包含自己上传的文件)
 
 ### 请求路径
+
 /file/others-list
 
 ### 请求方法
+
 GET
 
 ### 数据类型
+
 application/json
 
 ### 请求参数
@@ -291,16 +314,30 @@ application/json
 | --------- | -------- | ------- |
 |  code     |  number     |  响应码  |
 |  msg      |  string     |  响应信息 |
-|  data     |  array.object  |  响应数据 |
+|  data     |  object  |  响应数据 |
 
 #### data 结构
 
 | 参数      | 类型      | 说明     |
 | --------- | -------- | ------- |
-|  account_id          |  string  |  账户 ID |
+|  list     |  array.object     |  列表数据  |
+|  total     |  number     |  列表总数  |
+
+#### list 结构
+
+| 参数      | 类型      | 说明     |
+| --------- | -------- | ------- |
+|  file_id          |  string  |  文件 ID |
 |  file_name          |  string  |  文件名称 |
+|  owner          |  string  |  文件拥有者 |
+|  owner_id          |  string  |  文件拥有者账户 ID |
 |  address            |  string  |  文件地址 |
 |  thumbnail          |  string  |  文件缩略图 |
+|  status          |  number  |  文件使用状态，1: 申请中, 2: 已通过, 3: 已拒绝 |
+|  start_at          |  string  |  文件的使用申请开始时间 |
+|  finish_at          |  string  |  文件的使用申请结束时间 |
+|  policy_id          |  string  |  文件关联的策略 ID |
+|  apply_id          |  number  |  文件的使用申请记录 ID |
 |  created_at          |  number  |  文件上传时间戳 |
 
 ## 撤销策略
@@ -308,12 +345,15 @@ application/json
 撤销策略并删除文件和策略的关联关系及策略对应的所有文件的使用申请
 
 ### 请求路径
+
 /policy/revoke
 
 ### 请求方法
+
 POST
 
 ### 数据类型
+
 application/json
 
 ### 请求参数
@@ -337,12 +377,15 @@ application/json
 获取策略关联的文件信息
 
 ### 请求路径
+
 /policy/file-detail-list
 
 ### 请求方法
+
 GET
 
 ### 数据类型
+
 application/json
 
 ### 请求参数
@@ -360,29 +403,34 @@ application/json
 | --------- | -------- | ------- |
 |  code     |  number     |  响应码  |
 |  msg      |  string     |  响应信息 |
-|  data     |  array.object  |  响应数据 |
+|  data     |  object  |  响应数据 |
 
 #### data 结构
 
 | 参数      | 类型      | 说明     |
 | --------- | -------- | ------- |
-|  account_id          |  string  |  账户 ID |
-|  file_name          |  string  |  文件名称 |
-|  address            |  string  |  文件地址 |
-|  thumbnail          |  string  |  文件缩略图 |
-|  created_at          |  number  |  文件上传时间戳 |
+|  list     |  array.object     |  列表数据  |
+|  total     |  number     |  列表总数  |
+
+#### list 结构
+
+| file_id | string | 文件 ID | | file_name | string | 文件名称 | | owner | string | 文件拥有者 | | owner_id | string | 文件拥有者账户 ID |
+| address | string | 文件地址 | | thumbnail | string | 文件缩略图 | | created_at | number | 文件上传时间戳 |
 
 ## 策略信息列表
 
 获取策略信息列表
 
 ### 请求路径
+
 /policy/list
 
 ### 请求方法
+
 GET
 
 ### 数据类型
+
 application/json
 
 ### 请求参数
@@ -407,6 +455,13 @@ application/json
 
 | 参数      | 类型      | 说明     |
 | --------- | -------- | ------- |
+|  list     |  array.object     |  列表数据  |
+|  total     |  number     |  列表总数  |
+
+#### list 结构
+
+| 参数      | 类型      | 说明     |
+| --------- | -------- | ------- |
 |  hrac        |  string  |  hrac |
 |  label        |  string  | 策略 label  |
 |  policy_id        |  string  | 策略 ID  |
@@ -424,12 +479,15 @@ application/json
 申请文件使用
 
 ### 请求路径
+
 /apply/file
 
 ### 请求方法
+
 POST
 
 ### 数据类型
+
 application/json
 
 ### 请求参数
@@ -456,12 +514,15 @@ application/json
 申请文件使用信息列表
 
 ### 请求路径
+
 /apply/list
 
 ### 请求方法
+
 GET
 
 ### 数据类型
+
 application/json
 
 ### 请求参数
@@ -486,6 +547,13 @@ application/json
 
 | 参数      | 类型      | 说明     |
 | --------- | -------- | ------- |
+|  list     |  array.object     |  列表数据  |
+|  total     |  number     |  列表总数  |
+
+#### list 结构
+
+| 参数      | 类型      | 说明     |
+| --------- | -------- | ------- |
 |  apply_id          |  number  |  申请记录 ID |
 |  file_id          |  string  |  文件 ID |
 |  proposer            |  string  |  申请人 |
@@ -501,12 +569,15 @@ application/json
 撤销文件使用申请
 
 ### 请求路径
+
 /apply/revoke
 
 ### 请求方法
+
 POST
 
 ### 数据类型
+
 application/json
 
 ### 请求参数
@@ -529,12 +600,15 @@ application/json
 发布文件对应的策略并批准文件使用申请
 
 ### 请求路径
+
 /apply/approve
 
 ### 请求方法
+
 POST
 
 ### 数据类型
+
 application/json
 
 ### 请求参数
@@ -569,12 +643,15 @@ application/json
 拒绝文件使用申请
 
 ### 请求路径
+
 /apply/reject
 
 ### 请求方法
+
 POST
 
 ### 数据类型
+
 application/json
 
 ### 请求参数
@@ -592,7 +669,6 @@ application/json
 |  code     |  number     |  响应码  |
 |  msg      |  string     |  响应信息 |
 |  data     |  object  |  响应数据 |
-
 
 ## 常见响应码
 
