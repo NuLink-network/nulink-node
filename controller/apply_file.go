@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"github.com/NuLink-network/nulink-node/resource/log"
 	"github.com/NuLink-network/nulink-node/resp"
 	"github.com/gin-gonic/gin"
 
@@ -12,6 +13,7 @@ func ApplyFile(c *gin.Context) {
 	req := &entity.ApplyFileRequest{}
 	if err := c.ShouldBindJSON(req); err != nil {
 		// todo log
+		log.Logger().WithField("error", err).Error("apply file file")
 		resp.ParameterErr(c)
 		return
 	}
@@ -62,7 +64,7 @@ func ApproveApply(c *gin.Context) {
 		return
 	}
 
-	if code := logic.ApproveApply(req.ApplyID, req.Policy); code != resp.CodeSuccess {
+	if code := logic.ApproveApply(req.AccountID, req.ApplyID, req.Policy); code != resp.CodeSuccess {
 		resp.Error(c, code)
 		return
 	}

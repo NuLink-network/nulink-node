@@ -14,12 +14,11 @@ import (
 func CreateAccount(c *gin.Context) {
 	req := &entity.CreateAccountRequest{}
 	if err := c.ShouldBindJSON(req); err != nil {
-		// todo log
 		resp.ParameterErr(c)
 		return
 	}
 
-	if err := logic.CreateAccount(req.Name, req.Account, req.EthereumAddr, req.EncryptedPK, req.VerifyPK); err != nil {
+	if err := logic.CreateAccount(req.Name, req.AccountID, req.EthereumAddr, req.EncryptedPK, req.VerifyPK); err != nil {
 		// todo log
 		resp.InternalServerError(c)
 		return
@@ -55,12 +54,12 @@ func AccountIsExist(c *gin.Context) {
 		resp.ParameterErr(c)
 		return
 	}
-	if len(req.Account) == 0 {
+	if len(req.AccountID) == 0 {
 		resp.ParameterErr(c)
 		return
 	}
 
-	response, err := logic.AccountIsExist(req.Name, req.Account, req.EthereumAddr, req.EncryptedPK, req.VerifyPK)
+	response, err := logic.AccountIsExist(req.Name, req.AccountID, req.EthereumAddr, req.EncryptedPK, req.VerifyPK)
 	if err != nil {
 		// todo log
 		resp.InternalServerError(c)

@@ -11,7 +11,7 @@ import (
 	"github.com/NuLink-network/nulink-node/resp"
 )
 
-func ApplyFile(fileIDs []string, proposerID string, startAt, finishAt time.Time) (code int) {
+func ApplyFile(fileIDs []string, proposerID string, startAt, finishAt int64) (code int) {
 	files, err := dao.NewFile().FindAny("file_id in ?", fileIDs)
 	if err != nil {
 		return resp.CodeInternalServerError
@@ -27,8 +27,8 @@ func ApplyFile(fileIDs []string, proposerID string, startAt, finishAt time.Time)
 			FileID:      fid,
 			ProposerID:  proposerID,
 			FileOwnerID: fileOwner[fid],
-			StartAt:     startAt,
-			FinishAt:    finishAt,
+			StartAt:     time.Unix(startAt, 0),
+			FinishAt:    time.Unix(finishAt, 0),
 		})
 	}
 	if err := dao.NewAppleFile().BatchCreate(afs); err != nil {
@@ -61,9 +61,9 @@ func ApplyFileList(fileID string, status uint8, proposerID, fileOwnerID string, 
 			ProposerID:  af.ProposerID,
 			FileOwner:   af.FileOwner,
 			FileOwnerID: af.FileOwnerID,
-			StartAt:     af.StartAt,
-			FinishAt:    af.FinishAt,
-			CreatedAt:   af.CreatedAt,
+			StartAt:     af.StartAt.Unix(),
+			FinishAt:    af.FinishAt.Unix(),
+			CreatedAt:   af.CreatedAt.Unix(),
 		})
 	}
 	return ret, nil
@@ -92,10 +92,10 @@ func RevokeApply(proposerID string, applyIDs []uint64) (code int) {
 	return resp.CodeSuccess
 }
 
-func ApproveApply(applyID uint64, policy entity.Policy) (code int) {
+func ApproveApply(accountID string, applyID uint64, policy entity.Policy) (code int) {
 	af := &dao.ApplyFile{
 		ID:          applyID,
-		FileOwnerID: policy.CreatorID,
+		FileOwnerID: accountID,
 	}
 	apply, err := af.Get()
 	if err != nil {
@@ -111,12 +111,26 @@ func ApproveApply(applyID uint64, policy entity.Policy) (code int) {
 		return resp.CodeSuccess
 	}
 
+	p := &dao.Policy{
+		PolicyID: policy.ID,
+	}
+	pl, err := p.Get()
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return resp.CodeApplyNotExist
+		}
+		return resp.CodeInternalServerError
+	}
+	if pl.CreatorID != accountID {
+
+	}
+
 	newPolicy := &dao.Policy{
 		PolicyID:         policy.ID,
 		Hrac:             policy.Hrac,
 		Gas:              policy.Gas,
 		TxHash:           policy.TxHash,
-		CreatorID:        policy.CreatorID,
+		ConsumerID:       policy.ConsumerID,
 		EncryptedAddress: policy.EncryptedAddress,
 	}
 	if err := dao.NewPolicy().Updates(newPolicy); err != nil {

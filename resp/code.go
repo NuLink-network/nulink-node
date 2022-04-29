@@ -13,24 +13,23 @@ const (
 )
 
 const (
-	CodeApplyIrrevocable  = 3001
-	CodeApplyRejected     = 3002
-	CodeApplyApproved     = 3003
-	CodePolicyUnpublished = 3004
-)
-
-const (
 	CodePolicyNotExist = 4001
-	CodeApplyNotExist  = 4002
+	CodePolicyNotYours = 4002
+	CodeApplyNotExist  = 4003
 )
 
 const (
-	CodePolicyIsExist = 4101
+	CodeApplyIrrevocable  = 4101
+	CodeApplyRejected     = 4102
+	CodeApplyApproved     = 4103
+	CodePolicyIsExist     = 4104
+	CodePolicyUnpublished = 4105
 )
 
 const (
 	MsgPolicyIsExist     = "policy already exists"
 	MsgPolicyNotExist    = "policy does not exist"
+	MsgPolicyNotYours    = "please choose your own published policy"
 	MsgApplyNotExist     = "apply does not exist"
 	MsgApplyIrrevocable  = "apply is irrevocable"
 	MsgApplyApproved     = "apply approved"
@@ -39,13 +38,15 @@ const (
 )
 
 var code2msg = map[int]string{
-	CodeSuccess:           MsgSuccess,
-	CodeApplyIrrevocable:  MsgApplyIrrevocable,
-	CodeApplyApproved:     MsgApplyApproved,
-	CodeApplyRejected:     MsgApplyRejected,
-	CodePolicyUnpublished: MsgPolicyUnpublished,
-	CodeParameterErr:      MsgParameterErr,
-	CodePolicyNotExist:    MsgPolicyNotExist,
-	CodeApplyNotExist:     MsgApplyNotExist,
-	CodePolicyIsExist:     MsgPolicyIsExist,
+	CodeSuccess:             MsgSuccess,
+	CodeParameterErr:        MsgParameterErr,
+	CodeInternalServerError: MsgInternalServerError,
+	CodePolicyNotExist:      MsgPolicyNotExist,
+	CodePolicyNotYours:      MsgPolicyNotYours,
+	CodeApplyNotExist:       MsgApplyNotExist,
+	CodeApplyIrrevocable:    MsgApplyIrrevocable,
+	CodeApplyApproved:       MsgApplyApproved,
+	CodeApplyRejected:       MsgApplyRejected,
+	CodePolicyIsExist:       MsgPolicyIsExist,
+	CodePolicyUnpublished:   MsgPolicyUnpublished,
 }

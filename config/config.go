@@ -12,7 +12,7 @@ var (
 )
 
 func Init() {
-	flag.StringVar(&configFile, "conf", "config/app-dev.yaml", "path of config file")
+	flag.StringVar(&configFile, "conf", "config/node-dev.yaml", "path of config file")
 	flag.Parse()
 	if configFile == "" {
 		flag.Usage()

@@ -12,7 +12,7 @@ type FilePolicy struct {
 	PolicyID  string         `gorm:"column:policy_id" json:"policy_id" sql:"char(36)"`
 	CreatedAt time.Time      `gorm:"column:created_at" json:"created_at,omitempty" sql:"datetime"`
 	UpdatedAt time.Time      `gorm:"column:updated_at" json:"updated_at,omitempty" sql:"datetime"`
-	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at,index" json:"deleted_at,omitempty" sql:"datetime"`
+	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at,omitempty" sql:"datetime"`
 }
 
 func NewFilePolicy() *FilePolicy {
@@ -30,4 +30,32 @@ func (f *FilePolicy) Create() (id uint64, err error) {
 
 func (f *FilePolicy) BatchCreate(fps []*FilePolicy) error {
 	return db.GetDB().Create(fps).Error
+}
+
+func (f *FilePolicy) Get() (fp *FilePolicy, err error) {
+	err = db.GetDB().Where(f).First(&fp).Error
+	return fp, err
+}
+
+func (f *FilePolicy) Find(pager func(*gorm.DB) *gorm.DB) (fps []*FilePolicy, err error) {
+	tx := db.GetDB().Where(f)
+	if pager != nil {
+		tx = tx.Scopes(pager)
+	}
+	err = tx.Find(&fps).Error
+	return fps, err
+}
+
+func (f *FilePolicy) FindFileIDsByPolicyIDs(policyIDs []string, pager func(*gorm.DB) *gorm.DB) (fileIDs []string, err error) {
+	tx := db.GetDB().Model(f).Where("policy_id in ?", policyIDs)
+	if pager != nil {
+		tx = tx.Scopes(pager)
+	}
+	err = tx.Distinct().Pluck("file_id", &fileIDs).Error
+	return fileIDs, err
+}
+
+func (f *FilePolicy) Delete() (rows int64, err error) {
+	ret := db.GetDB().Where(f).Delete(f)
+	return ret.RowsAffected, ret.Error
 }

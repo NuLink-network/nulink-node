@@ -2,20 +2,28 @@ package db
 
 import (
 	"fmt"
-	"log"
-
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
+	"log"
+	"os"
 )
 
 var db *gorm.DB
 
-// InitDB 初始化 MySQL 链接
-func InitDB(user, password, host, port, dbName string) {
+func Init(user, password, host, port, name string) {
 	log.Println("connecting MySQL ... ", host)
 	//dsn := "%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local"
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", user, password, host, port, dbName)
-	mdb, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", user, password, host, port, name)
+	mdb, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+		Logger: logger.New(
+			log.New(os.Stdout, "\r\n", log.LstdFlags),
+			logger.Config{
+				LogLevel: logger.Info,
+				Colorful: false,
+			},
+		),
+	})
 	if err != nil {
 		panic(err)
 	}
@@ -27,7 +35,6 @@ func InitDB(user, password, host, port, dbName string) {
 	return
 }
 
-// GetDB 获取数据库链接实例
 func GetDB() *gorm.DB {
 	return db
 }

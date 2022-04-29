@@ -2,25 +2,22 @@ package main
 
 import (
 	"github.com/NuLink-network/nulink-node/config"
+	"github.com/NuLink-network/nulink-node/resource/db"
 	"github.com/NuLink-network/nulink-node/resource/log"
 	"github.com/NuLink-network/nulink-node/router"
 	"github.com/fvbock/endless"
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 func main() {
-	//f, _ := os.Create("node-request.log")
-	//gin.DefaultWriter = io.MultiWriter(f)
-
 	config.Init()
-	log.InitLogger(logrus.DebugLevel, "./node.log")
-	//db.InitDB("", "", "", "", "")
+	log.Init(viper.GetString("env"), viper.GetString("logDir"))
+	dbConf := viper.GetStringMapString("database")
+	db.Init(dbConf["user"], dbConf["password"], dbConf["host"], dbConf["port"], dbConf["name"])
 
 	engine := gin.Default()
-
-	engine.Use(gin.Recovery())
 	router.Register(engine)
 
-	endless.ListenAndServe(":8088", engine)
+	endless.ListenAndServe(viper.GetString("address"), engine)
 }

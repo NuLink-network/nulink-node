@@ -14,16 +14,16 @@ const (
 
 type Policy struct {
 	ID               uint64         `gorm:"primarykey"`
-	Hrac             string         `gorm:"column:hrac" json:"hrac" sql:"varchar()"`
-	Label            string         `gorm:"column:label" json:"label" sql:"varchar(24)"`
+	Hrac             string         `gorm:"column:hrac" json:"hrac" sql:"varchar(256)"`
+	Label            string         `gorm:"column:label" json:"label" sql:"varchar(32)"`
 	PolicyID         string         `gorm:"column:policy_id" json:"policy_id" sql:"char(36)"`
-	Creator          string         `gorm:"column:creator" json:"creator" sql:"varchar(24)"`
+	Creator          string         `gorm:"column:creator" json:"creator" sql:"varchar(32)"`
 	CreatorID        string         `gorm:"column:creator_id" json:"creator_id" sql:"char(36)"`
-	Consumer         string         `gorm:"column:consumer" json:"consumer" sql:"varchar(24)"`
+	Consumer         string         `gorm:"column:consumer" json:"consumer" sql:"varchar(32)"`
 	ConsumerID       string         `gorm:"column:consumer_id" json:"consumer_id" sql:"char(36)"`
-	EncryptedPK      string         `gorm:"column:encrypted_pk" json:"encrypted_pk" sql:"varchar()"`           // todo length?
-	EncryptedAddress string         `gorm:"column:encrypted_address" json:"encrypted_address" sql:"varchar()"` // todo length?
-	Status           uint8          `gorm:"column:status" json:"status" sql:"tinyint(4)" comment:"1: unpublished, 2: published"`
+	EncryptedPK      string         `gorm:"column:encrypted_pk" json:"encrypted_pk" sql:"varchar(256)"`           // todo length?
+	EncryptedAddress string         `gorm:"column:encrypted_address" json:"encrypted_address" sql:"varchar(256)"` // todo length?
+	Status           uint8          `gorm:"column:status;default:1" json:"status" sql:"tinyint(4)" comment:"1: unpublished, 2: published"`
 	Gas              string         `gorm:"column:gas" json:"gas" sql:"varchar(32)"`
 	TxHash           string         `gorm:"column:tx_hash" json:"tx_hash" sql:"char(66)"`
 	CreatedAt        time.Time      `gorm:"column:created_at" json:"created_at" sql:"datetime"`
@@ -45,13 +45,22 @@ func (p *Policy) Create() (id uint64, err error) {
 }
 
 func (p *Policy) Get() (policy *Policy, err error) {
-	err = db.GetDB().Where(p).First(policy).Error
+	err = db.GetDB().Where(p).First(&policy).Error
 	return policy, err
 }
 
-func (p *Policy) Find(page, pageSize int) (ps []*Policy, err error) {
-	err = db.GetDB().Where(p).Scopes(Paginate(page, pageSize)).Find(&ps).Error
+func (p *Policy) Find(pager func(*gorm.DB) *gorm.DB) (ps []*Policy, err error) {
+	tx := db.GetDB().Where(p)
+	if pager != nil {
+		tx = tx.Scopes(pager)
+	}
+	err = tx.Find(&ps).Error
 	return ps, err
+}
+
+func (p *Policy) FindPolicyIDs() (policyIDs []string, err error) {
+	err = db.GetDB().Model(p).Where(p).Pluck("policy_id", &policyIDs).Error
+	return policyIDs, err
 }
 
 func (p *Policy) Updates(new *Policy) error {
@@ -59,7 +68,7 @@ func (p *Policy) Updates(new *Policy) error {
 }
 
 func (p *Policy) Delete() (rows int64, err error) {
-	ret := db.GetDB().Delete(p)
+	ret := db.GetDB().Where(p).Delete(p)
 	return ret.RowsAffected, ret.Error
 }
 
@@ -82,6 +91,17 @@ func CreatePolicyAndFiles(policy *Policy, files []*File) error {
 		}
 		if err := tx.Create(files).Error; err != nil {
 			return err
+		}
+		return nil
+	})
+}
+
+func Tx(models ...interface{}) error {
+	return db.GetDB().Transaction(func(tx *gorm.DB) error {
+		for _, m := range models {
+			if err := tx.Create(m).Error; err != nil {
+				return err
+			}
 		}
 		return nil
 	})

@@ -3,21 +3,31 @@ package log
 import (
 	"github.com/sirupsen/logrus"
 	"gopkg.in/natefinch/lumberjack.v2"
+	"log"
 	"os"
+	"path/filepath"
 )
 
 // Create a new instance of the logger. You can have any number of instances.
 var logger = logrus.New()
 
-func InitLogger(level logrus.Level, path string) {
-	logger.SetLevel(level)
+const DEV = "dev"
+
+func Init(env, path string) {
+	log.Printf("init log, env: %s, path: %s", env, path)
 	logger.SetReportCaller(true)
 
 	logger.SetFormatter(&logrus.TextFormatter{
 		QuoteEmptyFields: true,
 	})
 
-	file, err := os.OpenFile("node.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if env == DEV {
+		logger.SetLevel(logrus.DebugLevel)
+		return
+	}
+
+	logger.SetLevel(logrus.InfoLevel)
+	file, err := os.OpenFile(filepath.Join(path, "node.log"), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err == nil {
 		logger.Out = file
 	} else {

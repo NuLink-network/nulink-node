@@ -21,7 +21,7 @@ func UploadFile(accountID, policyID string, files []entity.File) (code int) {
 		return resp.CodePolicyUnpublished
 	}
 	if policy.CreatorID != accountID {
-
+		return resp.CodePolicyNotYours
 	}
 
 	fs := make([]*dao.File, 0, len(files))
@@ -97,7 +97,7 @@ func GetFileList(accountID string, fileName string, page, pageSize int) ([]*enti
 		OwnerID: accountID,
 		Name:    fileName,
 	}
-	files, err := file.Find(page, pageSize)
+	files, err := file.Find(Paginate(page, pageSize))
 	if err != nil {
 		return nil, err
 	}
@@ -105,17 +105,19 @@ func GetFileList(accountID string, fileName string, page, pageSize int) ([]*enti
 	ret := make([]*entity.GetFileListResponse, 0, 10)
 	for _, f := range files {
 		ret = append(ret, &entity.GetFileListResponse{
-			AccountID: f.OwnerID,
+			FileID:    f.FileID,
 			FileName:  f.Name,
 			Address:   f.Address,
 			Thumbnail: f.Thumbnail,
-			CreatedAt: f.CreatedAt,
+			Owner:     f.Owner,
+			OwnerID:   f.OwnerID,
+			CreatedAt: f.CreatedAt.Unix(),
 		})
 	}
 	return ret, nil
 }
 
-func GetOthersFileList(accountID string, fileName string, page, pageSize int) ([]*entity.GetOthersFileListResponse, error) {
+func GetOthersFileList(accountID string, fileName string, page, pageSize int) ([]*entity.GetFileListResponse, error) {
 	file := &dao.File{
 		Name: fileName,
 	}
@@ -124,28 +126,38 @@ func GetOthersFileList(accountID string, fileName string, page, pageSize int) ([
 		return nil, err
 	}
 
-	ret := make([]*entity.GetOthersFileListResponse, 0, len(files))
+	ret := make([]*entity.GetFileListResponse, 0, len(files))
 	for _, f := range files {
-		ret = append(ret, &entity.GetOthersFileListResponse{
-			AccountID: f.OwnerID,
+		ret = append(ret, &entity.GetFileListResponse{
+			FileID:    f.FileID,
 			FileName:  f.Name,
 			Address:   f.Address,
 			Thumbnail: f.Thumbnail,
-			CreatedAt: f.CreatedAt,
+			Owner:     f.Owner,
+			OwnerID:   f.OwnerID,
+			CreatedAt: f.CreatedAt.Unix(),
 		})
 	}
 	return ret, nil
 }
 
-func DeleteFile(accountID string, fileIDs []string) error {
+func DeleteFile(accountID string, fileIDs []string) (code int) {
 	// todo signature verification
-
-	fs := make([]*dao.File, 0, len(fileIDs))
-	for _, fid := range fileIDs {
-		fs = append(fs, &dao.File{
-			OwnerID: accountID,
-			FileID:  fid,
-		})
+	file := &dao.File{
+		OwnerID: accountID,
 	}
-	return dao.NewFile().BatchDelete(fs)
+
+	// 删除文件和策略的关系
+	// 删除文件的使用申请
+	// 删除文件
+
+	//files, err := file.FindByFileIDs(fileIDs, nil)
+	//if err != nil {
+	//	return resp.CodeInternalServerError
+	//}
+
+	if err := file.DeleteByFilesIDs(fileIDs); err != nil {
+		return resp.CodeInternalServerError
+	}
+	return resp.CodeSuccess
 }
