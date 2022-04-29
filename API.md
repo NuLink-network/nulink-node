@@ -280,11 +280,12 @@ application/json
 |  address            |  string  |  文件地址 |
 |  thumbnail          |  string  |  文件缩略图 |
 |  status          |  number  |  文件使用状态，1: 申请中, 2: 已通过, 3: 已拒绝 |
-|  start_at          |  string  |  文件的使用申请开始时间 |
-|  finish_at          |  string  |  文件的使用申请结束时间 |
+|  start_at          |  number  |  文件的使用申请开始时间戳 |
+|  finish_at          |  number  |  文件的使用申请结束时间戳 |
 |  policy_id          |  string  |  文件关联的策略 ID |
 |  policy_hrac          |  string  |  文件关联的策略 hrac |
 |  apply_id          |  number  |  文件的使用申请记录 ID |
+|  apply_at          |  number  |  文件的使用申请时间戳 |
 |  created_at          |  number  |  文件上传时间戳 |
 
 ## 其他人的文件列表
@@ -340,11 +341,12 @@ application/json
 |  address            |  string  |  文件地址 |
 |  thumbnail          |  string  |  文件缩略图 |
 |  status          |  number  |  文件使用状态，1: 申请中, 2: 已通过, 3: 已拒绝 |
-|  start_at          |  string  |  文件的使用申请开始时间 |
-|  finish_at          |  string  |  文件的使用申请结束时间 |
+|  start_at          |  number  |  文件的使用申请开始时间戳 |
+|  finish_at          |  number|  文件的使用申请结束时间戳 |
 |  policy_id          |  string  |  文件关联的策略 ID |
 |  policy_hrac          |  string  |  文件关联的策略 hrac |
 |  apply_id          |  number  |  文件的使用申请记录 ID |
+|  apply_time          |  number  |  文件的使用申请时间戳 |
 |  created_at          |  number  |  文件上传时间戳 |
 
 ## 撤销策略
