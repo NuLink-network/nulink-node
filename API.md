@@ -403,6 +403,7 @@ application/json
 | ------------ | -------- | ------ | ---- |------- |
 |  creator_id  |  string  | 否     | 策略的创建者账户ID (UUID V4) |
 |  consumer_id  |  string  | 否     | 策略的使用者账户ID (UUID V4) |
+|  policy_id  |  string  | 否     | 策略ID (UUID V4) |
 |  status  |  number  |   否   |  0 (不区分状态) |  策略状态，1: 未发布，2: 已发布|
 |  paginate    |  [Paginate](#Paginate-结构) |  否  |      | 分页 |
 
@@ -423,8 +424,17 @@ application/json
 
 #### list 结构
 
-| file_id | string | 文件 ID | | file_name | string | 文件名称 | | owner | string | 文件拥有者 | | owner_id | string | 文件拥有者账户 ID |
-| address | string | 文件地址 | | thumbnail | string | 文件缩略图 | | created_at | number | 文件上传时间戳 |
+| 参数      | 类型      | 说明     |
+| --------- | -------- | ------- |
+| policy_id  |  string | 策略ID (UUID V4) |
+| status  |  number  |  策略状态，1: 未发布，2: 已发布|
+| file_id | string | 文件 ID | 
+| file_name | string | 文件名称 | 
+| owner | string | 文件拥有者 | 
+| owner_id | string | 文件拥有者账户 ID |
+| address | string | 文件地址 | 
+| thumbnail | string | 文件缩略图 |
+| created_at | number | 文件上传时间戳 |
 
 ## 策略信息列表
 
@@ -507,7 +517,6 @@ application/json
 |  proposer_id  |  string  |   是   |   |  申请人的账户 ID |
 |  start_at  |  number  |   是   |   |  开始时间戳 |
 |  finish_at  |  number  |   是   |   |  结束时间戳 |
-|  proposer_id  |  string  |   是   |   |  结束时间 |
 |  signature   |  string  | 是     | 签名 |
 
 ### 响应参数
@@ -569,6 +578,8 @@ application/json
 |  proposer_id          |  string  |  申请人账户 ID |
 |  file_owner          |  string  |  文件拥有者 |
 |  file_owner_id          |  string  |  文件拥有者账户 ID |
+|  policy_id        |  string  | 策略 ID  |
+|  hrac        |  string  | 策略 hrac |
 |  start_at          |  number  |  使用开始时间戳 |
 |  finish_at          |  number  |  使用结束时间戳 |
 |  created_at          |  number  |  申请时间戳 |
