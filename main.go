@@ -16,7 +16,13 @@ func main() {
 	dbConf := viper.GetStringMapString("database")
 	db.Init(dbConf["user"], dbConf["password"], dbConf["host"], dbConf["port"], dbConf["name"])
 
+	basicAuth := viper.GetStringMapString("basicAuth")
+	accounts := gin.Accounts{
+		basicAuth["user"]: basicAuth["password"],
+	}
+
 	engine := gin.Default()
+	engine.Use(gin.BasicAuth(accounts))
 	router.Register(engine)
 
 	endless.ListenAndServe(viper.GetString("address"), engine)

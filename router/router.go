@@ -1,9 +1,8 @@
 package router
 
 import (
-	"github.com/gin-gonic/gin"
-
 	"github.com/NuLink-network/nulink-node/controller"
+	"github.com/gin-gonic/gin"
 )
 
 const (
@@ -14,6 +13,8 @@ const (
 )
 
 func Register(engine *gin.Engine) {
+	engine.GET("/ping", controller.Ping)
+
 	account := engine.Group(AccountGroup)
 	account.POST("/create", controller.CreateAccount)
 	account.GET("/get", controller.GetAccount)
