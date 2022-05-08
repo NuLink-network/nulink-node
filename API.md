@@ -306,7 +306,7 @@ application/json
 | ------------ | -------- | ------ | ---- |------- |
 |  account_id  |  string  |  是    |      |  账户ID (UUID V4) |
 |  file_name   |  string  |  否    |      |  文件名称, 支持模糊匹配|
-|  style   |  string  |  否    |      |  文件类型|
+|  category   |  string  |  否    |      |  文件类型|
 |  format   |  string  |  否    |      |  文件格式|
 |  desc   |  bool  |  否    |  false    |  是否按照上传时间倒序 |
 |  paginate    |  [Paginate](#Paginate-结构) |  否  |      | 签名 |
