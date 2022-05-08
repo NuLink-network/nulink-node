@@ -72,6 +72,7 @@ application/json
 |  account_id    |  string  |  账户ID(UUID v4) |
 |  ethereum_addr |  string  |  以太坊地址 |
 |  encrypted_pk  |  string  |  加密的公钥 |
+|  verify_pk     |  string  |  验证公钥 |
 |  status        |  number  |  账户状态 |
 |  created_at    |  number  |  账户创建时间戳 |
 
@@ -137,15 +138,17 @@ application/json
 | ------------ | -------- | ------ | ------- |
 |  file        |  [][File](#File-结构)  | 是     | 文件列表 |
 |  account_id  |  string  | 是     | 账户 ID (UUID V4) |
-|  policy_id   |  string  | 是     | 策略 ID (UUID V4) |
+|  policy_id   |  number  | 是     | 策略 ID |
 |  signature   |  string  | 是     | 签名 |
 
 #### File 结构
 
 | 参数       | 类型     | 必填    | 说明   |
 | --------- | -------- | ------ | ------- |
-|  id       |  string  | 是     | 文件 ID (UUID V4) |
+|  md5     |  string  | 是     | 文件名md5 |
 |  name     |  string  | 是     | 文件名称 |
+|  suffix     |  string  | 否     | 文件后缀 |
+|  category     |  string  | 是     | 文件类型 |
 |  address  |  string  | 是     | 文件地址 |
 
 ### 响应参数
@@ -178,7 +181,7 @@ application/json
 | ------------ | -------- | ------ | ------- |
 |  file        |  [][File](#File-结构)  | 是     | 文件列表 |
 |  account_id  |  string  | 是     | 账户ID (UUID V4) |
-|  policy_id   |  string  | 是     | 策略 ID (UUID V4)|
+|  policy_label_id   |  string  | 是     | 策略 label ID (UUID V4)|
 |  policy_label   |  string  | 是     | 策略标签 |
 |  encrypted_pk   |  string  | 是     | 加密的公钥 |
 |  signature   |  string  | 是     | 签名 |
@@ -279,13 +282,6 @@ application/json
 |  owner_id          |  string  |  文件拥有者账户 ID |
 |  address            |  string  |  文件地址 |
 |  thumbnail          |  string  |  文件缩略图 |
-|  status          |  number  |  文件使用状态，1: 申请中, 2: 已通过, 3: 已拒绝 |
-|  start_at          |  number  |  文件的使用申请开始时间戳 |
-|  finish_at          |  number  |  文件的使用申请结束时间戳 |
-|  policy_id          |  string  |  文件关联的策略 ID |
-|  policy_hrac          |  string  |  文件关联的策略 hrac |
-|  apply_id          |  number  |  文件的使用申请记录 ID |
-|  apply_at          |  number  |  文件的使用申请时间戳 |
 |  created_at          |  number  |  文件上传时间戳 |
 
 ## 其他人的文件列表
@@ -340,13 +336,6 @@ application/json
 |  owner_id          |  string  |  文件拥有者账户 ID |
 |  address            |  string  |  文件地址 |
 |  thumbnail          |  string  |  文件缩略图 |
-|  status          |  number  |  文件使用状态，1: 申请中, 2: 已通过, 3: 已拒绝 |
-|  start_at          |  number  |  文件的使用申请开始时间戳 |
-|  finish_at          |  number|  文件的使用申请结束时间戳 |
-|  policy_id          |  string  |  文件关联的策略 ID |
-|  policy_hrac          |  string  |  文件关联的策略 hrac |
-|  apply_id          |  number  |  文件的使用申请记录 ID |
-|  apply_time          |  number  |  文件的使用申请时间戳 |
 |  created_at          |  number  |  文件上传时间戳 |
 
 ## 撤销策略
@@ -370,7 +359,7 @@ application/json
 | 参数          |  类型     | 必填  | 默认值 | 说明   |
 | ------------ | -------- | ------ | ---- |------- |
 |  account_id  |  string  | 是     | 账户ID (UUID V4) |
-|  policy_id   |  string  | 是     | 策略 ID (UUID V4)|
+|  policy_id   |  number  | 是     | 策略 ID |
 |  signature   |  string  | 是     | 签名 |
 
 ### 响应参数
@@ -403,8 +392,7 @@ application/json
 | ------------ | -------- | ------ | ---- |------- |
 |  creator_id  |  string  | 否     | 策略的创建者账户ID (UUID V4) |
 |  consumer_id  |  string  | 否     | 策略的使用者账户ID (UUID V4) |
-|  policy_id  |  string  | 否     | 策略ID (UUID V4) |
-|  status  |  number  |   否   |  0 (不区分状态) |  策略状态，1: 未发布，2: 已发布|
+|  policy_id  |  number  | 否     | 策略ID  |
 |  paginate    |  [Paginate](#Paginate-结构) |  否  |      | 分页 |
 
 ### 响应参数
@@ -426,8 +414,6 @@ application/json
 
 | 参数      | 类型      | 说明     |
 | --------- | -------- | ------- |
-| policy_id  |  string | 策略ID (UUID V4) |
-| status  |  number  |  策略状态，1: 未发布，2: 已发布|
 | file_id | string | 文件 ID | 
 | file_name | string | 文件名称 | 
 | owner | string | 文件拥有者 | 
@@ -435,6 +421,10 @@ application/json
 | address | string | 文件地址 | 
 | thumbnail | string | 文件缩略图 |
 | created_at | number | 文件上传时间戳 |
+| policy_id  |  number | 策略ID  |
+| policy_hrac          |  string  |  策略 hrac |
+| policy_start_at   |  number  |  策略开始时间戳 |
+| policy_end_at     |  number  |  策略结束时间戳 |
 
 ## 策略信息列表
 
@@ -456,7 +446,7 @@ application/json
 
 | 参数          |  类型     | 必填  | 默认值 | 说明   |
 | ------------ | -------- | ------ | ---- |------- |
-|  policy_id  |  string  | 否     | 策略ID (UUID V4) |
+|  policy_id  |  number  | 否     | 策略ID  |
 |  creator_id  |  string  | 否     | 策略的创建者账户ID (UUID V4) |
 |  consumer_id  |  string  | 否     | 策略的使用者账户ID (UUID V4) |
 |  status  |  number  |   否   |  0 (不区分状态) |  策略状态，1: 未发布，2: 已发布|
@@ -483,7 +473,7 @@ application/json
 | --------- | -------- | ------- |
 |  hrac        |  string  |  hrac |
 |  label        |  string  | 策略 label  |
-|  policy_id        |  string  | 策略 ID  |
+|  policy_id        |  number  | 策略 ID  |
 |  creator        |  string  |  策略创建者 |
 |  creator_id       |  string  |  策略创建者 ID |
 |  consumer      |  string  | 策略使用者  |
@@ -491,7 +481,9 @@ application/json
 |  status      |  string  | 策略状态，1: 未发布，2: 已发布  |
 |  gas     |  string  |  gas |
 |  tx_hash     |  string  | 交易 hash  |
-|  created_at      |  string  | 策略创建时间  |
+|  start_at   |  number  |  策略开始时间戳 |
+|  end_at     |  number  |  策略结束时间戳 |
+|  created_at      |  number  | 策略创建时间戳  |
 
 ## 申请文件使用
 
@@ -578,7 +570,7 @@ application/json
 |  proposer_id          |  string  |  申请人账户 ID |
 |  file_owner          |  string  |  文件拥有者 |
 |  file_owner_id          |  string  |  文件拥有者账户 ID |
-|  policy_id        |  string  | 策略 ID  |
+|  policy_id        |  number  | 策略 ID  |
 |  hrac        |  string  | 策略 hrac |
 |  start_at          |  number  |  使用开始时间戳 |
 |  finish_at          |  number  |  使用结束时间戳 |
@@ -643,11 +635,11 @@ application/json
 
 | 参数      | 类型      | 说明     |
 | --------- | -------- | ------- |
-|  id          |  string  | 策略 ID  |
 |  hrac          |  string  |  hrac |
 |  gas          |  string  |  gas |
 |  tx_hash          |  string  |  交易 Hash |
 |  creator_id          |  string  | 交易创建者 ID  |
+|  encrypted_pk          |  string  | encrypted public key  |
 |  encrypted_address          |  string  | encrypted ipfs address  |
 
 ### 响应参数
