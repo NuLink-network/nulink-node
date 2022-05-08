@@ -472,13 +472,11 @@ application/json
 | 参数      | 类型      | 说明     |
 | --------- | -------- | ------- |
 |  hrac        |  string  |  hrac |
-|  label        |  string  | 策略 label  |
 |  policy_id        |  number  | 策略 ID  |
 |  creator        |  string  |  策略创建者 |
 |  creator_id       |  string  |  策略创建者 ID |
 |  consumer      |  string  | 策略使用者  |
 |  consumer_id       |  string  | 策略使用者 ID  |
-|  status      |  string  | 策略状态，1: 未发布，2: 已发布  |
 |  gas     |  string  |  gas |
 |  tx_hash     |  string  | 交易 hash  |
 |  start_at   |  number  |  策略开始时间戳 |

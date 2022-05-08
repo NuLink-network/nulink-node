@@ -7,9 +7,9 @@ import (
 	"github.com/NuLink-network/nulink-node/resp"
 )
 
-func RevokePolicy(accountID, policyID string) (code int) {
+func RevokePolicy(accountID string, policyID uint64) (code int) {
 	policy := &dao.Policy{
-		PolicyID:  policyID,
+		ID:        policyID,
 		CreatorID: accountID,
 	}
 	rows, err := policy.Delete()
@@ -41,16 +41,13 @@ func RevokePolicy(accountID, policyID string) (code int) {
 	return resp.CodeSuccess
 }
 
-func PolicyList(policyID, creatorID, consumerID string, status uint8, page, pageSize int) ([]*entity.PolicyListResponse, int) {
+func PolicyList(policyID uint64, creatorID, consumerID string, page, pageSize int) ([]*entity.PolicyListResponse, int) {
 	p := &dao.Policy{
-		PolicyID:   policyID,
+		ID:         policyID,
 		CreatorID:  creatorID,
 		ConsumerID: consumerID,
 	}
-	if status != dao.PolicyStatusAll {
-		p.Status = status
-	}
-	ps, err := p.Find(Paginate(page, pageSize))
+	ps, err := p.Find(nil, dao.Paginate(page, pageSize))
 	if err != nil {
 		log.Logger().WithField("policy", p).WithField("error", err).Error("find policy failed")
 		return nil, resp.CodeInternalServerError
@@ -60,30 +57,26 @@ func PolicyList(policyID, creatorID, consumerID string, status uint8, page, page
 	for _, p := range ps {
 		ret = append(ret, &entity.PolicyListResponse{
 			Hrac:       p.Hrac,
-			Label:      p.Label,
-			PolicyID:   p.PolicyID,
+			PolicyID:   p.ID,
 			Creator:    p.Creator,
 			CreatorID:  p.CreatorID,
 			Consumer:   p.Consumer,
 			ConsumerID: p.ConsumerID,
-			//EncryptedPK:      p.EncryptedPK,
-			//EncryptedAddress: p.EncryptedAddress,
-			Status:    p.Status,
-			Gas:       p.Gas,
-			TxHash:    p.TxHash,
-			CreatedAt: p.CreatedAt,
+			Gas:        p.Gas,
+			TxHash:     p.TxHash,
+			StartAt:    p.StartAt.Unix(),
+			EndAt:      p.EndAt.Unix(),
+			CreatedAt:  p.CreatedAt,
 		})
 	}
 	return ret, resp.CodeSuccess
 }
 
-func FileDetailList(creatorID, consumerID string, status uint8, page, pageSize int) ([]*entity.FileDetailListResponse, int) {
+func FileDetailList(policyID uint64, creatorID, consumerID string, page, pageSize int) ([]*entity.FileDetailListResponse, int) {
 	p := &dao.Policy{
+		ID:         policyID,
 		CreatorID:  creatorID,
 		ConsumerID: consumerID,
-	}
-	if status != dao.PolicyStatusAll {
-		p.Status = status
 	}
 	policyIDs, err := p.FindPolicyIDs()
 	if err != nil {
@@ -91,9 +84,9 @@ func FileDetailList(creatorID, consumerID string, status uint8, page, pageSize i
 		return nil, resp.CodeInternalServerError
 	}
 
-	fileIDs, err := dao.NewFilePolicy().FindFileIDsByPolicyIDs(policyIDs, Paginate(page, pageSize))
+	fileIDs, err := dao.NewFilePolicy().FindFileIDsByPolicyIDs(policyIDs, dao.Paginate(page, pageSize))
 	if err != nil {
-		log.Logger().WithField("policyIDs", policyIDs).WithField("error", err).Error("find file ids by policy ids failed")
+		log.Logger().WithField("policy ids", policyIDs).WithField("error", err).Error("find file ids by policy ids failed")
 		return nil, resp.CodeInternalServerError
 	}
 
@@ -106,11 +99,17 @@ func FileDetailList(creatorID, consumerID string, status uint8, page, pageSize i
 	ret := make([]*entity.FileDetailListResponse, 0, 10)
 	for _, f := range files {
 		ret = append(ret, &entity.FileDetailListResponse{
-			OwnerID:   f.OwnerID,
-			FileName:  f.Name,
-			Address:   f.Address,
-			Thumbnail: f.Thumbnail,
-			CreatedAt: f.CreatedAt.Unix(),
+			FileID:        f.FileID,
+			FileName:      f.Name,
+			Owner:         f.Owner,
+			OwnerID:       f.OwnerID,
+			Address:       f.Address,
+			Thumbnail:     f.Thumbnail,
+			CreatedAt:     f.CreatedAt.Unix(),
+			PolicyID:      0,
+			PolicyHrac:    "",
+			PolicyStartAt: 0,
+			PolicyEndAt:   0,
 		})
 	}
 	return ret, resp.CodeSuccess

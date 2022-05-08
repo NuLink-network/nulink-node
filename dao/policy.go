@@ -2,6 +2,7 @@ package dao
 
 import (
 	"github.com/NuLink-network/nulink-node/resource/db"
+	"github.com/NuLink-network/nulink-node/utils"
 	"gorm.io/gorm"
 	"time"
 )
@@ -15,17 +16,17 @@ const (
 type Policy struct {
 	ID               uint64         `gorm:"primarykey"`
 	Hrac             string         `gorm:"column:hrac" json:"hrac" sql:"varchar(256)"`
-	Label            string         `gorm:"column:label" json:"label" sql:"varchar(32)"`
-	PolicyID         string         `gorm:"column:policy_id" json:"policy_id" sql:"char(36)"`
+	PolicyLabelID    string         `gorm:"column:policy_label_id" json:"policy_label_id" sql:"char(36)"`
 	Creator          string         `gorm:"column:creator" json:"creator" sql:"varchar(32)"`
 	CreatorID        string         `gorm:"column:creator_id" json:"creator_id" sql:"char(36)"`
 	Consumer         string         `gorm:"column:consumer" json:"consumer" sql:"varchar(32)"`
 	ConsumerID       string         `gorm:"column:consumer_id" json:"consumer_id" sql:"char(36)"`
-	EncryptedPK      string         `gorm:"column:encrypted_pk" json:"encrypted_pk" sql:"varchar(256)"`           // todo length?
-	EncryptedAddress string         `gorm:"column:encrypted_address" json:"encrypted_address" sql:"varchar(256)"` // todo length?
-	Status           uint8          `gorm:"column:status;default:1" json:"status" sql:"tinyint(4)" comment:"1: unpublished, 2: published"`
+	EncryptedPK      string         `gorm:"column:encrypted_pk" json:"encrypted_pk" sql:"varchar(256)"`
+	EncryptedAddress string         `gorm:"column:encrypted_address" json:"encrypted_address" sql:"varchar(256)"`
 	Gas              string         `gorm:"column:gas" json:"gas" sql:"varchar(32)"`
 	TxHash           string         `gorm:"column:tx_hash" json:"tx_hash" sql:"char(66)"`
+	StartAt          time.Time      `gorm:"column:start_at" json:"start_at" sql:"datetime"`
+	EndAt            time.Time      `gorm:"column:end_at" json:"end_at" sql:"datetime"`
 	CreatedAt        time.Time      `gorm:"column:created_at" json:"created_at" sql:"datetime"`
 	UpdatedAt        time.Time      `gorm:"column:updated_at" json:"updated_at" sql:"datetime"`
 	DeletedAt        gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at" sql:"datetime"`
@@ -49,8 +50,14 @@ func (p *Policy) Get() (policy *Policy, err error) {
 	return policy, err
 }
 
-func (p *Policy) Find(pager func(*gorm.DB) *gorm.DB) (ps []*Policy, err error) {
+func (p *Policy) Find(ext *QueryExtra, pager Pager) (ps []*Policy, err error) {
 	tx := db.GetDB().Where(p)
+	if ext != nil && ext.Conditions != nil {
+		tx = tx.Where(ext.Conditions)
+	}
+	if !utils.IsEmpty(ext.OrderStr) {
+		tx.Order(ext.OrderStr)
+	}
 	if pager != nil {
 		tx = tx.Scopes(pager)
 	}
@@ -82,27 +89,4 @@ func (p *Policy) IsExist() (isExist bool, err error) {
 	}
 
 	return true, nil
-}
-
-func CreatePolicyAndFiles(policy *Policy, files []*File) error {
-	return db.GetDB().Transaction(func(tx *gorm.DB) error {
-		if err := tx.Create(policy).Error; err != nil {
-			return err
-		}
-		if err := tx.Create(files).Error; err != nil {
-			return err
-		}
-		return nil
-	})
-}
-
-func Tx(models ...interface{}) error {
-	return db.GetDB().Transaction(func(tx *gorm.DB) error {
-		for _, m := range models {
-			if err := tx.Create(m).Error; err != nil {
-				return err
-			}
-		}
-		return nil
-	})
 }

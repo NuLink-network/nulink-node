@@ -29,7 +29,7 @@ func PolicyList(c *gin.Context) {
 		return
 	}
 
-	response, code := logic.PolicyList(req.PolicyID, req.CreatorID, req.ConsumerID, req.Status, req.Paginate.Page, req.Paginate.PageSize)
+	response, code := logic.PolicyList(req.PolicyID, req.CreatorID, req.ConsumerID, req.Paginate.Page, req.Paginate.PageSize)
 	if code != resp.CodeSuccess {
 		resp.Error(c, code)
 		return
@@ -46,7 +46,7 @@ func FileDetailList(c *gin.Context) {
 		return
 	}
 
-	response, code := logic.FileDetailList(req.CreatorID, req.ConsumerID, req.Status, req.Paginate.Page, req.Paginate.PageSize)
+	response, code := logic.FileDetailList(req.PolicyID, req.CreatorID, req.ConsumerID, req.Paginate.Page, req.Paginate.PageSize)
 	if code != resp.CodeSuccess {
 		resp.Error(c, code)
 		return

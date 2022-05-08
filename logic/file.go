@@ -4,21 +4,20 @@ import (
 	"errors"
 	"github.com/NuLink-network/nulink-node/dao"
 	"github.com/NuLink-network/nulink-node/entity"
+	"github.com/NuLink-network/nulink-node/resource/log"
 	"github.com/NuLink-network/nulink-node/resp"
+	"github.com/NuLink-network/nulink-node/utils"
 	"gorm.io/gorm"
 )
 
-func UploadFile(accountID, policyID string, files []entity.File) (code int) {
-	p := &dao.Policy{PolicyID: policyID}
+func UploadFile(accountID string, policyID uint64, files []entity.File) (code int) {
+	p := &dao.Policy{ID: policyID}
 	policy, err := p.Get()
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return resp.CodePolicyNotExist
 		}
 		return resp.CodeInternalServerError
-	}
-	if policy.Status != dao.PolicyStatusPublished {
-		return resp.CodePolicyUnpublished
 	}
 	if policy.CreatorID != accountID {
 		return resp.CodePolicyNotYours
@@ -28,81 +27,100 @@ func UploadFile(accountID, policyID string, files []entity.File) (code int) {
 	fps := make([]*dao.FilePolicy, 0, len(files))
 	for _, f := range files {
 		fs = append(fs, &dao.File{
-			FileID:  f.ID,
-			Name:    f.Name,
-			Address: f.Address,
-			//Owner:          fileOwner,
-			OwnerID: accountID,
+			FileID:        f.ID,
+			MD5:           f.MD5,
+			Name:          f.Name,
+			Suffix:        f.Suffix,
+			Category:      f.Category,
+			Address:       f.Address,
+			Owner:         policy.Creator,
+			OwnerID:       accountID,
+			PolicyLabelID: policy.PolicyLabelID,
 		})
+
 		fps = append(fps, &dao.FilePolicy{
-			FileID:   f.ID,
-			PolicyID: policyID,
+			FileID:     f.ID,
+			PolicyID:   policyID,
+			CreatorID:  accountID,
+			ConsumerID: policy.ConsumerID,
+			StartAt:    policy.StartAt,
+			EndAt:      policy.EndAt,
 		})
 	}
-	if err := dao.NewFile().BatchCreate(fs); err != nil {
-		return resp.CodeInternalServerError
-	}
-	if err := dao.NewFilePolicy().BatchCreate(fps); err != nil {
+
+	if err = dao.Tx(fs, fps); err != nil {
 		return resp.CodeInternalServerError
 	}
 	return resp.CodeSuccess
 }
 
-func CreatePolicyAndUploadFile(accountID, policyID, policyLabel, encryptedPK string, files []entity.File) (code int) {
-	p := &dao.Policy{PolicyID: policyID}
-	isExist, err := p.IsExist()
+func CreatePolicyAndUploadFile(accountID, policyLabelID, policyLabel, encryptedPK string, files []entity.File) (code int) {
+	pl := &dao.PolicyLabel{PolicyLabelID: policyLabelID}
+	isExist, err := pl.IsExist()
 	if err != nil {
-		// todo log
+		log.Logger().WithField("policy label", pl).WithField("error", err).Error("get policy label failed")
 		return resp.CodeInternalServerError
 	}
 	if isExist {
 		return resp.CodePolicyIsExist
 	}
 
-	policy := &dao.Policy{
-		PolicyID:    policyID,
-		Label:       policyLabel,
-		CreatorID:   accountID,
-		EncryptedPK: encryptedPK,
+	acc := &dao.Account{Account: accountID}
+	account, err := acc.Get()
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return resp.CodeAccountNotExist
+		}
+		log.Logger().WithField("account", acc).WithField("error", err).Error("get account failed")
+		return resp.CodeInternalServerError
+	}
+
+	policy := &dao.PolicyLabel{
+		PolicyLabelID: policyLabelID,
+		Label:         policyLabel,
+		CreatorID:     accountID,
+		EncryptedPK:   encryptedPK,
 	}
 
 	fs := make([]*dao.File, 0, len(files))
-	fps := make([]*dao.FilePolicy, 0, len(files))
 	for _, f := range files {
 		fs = append(fs, &dao.File{
-			FileID:  f.ID,
-			Name:    f.Name,
-			Address: f.Address,
-			//Owner:          fileOwner, // todo
-			OwnerID: accountID,
-		})
-		fps = append(fps, &dao.FilePolicy{
-			FileID:   f.ID,
-			PolicyID: policyID,
+			FileID:        f.ID,
+			MD5:           f.MD5,
+			Name:          f.Name,
+			Suffix:        f.Suffix,
+			Category:      f.Category,
+			Address:       f.Address,
+			Owner:         account.Name,
+			OwnerID:       accountID,
+			PolicyLabelID: policyLabelID,
 		})
 	}
-	if err = dao.CreatePolicyAndFiles(policy, fs); err != nil {
+	if err = dao.Tx(policy, fs); err != nil {
 		return resp.CodeInternalServerError
 	}
-
-	if err := dao.NewFilePolicy().BatchCreate(fps); err != nil {
-		return resp.CodeInternalServerError
-	}
-
 	return resp.CodeSuccess
 }
 
-func GetFileList(accountID string, fileName string, page, pageSize int) ([]*entity.GetFileListResponse, error) {
+func GetFileList(accountID string, fileName string, page, pageSize int) (ret []*entity.GetFileListResponse, code int) {
 	file := &dao.File{
 		OwnerID: accountID,
 		Name:    fileName,
 	}
-	files, err := file.Find(Paginate(page, pageSize))
+
+	query := &dao.QueryExtra{
+		Conditions: map[string]interface{}{},
+	}
+	if utils.IsEmpty(fileName) {
+		query.Conditions["name like ?"] = "%" + fileName + "%"
+	}
+	files, err := file.FindAny(query, dao.Paginate(page, pageSize))
 	if err != nil {
-		return nil, err
+		log.Logger().WithField("file", file).WithField("error", err).Error("find files failed")
+		return nil, resp.CodeInternalServerError
 	}
 
-	ret := make([]*entity.GetFileListResponse, 0, 10)
+	ret = make([]*entity.GetFileListResponse, 0, 10)
 	for _, f := range files {
 		ret = append(ret, &entity.GetFileListResponse{
 			FileID:    f.FileID,
@@ -114,21 +132,39 @@ func GetFileList(accountID string, fileName string, page, pageSize int) ([]*enti
 			CreatedAt: f.CreatedAt.Unix(),
 		})
 	}
-	return ret, nil
+	return ret, resp.CodeSuccess
 }
 
-func GetOthersFileList(accountID string, fileName string, page, pageSize int) ([]*entity.GetFileListResponse, error) {
+func GetOthersFileList(accountID string, fileName, category, format string, desc bool, page, pageSize int) (ret []*entity.GetOthersFileListResponse, code int) {
 	file := &dao.File{
-		Name: fileName,
+		Category: category,
 	}
-	files, err := file.FindNotAccountID(accountID, page, pageSize)
+	conditions := map[string]interface{}{
+		"owner_id != ?": accountID,
+	}
+	if utils.IsEmpty(fileName) {
+		conditions["name like ?"] = "%" + fileName + "%"
+	}
+	if format == utils.OtherFormat {
+		conditions["suffix not in ?"] = utils.OtherFormatExcludeSuffix
+	} else {
+		conditions["suffix in ?"] = utils.FileFormat2Suffix[format]
+	}
+	query := &dao.QueryExtra{
+		Conditions: conditions,
+	}
+	if desc {
+		query.OrderStr = "id desc"
+	}
+	files, err := file.FindAny(query, dao.Paginate(page, pageSize))
 	if err != nil {
-		return nil, err
+		log.Logger().WithField("file", file).WithField("error", err).Error("find others file failed")
+		return nil, resp.CodeInternalServerError
 	}
 
-	ret := make([]*entity.GetFileListResponse, 0, len(files))
+	ret = make([]*entity.GetOthersFileListResponse, 0, len(files))
 	for _, f := range files {
-		ret = append(ret, &entity.GetFileListResponse{
+		ret = append(ret, &entity.GetOthersFileListResponse{
 			FileID:    f.FileID,
 			FileName:  f.Name,
 			Address:   f.Address,
@@ -138,24 +174,32 @@ func GetOthersFileList(accountID string, fileName string, page, pageSize int) ([
 			CreatedAt: f.CreatedAt.Unix(),
 		})
 	}
-	return ret, nil
+	return ret, resp.CodeSuccess
 }
 
 func DeleteFile(accountID string, fileIDs []string) (code int) {
 	// todo signature verification
+	// 删除文件的使用申请
+	// 删除文件和策略的关系
+	// 删除文件
+
+	applyFile := &dao.ApplyFile{
+		FileOwnerID: accountID,
+	}
+	if err := applyFile.DeleteByFileIDs(fileIDs); err != nil {
+		return resp.CodeInternalServerError
+	}
+
+	filePolicy := &dao.FilePolicy{
+		CreatorID: accountID,
+	}
+	if err := filePolicy.DeleteByFileIDs(fileIDs); err != nil {
+		return resp.CodeInternalServerError
+	}
+
 	file := &dao.File{
 		OwnerID: accountID,
 	}
-
-	// 删除文件和策略的关系
-	// 删除文件的使用申请
-	// 删除文件
-
-	//files, err := file.FindByFileIDs(fileIDs, nil)
-	//if err != nil {
-	//	return resp.CodeInternalServerError
-	//}
-
 	if err := file.DeleteByFilesIDs(fileIDs); err != nil {
 		return resp.CodeInternalServerError
 	}

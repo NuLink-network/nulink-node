@@ -25,9 +25,9 @@ func GetAccount(account string) (*entity.GetAccountResponse, error) {
 		Account:      a.Account,
 		EthereumAddr: a.EthereumAddr,
 		EncryptedPK:  a.EncryptedPK,
-		//VerifyPK:     a.VerifyPK,
-		Status:    a.Status,
-		CreatedAt: a.CreatedAt,
+		VerifyPK:     a.VerifyPK,
+		Status:       a.Status,
+		CreatedAt:    a.CreatedAt,
 	}, nil
 }
 

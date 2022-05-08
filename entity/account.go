@@ -27,13 +27,13 @@ type AccountIsExistRequest struct {
 // ========================= response =========================
 
 type GetAccountResponse struct {
-	Name         string `json:"name"`
-	Account      string `json:"account"`
-	EthereumAddr string `json:"ethereum_addr"`
-	EncryptedPK  string `json:"encrypted_pk"`
-	//VerifyPK     string    `json:"verify_pk"`
-	Status    int8      `json:"status"`
-	CreatedAt time.Time `json:"created_at"`
+	Name         string    `json:"name"`
+	Account      string    `json:"account"`
+	EthereumAddr string    `json:"ethereum_addr"`
+	EncryptedPK  string    `json:"encrypted_pk"`
+	VerifyPK     string    `json:"verify_pk"`
+	Status       int8      `json:"status"`
+	CreatedAt    time.Time `json:"created_at"`
 }
 
 type AccountIsExistResponse struct {

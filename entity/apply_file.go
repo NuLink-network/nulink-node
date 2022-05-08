@@ -29,6 +29,7 @@ type Policy struct {
 	Gas              string `json:"gas" binding:"required"`
 	TxHash           string `json:"tx_hash" binding:"required"`
 	ConsumerID       string `json:"consumer_id" binding:"required"`
+	EncryptedPK      string `json:"encrypted_pk" binding:"required"`
 	EncryptedAddress string `json:"encrypted_address" binding:"required"`
 }
 

@@ -2,6 +2,7 @@ package dao
 
 import (
 	"github.com/NuLink-network/nulink-node/resource/db"
+	"github.com/NuLink-network/nulink-node/utils"
 	"gorm.io/gorm"
 	"time"
 )
@@ -15,7 +16,7 @@ const (
 
 type ApplyFile struct {
 	ID          uint64         `gorm:"primarykey"`
-	FileID      string         `gorm:"column:file_id" json:"file_id" sql:"bigint(20)"`
+	FileID      string         `gorm:"column:file_id" json:"file_id" sql:"char(36)"`
 	FileName    string         `gorm:"column:file_name" json:"file_name" sql:"varchar()"`
 	Proposer    string         `gorm:"column:proposer" json:"proposer" sql:"varchar(32)" comment:"申请者"`
 	ProposerID  string         `gorm:"column:proposer_id" json:"proposer_id" sql:"varchar(36)"`
@@ -46,14 +47,33 @@ func (a *ApplyFile) BatchCreate(as []*ApplyFile) error {
 	return db.GetDB().Create(as).Error
 }
 
-func (a *ApplyFile) Get() (file *ApplyFile, err error) {
-	err = db.GetDB().Where(a).First(file).Error
-	return file, err
+func (a *ApplyFile) Get() (af *ApplyFile, err error) {
+	err = db.GetDB().Where(a).First(af).Error
+	return af, err
 }
 
-func (a *ApplyFile) Find(page, pageSize int) (files []*ApplyFile, err error) {
-	err = db.GetDB().Where(a).Scopes(Paginate(page, pageSize)).Find(&files).Error
-	return files, err
+func (a *ApplyFile) Find(pager Pager) (afs []*ApplyFile, err error) {
+	tx := db.GetDB().Where(a)
+	if pager != nil {
+		tx = tx.Scopes(pager)
+	}
+	err = tx.Find(&afs).Error
+	return afs, err
+}
+
+func (a *ApplyFile) FindAny(ext *QueryExtra, pager Pager) (afs []*ApplyFile, err error) {
+	tx := db.GetDB().Where(a)
+	if ext != nil && ext.Conditions != nil {
+		tx = tx.Where(ext.Conditions)
+	}
+	if !utils.IsEmpty(ext.OrderStr) {
+		tx.Order(ext.OrderStr)
+	}
+	if pager != nil {
+		tx = tx.Scopes(pager)
+	}
+	err = tx.Find(&afs).Error
+	return afs, err
 }
 
 func (a *ApplyFile) Delete() (rows int64, err error) {
@@ -63,6 +83,10 @@ func (a *ApplyFile) Delete() (rows int64, err error) {
 
 func (a *ApplyFile) BatchDelete(ids []uint64) error {
 	return db.GetDB().Where(a).Delete(a, ids).Error
+}
+
+func (a *ApplyFile) DeleteByFileIDs(fids []string) error {
+	return db.GetDB().Where(a).Where("file_id in ?", fids).Delete(a).Error
 }
 
 func (a *ApplyFile) Updates(new *ApplyFile) error {

@@ -3,26 +3,28 @@ package entity
 // ========================= request =========================
 
 type File struct {
-	ID      string `json:"id" binding:"required"`
-	Name    string `json:"name" binding:"required"`
-	Address string `json:"address" binding:"required"`
+	ID       string `json:"id" binding:"required"`
+	MD5      string `json:"md5" binding:"required"`
+	Name     string `json:"name" binding:"required"`
+	Suffix   string `json:"suffix"`
+	Category string `json:"category" binding:"required"`
+	Address  string `json:"address" binding:"required"`
 }
 
 type UploadFileRequest struct {
 	Files     []File `json:"files" binding:"required"`
 	AccountID string `json:"account_id" binding:"required"`
-	PolicyID  string `json:"policy_id" binding:"required"`
+	PolicyID  uint64 `json:"policy_id" binding:"required"`
 	Signature string `json:"signature" binding:"required"`
 }
 
 type CreatePolicyAndUploadFileRequest struct {
-	Files     []File `json:"files" binding:"required"`
-	AccountID string `json:"account_id" binding:"required"`
-	//FileOwner   string `json:"file_owner" binding:"required"`
-	PolicyID    string `json:"policy_id" binding:"required"`
-	PolicyLabel string `json:"policy_label" binding:"required"`
-	EncryptedPK string `json:"encrypted_pk" binding:"required"`
-	Signature   string `json:"signature" binding:"required"`
+	Files         []File `json:"files" binding:"required"`
+	AccountID     string `json:"account_id" binding:"required"`
+	PolicyLabelID string `json:"policy_label_id" binding:"required"`
+	PolicyLabel   string `json:"policy_label" binding:"required"`
+	EncryptedPK   string `json:"encrypted_pk" binding:"required"`
+	Signature     string `json:"signature" binding:"required"`
 }
 
 type Paginate struct {
@@ -31,17 +33,18 @@ type Paginate struct {
 }
 
 type GetFileListRequest struct {
-	AccountID string `json:"account_id"`
-	FileName  string `json:"file_name"`
-	//UploadTime uint64   `json:"upload_time"`
-	Paginate Paginate `json:"paginate"`
+	AccountID string   `json:"account_id"`
+	FileName  string   `json:"file_name"`
+	Paginate  Paginate `json:"paginate"`
 }
 
 type GetOthersFileListRequest struct {
-	AccountID string `json:"account_id" binding:"required"`
-	FileName  string `json:"file_name"`
-	//UploadTime uint64   `json:"upload_time"`
-	Paginate Paginate `json:"paginate"`
+	AccountID string   `json:"account_id" binding:"required"`
+	FileName  string   `json:"file_name"`
+	Category  string   `json:"category"`
+	Format    string   `json:"format"`
+	Desc      bool     `json:"desc"`
+	Paginate  Paginate `json:"paginate"`
 }
 
 type DeleteFileRequest struct {
@@ -69,6 +72,5 @@ type GetOthersFileListResponse struct {
 	Owner     string `json:"owner"`
 	OwnerID   string `json:"owner_id"`
 	Thumbnail string `json:"thumbnail"`
-	Status    uint8  `json:"status"` // 1: 申请中，2:
 	CreatedAt int64  `json:"created_at"`
 }

@@ -2,17 +2,22 @@ package dao
 
 import (
 	"github.com/NuLink-network/nulink-node/resource/db"
+	"github.com/NuLink-network/nulink-node/utils"
 	"gorm.io/gorm"
 	"time"
 )
 
 type FilePolicy struct {
-	ID        uint64         `gorm:"primarykey"`
-	FileID    string         `gorm:"column:file_id" json:"file_id" sql:"char(36)"`
-	PolicyID  string         `gorm:"column:policy_id" json:"policy_id" sql:"char(36)"`
-	CreatedAt time.Time      `gorm:"column:created_at" json:"created_at,omitempty" sql:"datetime"`
-	UpdatedAt time.Time      `gorm:"column:updated_at" json:"updated_at,omitempty" sql:"datetime"`
-	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at,omitempty" sql:"datetime"`
+	ID         uint64         `gorm:"primarykey"`
+	FileID     string         `gorm:"column:file_id" json:"file_id" sql:"char(36)"`
+	PolicyID   uint64         `gorm:"column:policy_id" json:"policy_id" sql:"bigint(20)"`
+	CreatorID  string         `gorm:"column:creator_id" json:"creator_id" sql:"char(36)"`
+	ConsumerID string         `gorm:"column:consumer_id" json:"consumer_id" sql:"char(36)"`
+	StartAt    time.Time      `gorm:"column:start_at" json:"start_at" sql:"datetime"`
+	EndAt      time.Time      `gorm:"column:end_at" json:"end_at" sql:"datetime"`
+	CreatedAt  time.Time      `gorm:"column:created_at" json:"created_at,omitempty" sql:"datetime"`
+	UpdatedAt  time.Time      `gorm:"column:updated_at" json:"updated_at,omitempty" sql:"datetime"`
+	DeletedAt  gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at,omitempty" sql:"datetime"`
 }
 
 func NewFilePolicy() *FilePolicy {
@@ -46,6 +51,21 @@ func (f *FilePolicy) Find(pager func(*gorm.DB) *gorm.DB) (fps []*FilePolicy, err
 	return fps, err
 }
 
+func (f *FilePolicy) FindAny(ext *QueryExtra, pager Pager) (fps []*FilePolicy, err error) {
+	tx := db.GetDB().Where(f)
+	if ext != nil && ext.Conditions != nil {
+		tx = tx.Where(ext.Conditions)
+	}
+	if !utils.IsEmpty(ext.OrderStr) {
+		tx.Order(ext.OrderStr)
+	}
+	if pager != nil {
+		tx = tx.Scopes(pager)
+	}
+	err = tx.Find(&fps).Error
+	return fps, err
+}
+
 func (f *FilePolicy) FindFileIDsByPolicyIDs(policyIDs []string, pager func(*gorm.DB) *gorm.DB) (fileIDs []string, err error) {
 	tx := db.GetDB().Model(f).Where("policy_id in ?", policyIDs)
 	if pager != nil {
@@ -58,4 +78,12 @@ func (f *FilePolicy) FindFileIDsByPolicyIDs(policyIDs []string, pager func(*gorm
 func (f *FilePolicy) Delete() (rows int64, err error) {
 	ret := db.GetDB().Where(f).Delete(f)
 	return ret.RowsAffected, ret.Error
+}
+
+func (f *FilePolicy) DeleteByFileIDs(fids []string) error {
+	return db.GetDB().Where(f).Where("file_id in ?", fids).Delete(f).Error
+}
+
+func (f *FilePolicy) Updates(new *FilePolicy) error {
+	return db.GetDB().Where(f).Updates(new).Error
 }

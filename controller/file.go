@@ -29,7 +29,7 @@ func CreatePolicyAndUploadFile(c *gin.Context) {
 		return
 	}
 
-	if code := logic.CreatePolicyAndUploadFile(req.AccountID, req.PolicyID, req.PolicyLabel, req.EncryptedPK, req.Files); code != resp.CodeSuccess {
+	if code := logic.CreatePolicyAndUploadFile(req.AccountID, req.PolicyLabel, req.PolicyLabel, req.EncryptedPK, req.Files); code != resp.CodeSuccess {
 		resp.Error(c, code)
 		return
 	}
@@ -43,12 +43,12 @@ func GetFileList(c *gin.Context) {
 		return
 	}
 
-	response, err := logic.GetFileList(req.AccountID, req.FileName, req.Paginate.Page, req.Paginate.PageSize)
-	if err != nil {
-		resp.InternalServerError(c)
+	list, code := logic.GetFileList(req.AccountID, req.FileName, req.Paginate.Page, req.Paginate.PageSize)
+	if code != resp.CodeSuccess {
+		resp.Error(c, code)
 		return
 	}
-	resp.Success(c, response)
+	resp.SuccessList(c, list, len(list))
 }
 
 func GetOthersFileList(c *gin.Context) {
@@ -58,12 +58,12 @@ func GetOthersFileList(c *gin.Context) {
 		return
 	}
 
-	response, err := logic.GetOthersFileList(req.AccountID, req.FileName, req.Paginate.Page, req.Paginate.PageSize)
-	if err != nil {
-		resp.InternalServerError(c)
+	list, code := logic.GetOthersFileList(req.AccountID, req.FileName, req.Category, req.Format, req.Desc, req.Paginate.Page, req.Paginate.PageSize)
+	if code != resp.CodeSuccess {
+		resp.Error(c, code)
 		return
 	}
-	resp.Success(c, response)
+	resp.SuccessList(c, list, len(list))
 }
 
 func DeleteFile(c *gin.Context) {
