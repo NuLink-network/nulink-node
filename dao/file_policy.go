@@ -59,6 +59,9 @@ func (f *FilePolicy) FindAny(ext *QueryExtra, pager Pager) (fps []*FilePolicy, e
 	if !utils.IsEmpty(ext.OrderStr) {
 		tx.Order(ext.OrderStr)
 	}
+	if !(len(ext.DistinctStr) == 0) {
+		tx.Distinct(ext.DistinctStr)
+	}
 	if pager != nil {
 		tx = tx.Scopes(pager)
 	}

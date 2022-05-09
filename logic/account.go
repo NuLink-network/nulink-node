@@ -27,7 +27,7 @@ func GetAccount(account string) (*entity.GetAccountResponse, error) {
 		EncryptedPK:  a.EncryptedPK,
 		VerifyPK:     a.VerifyPK,
 		Status:       a.Status,
-		CreatedAt:    a.CreatedAt,
+		CreatedAt:    a.CreatedAt.Unix(),
 	}, nil
 }
 

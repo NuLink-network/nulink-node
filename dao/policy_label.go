@@ -36,7 +36,7 @@ func (p *PolicyLabel) Get() (policy *PolicyLabel, err error) {
 	return policy, err
 }
 
-func (p *PolicyLabel) Find(pager func(*gorm.DB) *gorm.DB) (ps []*PolicyLabel, err error) {
+func (p *PolicyLabel) Find(pager Pager) (ps []*PolicyLabel, err error) {
 	tx := db.GetDB().Where(p)
 	if pager != nil {
 		tx = tx.Scopes(pager)

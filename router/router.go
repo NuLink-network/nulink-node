@@ -7,6 +7,7 @@ import (
 
 const (
 	AccountGroup = "/account"
+	LabelGroup   = "/label"
 	PolicyGroup  = "/policy"
 	FileGroup    = "/file"
 	ApplyGroup   = "/apply"
@@ -20,6 +21,9 @@ func Register(engine *gin.Engine) {
 	account.GET("/get", controller.GetAccount)
 	account.GET("/isexist", controller.AccountIsExist)
 
+	label := engine.Group(LabelGroup)
+	label.GET("/list", controller.PolicyLabelList)
+
 	policy := engine.Group(PolicyGroup)
 	policy.POST("/revoke", controller.RevokePolicy)
 	policy.GET("/list", controller.PolicyList)
@@ -31,6 +35,7 @@ func Register(engine *gin.Engine) {
 	file.GET("/list", controller.GetFileList)
 	file.GET("/others-list", controller.GetOthersFileList)
 	file.POST("/delete", controller.DeleteFile)
+	file.GET("/detail", controller.FileDetail)
 
 	apply := engine.Group(ApplyGroup)
 	apply.POST("/file", controller.ApplyFile)

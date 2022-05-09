@@ -6,8 +6,9 @@ import (
 )
 
 type QueryExtra struct {
-	Conditions map[string]interface{}
-	OrderStr   string
+	Conditions  map[string]interface{}
+	OrderStr    string
+	DistinctStr []string
 }
 
 type Pager func(*gorm.DB) *gorm.DB

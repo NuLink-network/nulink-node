@@ -179,14 +179,11 @@ func GetOthersFileList(accountID string, fileName, category, format string, desc
 
 func DeleteFile(accountID string, fileIDs []string) (code int) {
 	// todo signature verification
-	// 删除文件的使用申请
-	// 删除文件和策略的关系
-	// 删除文件
-
 	applyFile := &dao.ApplyFile{
 		FileOwnerID: accountID,
 	}
 	if err := applyFile.DeleteByFileIDs(fileIDs); err != nil {
+		log.Logger().WithField("applyFile", applyFile).WithField("error", err).Error("delete apply file failed")
 		return resp.CodeInternalServerError
 	}
 
@@ -194,6 +191,7 @@ func DeleteFile(accountID string, fileIDs []string) (code int) {
 		CreatorID: accountID,
 	}
 	if err := filePolicy.DeleteByFileIDs(fileIDs); err != nil {
+		log.Logger().WithField("filePolicy", filePolicy).WithField("error", err).Error("delete file policy failed")
 		return resp.CodeInternalServerError
 	}
 
@@ -201,7 +199,45 @@ func DeleteFile(accountID string, fileIDs []string) (code int) {
 		OwnerID: accountID,
 	}
 	if err := file.DeleteByFilesIDs(fileIDs); err != nil {
+		log.Logger().WithField("file", file).WithField("error", err).Error("delete file failed")
 		return resp.CodeInternalServerError
 	}
 	return resp.CodeSuccess
+}
+
+func FileDetail(fileID, consumerID string) (ret []*entity.FileDetailResponse, code int) {
+	// 返回文件信息，策略信息，申请信息，文件拥有者 VerifyPK
+	f := &dao.File{
+		FileID: fileID,
+	}
+	file, err := f.Get()
+	if err != nil {
+		log.Logger().WithField("file", f).WithField("error", err).Error("get file failed")
+		return nil, resp.CodeInternalServerError
+	}
+
+	fp := &dao.FilePolicy{
+		FileID:     fileID,
+		ConsumerID: consumerID,
+	}
+	filePolicy, err := fp.Get()
+	if err != nil {
+		log.Logger().WithField("filePolicy", fp).WithField("error", err).Error("get file policy failed")
+		return nil, resp.CodeInternalServerError
+	}
+
+	p := &dao.Policy{
+		ID: filePolicy.PolicyID,
+	}
+	policy, err := p.Get()
+	if err != nil {
+		log.Logger().WithField("policy", p).WithField("error", err).Error("get policy failed")
+		return nil, resp.CodeInternalServerError
+	}
+
+	af := &dao.ApplyFile{
+		FileID:     fileID,
+		ProposerID: consumerID,
+	}
+	// todo
 }

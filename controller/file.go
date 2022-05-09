@@ -79,3 +79,18 @@ func DeleteFile(c *gin.Context) {
 	}
 	resp.SuccessNil(c)
 }
+
+func FileDetail(c *gin.Context) {
+	req := &entity.FileDetailRequest{}
+	if err := c.ShouldBindJSON(req); err != nil {
+		resp.ParameterErr(c)
+		return
+	}
+
+	list, code := logic.FileDetail(req.FileID, req.ConsumerID)
+	if code != resp.CodeSuccess {
+		resp.InternalServerError(c)
+		return
+	}
+	resp.SuccessList(c, list, len(list))
+}

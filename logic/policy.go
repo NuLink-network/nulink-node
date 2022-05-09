@@ -41,11 +41,12 @@ func RevokePolicy(accountID string, policyID uint64) (code int) {
 	return resp.CodeSuccess
 }
 
-func PolicyList(policyID uint64, creatorID, consumerID string, page, pageSize int) ([]*entity.PolicyListResponse, int) {
+func PolicyList(policyID uint64, policyLabelID, creatorID, consumerID string, page, pageSize int) ([]*entity.PolicyListResponse, int) {
 	p := &dao.Policy{
-		ID:         policyID,
-		CreatorID:  creatorID,
-		ConsumerID: consumerID,
+		ID:            policyID,
+		PolicyLabelID: policyLabelID,
+		CreatorID:     creatorID,
+		ConsumerID:    consumerID,
 	}
 	ps, err := p.Find(nil, dao.Paginate(page, pageSize))
 	if err != nil {
@@ -66,50 +67,81 @@ func PolicyList(policyID uint64, creatorID, consumerID string, page, pageSize in
 			TxHash:     p.TxHash,
 			StartAt:    p.StartAt.Unix(),
 			EndAt:      p.EndAt.Unix(),
-			CreatedAt:  p.CreatedAt,
+			CreatedAt:  p.CreatedAt.Unix(),
 		})
 	}
 	return ret, resp.CodeSuccess
 }
 
 func FileDetailList(policyID uint64, creatorID, consumerID string, page, pageSize int) ([]*entity.FileDetailListResponse, int) {
-	p := &dao.Policy{
-		ID:         policyID,
+	fp := &dao.FilePolicy{
+		PolicyID:   policyID,
 		CreatorID:  creatorID,
 		ConsumerID: consumerID,
 	}
-	policyIDs, err := p.FindPolicyIDs()
+	query := &dao.QueryExtra{
+		DistinctStr: []string{"file_id"},
+	}
+	filePolicyList, err := fp.FindAny(query, dao.Paginate(page, pageSize))
 	if err != nil {
-		log.Logger().WithField("policy", *p).WithField("error", err).Error("find policy ids failed")
+		log.Logger().WithField("filePolicy", fp).WithField("ext", query).WithField("error", err).Error("get file policy list failed")
 		return nil, resp.CodeInternalServerError
 	}
 
-	fileIDs, err := dao.NewFilePolicy().FindFileIDsByPolicyIDs(policyIDs, dao.Paginate(page, pageSize))
-	if err != nil {
-		log.Logger().WithField("policy ids", policyIDs).WithField("error", err).Error("find file ids by policy ids failed")
-		return nil, resp.CodeInternalServerError
+	filePolicyListLength := len(filePolicyList)
+	fileIDs := make([]string, 0, filePolicyListLength)
+	policyIDs := make([]uint64, 0, filePolicyListLength)
+	for _, fp := range filePolicyList {
+		fileIDs = append(fileIDs, fp.FileID)
+		policyIDs = append(policyIDs, fp.PolicyID)
 	}
 
-	files, err := dao.NewFile().FindByFileIDs(fileIDs, nil)
+	query = &dao.QueryExtra{
+		Conditions: map[string]interface{}{
+			"file_id in ?": fileIDs,
+		},
+	}
+	files, err := dao.NewFile().FindAny(query, nil)
 	if err != nil {
-		log.Logger().WithField("fileIDs", fileIDs).WithField("error", err).Error("find file by file ids failed")
+		log.Logger().WithField("ext", query).WithField("error", err).Error("get file list failed")
 		return nil, resp.CodeInternalServerError
 	}
-
-	ret := make([]*entity.FileDetailListResponse, 0, 10)
+	fileID2file := make(map[string]*dao.File, len(files))
 	for _, f := range files {
+		fileID2file[f.FileID] = f
+	}
+
+	query = &dao.QueryExtra{
+		Conditions: map[string]interface{}{
+			"file_id in ?": fileIDs,
+		},
+	}
+	policies, err := dao.NewPolicy().Find(query, nil)
+	if err != nil {
+		log.Logger().WithField("ext", query).WithField("error", err).Error("get file list failed")
+		return nil, resp.CodeInternalServerError
+	}
+	policyID2policy := make(map[uint64]*dao.Policy, len(files))
+	for _, p := range policies {
+		policyID2policy[p.ID] = p
+	}
+
+	ret := make([]*entity.FileDetailListResponse, 0, filePolicyListLength)
+	for _, fp := range filePolicyList {
+		file := fileID2file[fp.FileID]
+		policy := policyID2policy[fp.PolicyID]
 		ret = append(ret, &entity.FileDetailListResponse{
-			FileID:        f.FileID,
-			FileName:      f.Name,
-			Owner:         f.Owner,
-			OwnerID:       f.OwnerID,
-			Address:       f.Address,
-			Thumbnail:     f.Thumbnail,
-			CreatedAt:     f.CreatedAt.Unix(),
-			PolicyID:      0,
-			PolicyHrac:    "",
-			PolicyStartAt: 0,
-			PolicyEndAt:   0,
+			FileID:        fp.FileID,
+			FileName:      file.Name,
+			Owner:         file.Owner,
+			OwnerID:       file.OwnerID,
+			Address:       file.Address,
+			Thumbnail:     file.Thumbnail,
+			CreatedAt:     file.CreatedAt.Unix(),
+			PolicyID:      fp.PolicyID,
+			PolicyHrac:    policy.Hrac,
+			PolicyStartAt: policy.StartAt.Unix(),
+			PolicyEndAt:   policy.EndAt.Unix(),
 		})
 	}
 	return ret, resp.CodeSuccess
