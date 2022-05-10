@@ -751,6 +751,54 @@ application/json
 |  msg      |  string     |  响应信息 |
 |  data     |  object  |  响应数据 |
 
+## 策略 label 列表
+
+策略 label 信息列表
+
+### 请求路径
+
+/label/list
+
+### 请求方法
+
+GET
+
+### 数据类型
+
+application/json
+
+### 请求参数
+
+| 参数          |  类型     | 必填  | 默认值 | 说明   |
+| ------------ | -------- | ------ | ---- |------- |
+|  account_id  |  string  |   否   |   |  label 创建者的账户 ID |
+|  paginate    |  [Paginate](#Paginate-结构) |  否  |      | 分页 |
+
+### 响应参数
+
+| 参数      | 类型      | 说明     |
+| --------- | -------- | ------- |
+|  code     |  number     |  响应码  |
+|  msg      |  string     |  响应信息 |
+|  data     |  array.object  |  响应数据 |
+
+#### data 结构
+
+| 参数      | 类型      | 说明     |
+| --------- | -------- | ------- |
+|  list     |  array.object     |  列表数据  |
+|  total     |  number     |  列表总数  |
+
+#### list 结构
+
+| 参数      | 类型      | 说明     |
+| --------- | -------- | ------- |
+|  Label          |  string  |  label |
+|  label_id          |  number  |  label ID |
+|  creator          |  string  |  创建者 |
+|  creator_id          |  string  |  创建者 ID |
+|  created_at          |  number  |  创建时间戳 |
+
 ## 常见响应码
 
 | Code      | MSG      |
