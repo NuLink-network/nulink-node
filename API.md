@@ -138,8 +138,7 @@ application/json
 | ------------ | -------- | ------ | ------- |
 |  file        |  [][File](#File-结构)  | 是     | 文件列表 |
 |  account_id  |  string  | 是     | 账户 ID (UUID V4) |
-|  policy_id   |  number  | 否     | 策略 ID，policy_id 和 policy_label_id 必须有一个有值 |
-|  policy_label_id   |  number  | 否     | 策略 Label ID，policy_id 和 policy_label_id 必须有一个有值|
+|  policy_id   |  number  | 否     | 策略 ID |
 |  signature   |  string  | 是     | 签名 |
 
 #### File 结构
@@ -540,7 +539,6 @@ application/json
 | 参数      | 类型      | 说明     |
 | --------- | -------- | ------- |
 |  hrac        |  string  |  hrac |
-|  label        |  string  |  label |
 |  policy_id        |  number  | 策略 ID  |
 |  creator        |  string  |  策略创建者 |
 |  creator_id       |  string  |  策略创建者 ID |
