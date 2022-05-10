@@ -20,8 +20,11 @@ func PolicyLabelList(creatorID string, page entity.Paginate) ([]*entity.PolicyLa
 	ret := make([]*entity.PolicyLabelListResponse, 0, len(policyLabelList))
 	for _, pl := range policyLabelList {
 		ret = append(ret, &entity.PolicyLabelListResponse{
-			Label:   pl.Label,
-			LabelID: pl.PolicyLabelID,
+			Label:     pl.Label,
+			LabelID:   pl.PolicyLabelID,
+			Creator:   pl.Creator,
+			CreatorID: pl.CreatorID,
+			CreateAt:  pl.CreatedAt.Unix(),
 		})
 	}
 	return ret, resp.CodeSuccess

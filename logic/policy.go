@@ -1,31 +1,41 @@
 package logic
 
 import (
+	"errors"
 	"github.com/NuLink-network/nulink-node/dao"
 	"github.com/NuLink-network/nulink-node/entity"
 	"github.com/NuLink-network/nulink-node/resource/log"
 	"github.com/NuLink-network/nulink-node/resp"
+	"gorm.io/gorm"
 )
 
 func RevokePolicy(accountID string, policyID uint64) (code int) {
-	policy := &dao.Policy{
+	p := &dao.Policy{
 		ID:        policyID,
 		CreatorID: accountID,
 	}
-	rows, err := policy.Delete()
+	policy, err := p.Get()
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return resp.CodePolicyNotExist
+		}
+		log.Logger().WithField("policy", p).WithField("error", err).Error("get policy failed")
 		return resp.CodeInternalServerError
 	}
-	if rows == 0 {
-		return resp.CodePolicyNotExist
+	if policy.CreatorID != accountID {
+		return resp.CodePolicyLabelNotYours
 	}
 
 	fp := &dao.FilePolicy{
 		PolicyID: policyID,
 	}
 	filePolicy, err := fp.Get()
-	if err != nil {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return resp.CodeInternalServerError
+	}
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		// 如果策略记录存在，那么文件和策略的对应关系也应该存在。如果不存在则是程序异常。
+		log.Logger().WithField("filePolicy", fp).Error("policy exist but file policy does not exist")
 	}
 	if _, err := fp.Delete(); err != nil {
 		return resp.CodeInternalServerError
@@ -38,6 +48,10 @@ func RevokePolicy(accountID string, policyID uint64) (code int) {
 		return resp.CodeInternalServerError
 	}
 
+	_, err = p.Delete()
+	if err != nil {
+		return resp.CodeInternalServerError
+	}
 	return resp.CodeSuccess
 }
 
@@ -79,6 +93,7 @@ func FileDetailList(policyID uint64, creatorID, consumerID string, page, pageSiz
 		CreatorID:  creatorID,
 		ConsumerID: consumerID,
 	}
+	// todo 如果 CreatorID id 为空或者 PolicyID CreatorID ConsumerID 都有值则不需要去重
 	query := &dao.QueryExtra{
 		DistinctStr: []string{"file_id"},
 	}

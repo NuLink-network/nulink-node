@@ -2,12 +2,15 @@ package logic
 
 import (
 	"errors"
+	"time"
+
+	"gorm.io/gorm"
+
 	"github.com/NuLink-network/nulink-node/dao"
 	"github.com/NuLink-network/nulink-node/entity"
 	"github.com/NuLink-network/nulink-node/resource/log"
 	"github.com/NuLink-network/nulink-node/resp"
 	"github.com/NuLink-network/nulink-node/utils"
-	"gorm.io/gorm"
 )
 
 func UploadFile(accountID string, policyID uint64, files []entity.File) (code int) {
@@ -49,23 +52,14 @@ func UploadFile(accountID string, policyID uint64, files []entity.File) (code in
 	}
 
 	if err = dao.Tx(fs, fps); err != nil {
+		log.Logger().WithField("file", fs).WithField("filePolicy", fps).WithField("error", err).Error("batch create file and file policy failed")
 		return resp.CodeInternalServerError
 	}
 	return resp.CodeSuccess
 }
 
 func CreatePolicyAndUploadFile(accountID, policyLabelID, policyLabel, encryptedPK string, files []entity.File) (code int) {
-	pl := &dao.PolicyLabel{PolicyLabelID: policyLabelID}
-	isExist, err := pl.IsExist()
-	if err != nil {
-		log.Logger().WithField("policy label", pl).WithField("error", err).Error("get policy label failed")
-		return resp.CodeInternalServerError
-	}
-	if isExist {
-		return resp.CodePolicyIsExist
-	}
-
-	acc := &dao.Account{Account: accountID}
+	acc := &dao.Account{AccountID: accountID}
 	account, err := acc.Get()
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -75,7 +69,7 @@ func CreatePolicyAndUploadFile(accountID, policyLabelID, policyLabel, encryptedP
 		return resp.CodeInternalServerError
 	}
 
-	policy := &dao.PolicyLabel{
+	pl := &dao.PolicyLabel{
 		PolicyLabelID: policyLabelID,
 		Label:         policyLabel,
 		CreatorID:     accountID,
@@ -96,7 +90,8 @@ func CreatePolicyAndUploadFile(accountID, policyLabelID, policyLabel, encryptedP
 			PolicyLabelID: policyLabelID,
 		})
 	}
-	if err = dao.Tx(policy, fs); err != nil {
+	if err = dao.Tx(pl, fs); err != nil {
+		log.Logger().WithField("policyLabel", pl).WithField("file", fs).WithField("error", err).Error("create policy label and files failed")
 		return resp.CodeInternalServerError
 	}
 	return resp.CodeSuccess
@@ -205,15 +200,50 @@ func DeleteFile(accountID string, fileIDs []string) (code int) {
 	return resp.CodeSuccess
 }
 
-func FileDetail(fileID, consumerID string) (ret []*entity.FileDetailResponse, code int) {
+func FileDetail(fileID, consumerID string) (ret *entity.FileDetailResponse, code int) {
 	// 返回文件信息，策略信息，申请信息，文件拥有者 VerifyPK
 	f := &dao.File{
 		FileID: fileID,
 	}
 	file, err := f.Get()
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, resp.CodeFileNotExist
+		}
 		log.Logger().WithField("file", f).WithField("error", err).Error("get file failed")
 		return nil, resp.CodeInternalServerError
+	}
+
+	af := &dao.ApplyFile{
+		FileID:     fileID,
+		ProposerID: consumerID,
+	}
+	applyFile, err := af.Get()
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			// 未申请文件使用仅返回文件信息
+			return &entity.FileDetailResponse{
+				FileID:        file.FileID,
+				FileName:      file.Name,
+				Thumbnail:     file.Thumbnail,
+				FileCreatedAt: file.CreatedAt.Unix(),
+			}, resp.CodeSuccess
+		}
+		log.Logger().WithField("applyFile", af).WithField("error", err).Error("get apply file failed")
+		return nil, resp.CodeInternalServerError
+	}
+	if applyFile.Status != dao.ApplyStatusApproved {
+		return &entity.FileDetailResponse{
+			FileID:         file.FileID,
+			FileName:       file.Name,
+			Thumbnail:      file.Thumbnail,
+			FileCreatedAt:  file.CreatedAt.Unix(),
+			ApplyID:        applyFile.ID,
+			Status:         applyFile.Status,
+			ApplyStartAt:   applyFile.StartAt.Unix(),
+			ApplyEndAt:     applyFile.FinishAt.Unix(),
+			ApplyCreatedAt: applyFile.CreatedAt.Unix(),
+		}, resp.CodeSuccess
 	}
 
 	fp := &dao.FilePolicy{
@@ -222,6 +252,9 @@ func FileDetail(fileID, consumerID string) (ret []*entity.FileDetailResponse, co
 	}
 	filePolicy, err := fp.Get()
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, resp.CodeApplyUnApproved
+		}
 		log.Logger().WithField("filePolicy", fp).WithField("error", err).Error("get file policy failed")
 		return nil, resp.CodeInternalServerError
 	}
@@ -231,13 +264,50 @@ func FileDetail(fileID, consumerID string) (ret []*entity.FileDetailResponse, co
 	}
 	policy, err := p.Get()
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, resp.CodeApplyUnApproved
+		}
 		log.Logger().WithField("policy", p).WithField("error", err).Error("get policy failed")
 		return nil, resp.CodeInternalServerError
 	}
 
-	af := &dao.ApplyFile{
-		FileID:     fileID,
-		ProposerID: consumerID,
+	ret = &entity.FileDetailResponse{
+		FileID:          file.FileID,
+		FileName:        file.Name,
+		Thumbnail:       file.Thumbnail,
+		FileCreatedAt:   file.CreatedAt.Unix(),
+		ApplyID:         applyFile.ID,
+		Status:          applyFile.Status,
+		ApplyStartAt:    applyFile.StartAt.Unix(),
+		ApplyEndAt:      applyFile.FinishAt.Unix(),
+		ApplyCreatedAt:  applyFile.CreatedAt.Unix(),
+		PolicyID:        policy.ID,
+		Hrac:            policy.Hrac,
+		Creator:         policy.Creator,
+		CreatorID:       policy.CreatorID,
+		Consumer:        policy.Consumer,
+		ConsumerID:      policy.ConsumerID,
+		Gas:             policy.Gas,
+		TxHash:          policy.TxHash,
+		PolicyCreatedAt: policy.CreatedAt.Unix(),
 	}
-	// todo
+	// apply has expired
+	if applyFile.FinishAt.Before(time.Now()) {
+		return ret, resp.CodeSuccess
+	}
+
+	acc := &dao.Account{
+		AccountID: file.OwnerID,
+	}
+	owner, err := acc.Get()
+	if err != nil {
+		log.Logger().WithField("policy", p).WithField("error", err).Error("get policy failed")
+		return nil, resp.CodeInternalServerError
+	}
+
+	ret.FileIPFSAddress = file.Address
+	ret.PolicyEncryptedPK = policy.EncryptedPK
+	ret.PolicyEncryptedAddress = policy.EncryptedAddress
+	ret.AliceVerifyPK = owner.VerifyPK
+	return ret, resp.CodeSuccess
 }

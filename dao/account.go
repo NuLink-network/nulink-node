@@ -10,7 +10,7 @@ import (
 
 type Account struct {
 	ID           uint64         `gorm:"primarykey"`
-	Account      string         `gorm:"column:account_id" json:"account_id" sql:"char(36)"`
+	AccountID    string         `gorm:"column:account_id" json:"account_id" sql:"char(36)"`
 	Name         string         `gorm:"column:name" json:"name" sql:"varchar(32)"` // // todo length?
 	EthereumAddr string         `gorm:"column:ethereum_addr" json:"ethereum_addr" sql:"char(42)"`
 	EncryptedPK  string         `gorm:"column:encrypted_pk" json:"encrypted_pk" sql:"varchar(256)"` // todo length?
@@ -24,7 +24,7 @@ type Account struct {
 func NewAccount(name, account, ethereumAddr, encryptedPK, verifyPK string) *Account {
 	return &Account{
 		Name:         name,
-		Account:      account,
+		AccountID:    account,
 		EthereumAddr: ethereumAddr,
 		EncryptedPK:  encryptedPK,
 		VerifyPK:     verifyPK,

@@ -6,7 +6,7 @@ type ApplyFileRequest struct {
 	FileIDs    []string `json:"file_ids" binding:"required"`
 	ProposerID string   `json:"proposer_id" binding:"required"`
 	StartAt    int64    `json:"start_at" binding:"required"`
-	FinishAt   int64    `json:"finish_at" binding:"required"`
+	EndAt      int64    `json:"end_at" binding:"required"`
 	Signature  string   `json:"signature" binding:"required"`
 }
 
@@ -24,7 +24,6 @@ type RevokeApplyRequest struct {
 }
 
 type Policy struct {
-	ID               string `json:"id" binding:"required"`
 	Hrac             string `json:"hrac" binding:"required"`
 	Gas              string `json:"gas" binding:"required"`
 	TxHash           string `json:"tx_hash" binding:"required"`
@@ -34,14 +33,14 @@ type Policy struct {
 }
 
 type ApproveApplyRequest struct {
-	AccountID string `json:"accountID" binding:"required"`
+	AccountID string `json:"account_id" binding:"required"`
 	ApplyID   uint64 `json:"apply_id" binding:"required,gt=0"`
 	Policy    Policy `json:"policy" binding:"required"`
 	Signature string `json:"signature" binding:"required"`
 }
 
 type RejectApplyRequest struct {
-	AccountID string `json:"accountID" binding:"required"`
+	AccountID string `json:"account_id" binding:"required"`
 	ApplyID   uint64 `json:"apply_id" binding:"required,gt=0"`
 	Signature string `json:"signature" binding:"required"`
 }
@@ -56,6 +55,6 @@ type ApplyFileListResponse struct {
 	FileOwner   string `json:"file_owner"`
 	FileOwnerID string `json:"file_owner_id"`
 	StartAt     int64  `json:"start_at"`
-	FinishAt    int64  `json:"finish_at"`
+	EndAt       int64  `json:"end_at"`
 	CreatedAt   int64  `json:"created_at"`
 }

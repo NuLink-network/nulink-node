@@ -87,10 +87,10 @@ func FileDetail(c *gin.Context) {
 		return
 	}
 
-	list, code := logic.FileDetail(req.FileID, req.ConsumerID)
+	ret, code := logic.FileDetail(req.FileID, req.ConsumerID)
 	if code != resp.CodeSuccess {
 		resp.InternalServerError(c)
 		return
 	}
-	resp.SuccessList(c, list, len(list))
+	resp.Success(c, ret)
 }

@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"github.com/NuLink-network/nulink-node/resource/log"
 	"github.com/NuLink-network/nulink-node/resp"
 	"github.com/gin-gonic/gin"
 
@@ -12,13 +11,11 @@ import (
 func ApplyFile(c *gin.Context) {
 	req := &entity.ApplyFileRequest{}
 	if err := c.ShouldBindJSON(req); err != nil {
-		// todo log
-		log.Logger().WithField("error", err).Error("apply file file")
 		resp.ParameterErr(c)
 		return
 	}
 
-	if code := logic.ApplyFile(req.FileIDs, req.ProposerID, req.StartAt, req.FinishAt); code != resp.CodeSuccess {
+	if code := logic.ApplyFile(req.FileIDs, req.ProposerID, req.StartAt, req.EndAt); code != resp.CodeSuccess {
 		resp.Error(c, code)
 		return
 	}
@@ -28,18 +25,16 @@ func ApplyFile(c *gin.Context) {
 func ApplyFileList(c *gin.Context) {
 	req := &entity.ApplyFileListRequest{}
 	if err := c.ShouldBindJSON(req); err != nil {
-		// todo log
 		resp.ParameterErr(c)
 		return
 	}
 
-	response, err := logic.ApplyFileList(req.FileID, req.Status, req.ProposerID, req.FileOwnerID, req.Paginate.Page, req.Paginate.PageSize)
-	if err != nil {
-		// todo log
-		resp.InternalServerError(c)
+	list, code := logic.ApplyFileList(req.FileID, req.Status, req.ProposerID, req.FileOwnerID, req.Paginate.Page, req.Paginate.PageSize)
+	if code != resp.CodeSuccess {
+		resp.Error(c, code)
 		return
 	}
-	resp.Success(c, response)
+	resp.SuccessList(c, list, len(list))
 }
 
 func RevokeApply(c *gin.Context) {
@@ -59,7 +54,6 @@ func RevokeApply(c *gin.Context) {
 func ApproveApply(c *gin.Context) {
 	req := &entity.ApproveApplyRequest{}
 	if err := c.ShouldBindJSON(req); err != nil {
-		// todo log
 		resp.ParameterErr(c)
 		return
 	}
@@ -74,7 +68,6 @@ func ApproveApply(c *gin.Context) {
 func RejectApply(c *gin.Context) {
 	req := &entity.RejectApplyRequest{}
 	if err := c.ShouldBindJSON(req); err != nil {
-		// todo log
 		resp.ParameterErr(c)
 		return
 	}

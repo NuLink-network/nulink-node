@@ -16,6 +16,7 @@ const (
 type Policy struct {
 	ID               uint64         `gorm:"primarykey"`
 	Hrac             string         `gorm:"column:hrac" json:"hrac" sql:"varchar(256)"`
+	PolicyLabel      string         `gorm:"column:policy_label" json:"policy_label" sql:"varchar(32)"`
 	PolicyLabelID    string         `gorm:"column:policy_label_id" json:"policy_label_id" sql:"char(36)"`
 	Creator          string         `gorm:"column:creator" json:"creator" sql:"varchar(32)"`
 	CreatorID        string         `gorm:"column:creator_id" json:"creator_id" sql:"char(36)"`

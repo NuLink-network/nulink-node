@@ -26,7 +26,7 @@ type AccountIsExistRequest struct {
 
 type GetAccountResponse struct {
 	Name         string `json:"name"`
-	Account      string `json:"account"`
+	AccountID    string `json:"account_id"`
 	EthereumAddr string `json:"ethereum_addr"`
 	EncryptedPK  string `json:"encrypted_pk"`
 	VerifyPK     string `json:"verify_pk"`
