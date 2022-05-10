@@ -138,14 +138,16 @@ application/json
 | ------------ | -------- | ------ | ------- |
 |  file        |  [][File](#File-结构)  | 是     | 文件列表 |
 |  account_id  |  string  | 是     | 账户 ID (UUID V4) |
-|  policy_id   |  number  | 是     | 策略 ID |
+|  policy_id   |  number  | 否     | 策略 ID，policy_id 和 policy_label_id 必须有一个有值 |
+|  policy_label_id   |  number  | 否     | 策略 Label ID，policy_id 和 policy_label_id 必须有一个有值|
 |  signature   |  string  | 是     | 签名 |
 
 #### File 结构
 
 | 参数       | 类型     | 必填    | 说明   |
 | --------- | -------- | ------ | ------- |
-|  md5     |  string  | 是     | 文件名md5 |
+|  id     |  string  | 是     | 文件 ID (UUID V4) |
+|  md5     |  string  | 是     | 文件 MD5 |
 |  name     |  string  | 是     | 文件名称 |
 |  suffix     |  string  | 否     | 文件后缀 |
 |  category     |  string  | 是     | 文件类型 |
@@ -214,7 +216,7 @@ application/json
 
 | 参数          |  类型     | 必填    | 说明   |
 | ------------ | -------- | ------ | ------- |
-|  file_ids    |  []string  | 是     | 文件列表 |
+|  file_ids    |  []string  | 是     | 文件 ID 列表 |
 |  account_id  |  string  | 是     | 账户 ID (UUID V4) |
 |  signature   |  string  | 是     | 签名 |
 
@@ -228,7 +230,7 @@ application/json
 
 ## 文件列表
 
-返回符合条件的文件信息列表
+返回自己的文件信息列表
 
 ### 请求路径
 
@@ -255,7 +257,7 @@ application/json
 | 参数       | 类型     | 必填  | 默认值 | 说明   |
 | --------- | -------- | ---- | ---- | ------- |
 |  page      |  number  | 否   |  1   |  页码 |
-|  page_size |  number  | 否   |  10  |  每页的数据量 |
+|  page_size |  number  | 否   |  10  |  每页的数据量， 最小值: 1，最大值: 100 |
 
 ### 响应参数
 
@@ -309,7 +311,7 @@ application/json
 |  category   |  string  |  否    |      |  文件类型|
 |  format   |  string  |  否    |      |  文件格式|
 |  desc   |  bool  |  否    |  false    |  是否按照上传时间倒序 |
-|  paginate    |  [Paginate](#Paginate-结构) |  否  |      | 签名 |
+|  paginate    |  [Paginate](#Paginate-结构) |  否  |      | 分页信息 |
 
 ### 响应参数
 
@@ -337,6 +339,72 @@ application/json
 |  address            |  string  |  文件地址 |
 |  thumbnail          |  string  |  文件缩略图 |
 |  created_at          |  number  |  文件上传时间戳 |
+
+## 文件详情
+
+返回文件的详细信息包括文件信息，申请信息，策略信息，文件拥有者 VerifyPK
+
+1. 审核未通过：返回文件信息和申请信息
+2. 文件申请通过但已过期：返回文件信息，申请信息，策略信息
+3. 文件申请通过且未过期：返回文件信息，申请信息，策略信息，文件拥有者 VerifyPK 且返回下载相关信息(文件ipfs地址，策略加密公钥，策略藏宝图ipfs地址)
+
+### 请求路径
+
+/file/detail
+
+### 请求方法
+
+POST
+
+### 数据类型
+
+application/json
+
+### 请求参数
+
+| 参数          |  类型     | 必填    | 说明   |
+| ------------ | -------- | ------ | ------- |
+|  file_id    |  string  | 是     | 文件 ID (UUID V4)|
+|  consumer_id  |  string  | 是     | 文件使用者的 ID (UUID V4) |
+
+### 响应参数
+
+| 参数      | 类型      | 说明     |
+| --------- | -------- | ------- |
+|  code     |  number     |  响应码  |
+|  msg      |  string     |  响应信息 |
+|  data     |  object  |  响应数据 |
+
+#### data 结构
+
+| 参数      | 类型      | 说明     |
+| --------- | -------- | ------- |
+|  文件信息    |
+|  file_id    |   string   | 文件 ID   |
+|  file_name     |   string   |  文件名  |
+|  thumbnail     |   string   |  文件缩略图  |
+|  file_created_at     |   number   | 文件上传时间戳   |
+|  申请信息   |
+|  apply_id     |   number   |  申请记录 ID  |
+|  status     |   number   |  申请状态，1: 申请中，2: 已通过, 3: 已拒绝  |
+|  apply_start_at     |   string   |  申请开始时间戳(策略的开始时间戳)  |
+|  apply_end_at     |   string   |  申请结束时间戳(策略的结束时间戳)  |
+|  apply_created_at     |   string   |  提交申请时间戳  |
+|  策略信息     |
+|  policy_id     |   number   |  策略 ID  |
+|  hrac     |   string   |  策略 hrac  |
+|  creator     |   string   |  策略创建者(文件的拥有者)  |
+|  creator_id     |   string   | 策略创建者 ID   |
+|  consumer     |   string   |  策略的使用者(申请人，文件的使用者)  |
+|  consumer_id     |   string   | 策略的使用者 ID   |
+|  gas     |   string   |  策略 gas |
+|  tx_hash     |   string   |  策略 tx hash |
+|  policy_created_at     |   string   |  策略的创建时间戳  |
+|  下载信息     |
+|  file_ipfs_address     |   string   |  文件 ipfs 地址 |
+|  policy_encrypted_pk     |   string   | 策略加密的公钥   |
+|  encrypted_treasure_map_ipfs_address     |   string   |  策略的藏宝图地址  |
+|  alice_verify_pk     |   string   |  文件拥有者的 Verify 公钥  |
 
 ## 撤销策略
 
@@ -447,9 +515,9 @@ application/json
 | 参数          |  类型     | 必填  | 默认值 | 说明   |
 | ------------ | -------- | ------ | ---- |------- |
 |  policy_id  |  number  | 否     | 策略ID  |
+|  policy_label_id  |  number  | 否     | 策略ID  |
 |  creator_id  |  string  | 否     | 策略的创建者账户ID (UUID V4) |
 |  consumer_id  |  string  | 否     | 策略的使用者账户ID (UUID V4) |
-|  status  |  number  |   否   |  0 (不区分状态) |  策略状态，1: 未发布，2: 已发布|
 |  paginate    |  [Paginate](#Paginate-结构) |  否  |      | 分页 |
 
 ### 响应参数
@@ -472,6 +540,7 @@ application/json
 | 参数      | 类型      | 说明     |
 | --------- | -------- | ------- |
 |  hrac        |  string  |  hrac |
+|  label        |  string  |  label |
 |  policy_id        |  number  | 策略 ID  |
 |  creator        |  string  |  策略创建者 |
 |  creator_id       |  string  |  策略创建者 ID |
@@ -506,7 +575,7 @@ application/json
 |  file_ids  |  []string  |   是   |   |  文件 ID 列表 |
 |  proposer_id  |  string  |   是   |   |  申请人的账户 ID |
 |  start_at  |  number  |   是   |   |  开始时间戳 |
-|  finish_at  |  number  |   是   |   |  结束时间戳 |
+|  end_at  |  number  |   是   |   |  结束时间戳 |
 |  signature   |  string  | 是     | 签名 |
 
 ### 响应参数
@@ -562,6 +631,7 @@ application/json
 
 | 参数      | 类型      | 说明     |
 | --------- | -------- | ------- |
+|  policy_id          |  number  |  策略 ID |
 |  apply_id          |  number  |  申请记录 ID |
 |  file_id          |  string  |  文件 ID |
 |  proposer            |  string  |  申请人 |
@@ -571,7 +641,7 @@ application/json
 |  policy_id        |  number  | 策略 ID  |
 |  hrac        |  string  | 策略 hrac |
 |  start_at          |  number  |  使用开始时间戳 |
-|  finish_at          |  number  |  使用结束时间戳 |
+|  end_at          |  number  |  使用结束时间戳 |
 |  created_at          |  number  |  申请时间戳 |
 
 ## 撤销文件使用申请
@@ -625,6 +695,7 @@ application/json
 
 | 参数          |  类型     | 必填  | 默认值 | 说明   |
 | ------------ | -------- | ------ | ---- |------- |
+|  account_id  |  string  |   是   |   |  审批人的账户 ID |
 |  apply_id  |  number  |   是   |   |  申请记录 ID |
 |  policy  |  Policy  |   是   |   |  申请记录 ID |
 |  signature   |  string  | 是     | 签名 |
@@ -668,7 +739,7 @@ application/json
 
 | 参数          |  类型     | 必填  | 默认值 | 说明   |
 | ------------ | -------- | ------ | ---- |------- |
-|  proposer_id  |  string  |   是   |   |  申请人的账户 ID |
+|  account_id  |  string  |   是   |   |  审批人的账户 ID |
 |  apply_id  |  number  |   是   |   |  申请记录 ID |
 |  signature   |  string  | 是     | 签名 |
 
