@@ -792,7 +792,7 @@ application/json
 
 | 参数      | 类型      | 说明     |
 | --------- | -------- | ------- |
-|  Label          |  string  |  label |
+|  label          |  string  |  label |
 |  label_id          |  number  |  label ID |
 |  creator          |  string  |  创建者 |
 |  creator_id          |  string  |  创建者 ID |
