@@ -15,11 +15,10 @@ func PolicyLabelList(c *gin.Context) {
 		return
 	}
 
-	response, code := logic.PolicyLabelList(req.CreatorID, req.Paginate)
+	list, code := logic.PolicyLabelList(req.CreatorID, req.Paginate)
 	if code != resp.CodeSuccess {
 		resp.Error(c, code)
 		return
 	}
-	resp.Success(c, response)
-
+	resp.SuccessList(c, list, len(list))
 }

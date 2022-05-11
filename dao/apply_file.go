@@ -63,14 +63,17 @@ func (a *ApplyFile) Find(pager Pager) (afs []*ApplyFile, err error) {
 
 func (a *ApplyFile) FindAny(ext *QueryExtra, pager Pager) (afs []*ApplyFile, err error) {
 	tx := db.GetDB().Where(a)
-	if ext != nil && ext.Conditions != nil {
-		for k, v := range ext.Conditions {
-			tx = tx.Where(k, v)
+	if ext != nil {
+		if ext.Conditions != nil {
+			for k, v := range ext.Conditions {
+				tx = tx.Where(k, v)
+			}
+		}
+		if !utils.IsEmpty(ext.OrderStr) {
+			tx.Order(ext.OrderStr)
 		}
 	}
-	if !utils.IsEmpty(ext.OrderStr) {
-		tx.Order(ext.OrderStr)
-	}
+
 	if pager != nil {
 		tx = tx.Scopes(pager)
 	}

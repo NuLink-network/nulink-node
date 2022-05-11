@@ -10,24 +10,21 @@ type RevokePolicyRequest struct {
 
 type PolicyListRequest struct {
 	PolicyID      uint64   `json:"policy_id"`
-	PolicyLabelID string   `json:"policy_label"`
-	CreatorID     string   `json:"account_id"`
+	PolicyLabelID string   `json:"policy_label_id"`
+	CreatorID     string   `json:"creator_id"`
 	ConsumerID    string   `json:"consumer_id"`
 	Paginate      Paginate `json:"paginate"`
 }
 
 type FileDetailListRequest struct {
-	PolicyID   uint64   `json:"policy_id"`
-	CreatorID  string   `json:"creator_id"`
-	ConsumerID string   `json:"consumer_id"`
-	Paginate   Paginate `json:"paginate"`
+	PolicyID uint64   `json:"policy_id" binding:"required"`
+	Paginate Paginate `json:"paginate"`
 }
 
 // ========================= response =========================
 
 type PolicyListResponse struct {
 	Hrac       string `json:"hrac"`
-	Label      string `json:"label"`
 	PolicyID   uint64 `json:"policy_id"`
 	Creator    string `json:"creator"`
 	CreatorID  string `json:"creator_id"`

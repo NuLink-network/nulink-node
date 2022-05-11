@@ -52,14 +52,17 @@ func (p *Policy) Get() (policy *Policy, err error) {
 
 func (p *Policy) Find(ext *QueryExtra, pager Pager) (ps []*Policy, err error) {
 	tx := db.GetDB().Where(p)
-	if ext != nil && ext.Conditions != nil {
-		for k, v := range ext.Conditions {
-			tx = tx.Where(k, v)
+	if ext != nil {
+		if ext.Conditions != nil {
+			for k, v := range ext.Conditions {
+				tx = tx.Where(k, v)
+			}
+		}
+		if !utils.IsEmpty(ext.OrderStr) {
+			tx.Order(ext.OrderStr)
 		}
 	}
-	if !utils.IsEmpty(ext.OrderStr) {
-		tx.Order(ext.OrderStr)
-	}
+
 	if pager != nil {
 		tx = tx.Scopes(pager)
 	}

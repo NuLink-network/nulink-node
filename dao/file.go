@@ -1,7 +1,6 @@
 package dao
 
 import (
-	"fmt"
 	"github.com/NuLink-network/nulink-node/resource/db"
 	"github.com/NuLink-network/nulink-node/utils"
 	"gorm.io/gorm"
@@ -75,16 +74,18 @@ func (f *File) FindByFileIDs(fileIDs []string, pager Pager) (files []*File, err 
 }
 
 func (f *File) FindAny(ext *QueryExtra, pager Pager) (files []*File, err error) {
-	fmt.Println("============================== ext: ", ext)
 	tx := db.GetDB().Where(f)
-	if ext != nil && ext.Conditions != nil {
-		for k, v := range ext.Conditions {
-			tx = tx.Where(k, v)
+	if ext != nil {
+		if ext.Conditions != nil {
+			for k, v := range ext.Conditions {
+				tx = tx.Where(k, v)
+			}
+		}
+		if !utils.IsEmpty(ext.OrderStr) {
+			tx = tx.Order(ext.OrderStr)
 		}
 	}
-	if !utils.IsEmpty(ext.OrderStr) {
-		tx = tx.Order(ext.OrderStr)
-	}
+
 	if pager != nil {
 		tx = tx.Scopes(pager)
 	}

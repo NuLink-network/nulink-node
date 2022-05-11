@@ -460,7 +460,7 @@ application/json
 | ------------ | -------- | ------ | ---- |------- |
 |  creator_id  |  string  | 否     | 策略的创建者账户ID (UUID V4) |
 |  consumer_id  |  string  | 否     | 策略的使用者账户ID (UUID V4) |
-|  policy_id  |  number  | 否     | 策略ID  |
+|  policy_id  |  number  | 是     | 策略ID  |
 |  paginate    |  [Paginate](#Paginate-结构) |  否  |      | 分页 |
 
 ### 响应参数

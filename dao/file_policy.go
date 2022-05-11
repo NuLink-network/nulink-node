@@ -53,17 +53,20 @@ func (f *FilePolicy) Find(pager func(*gorm.DB) *gorm.DB) (fps []*FilePolicy, err
 
 func (f *FilePolicy) FindAny(ext *QueryExtra, pager Pager) (fps []*FilePolicy, err error) {
 	tx := db.GetDB().Where(f)
-	if ext != nil && ext.Conditions != nil {
-		for k, v := range ext.Conditions {
-			tx = tx.Where(k, v)
+	if ext != nil {
+		if ext.Conditions != nil {
+			for k, v := range ext.Conditions {
+				tx = tx.Where(k, v)
+			}
+		}
+		if !utils.IsEmpty(ext.OrderStr) {
+			tx.Order(ext.OrderStr)
+		}
+		if !(len(ext.DistinctStr) == 0) {
+			tx.Distinct(ext.DistinctStr)
 		}
 	}
-	if !utils.IsEmpty(ext.OrderStr) {
-		tx.Order(ext.OrderStr)
-	}
-	if !(len(ext.DistinctStr) == 0) {
-		tx.Distinct(ext.DistinctStr)
-	}
+
 	if pager != nil {
 		tx = tx.Scopes(pager)
 	}

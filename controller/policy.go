@@ -45,7 +45,7 @@ func FileDetailList(c *gin.Context) {
 		return
 	}
 
-	list, code := logic.FileDetailList(req.PolicyID, req.CreatorID, req.ConsumerID, req.Paginate.Page, req.Paginate.PageSize)
+	list, code := logic.FileDetailList(req.PolicyID, req.Paginate.Page, req.Paginate.PageSize)
 	if code != resp.CodeSuccess {
 		resp.Error(c, code)
 		return

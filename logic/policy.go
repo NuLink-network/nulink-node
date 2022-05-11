@@ -23,7 +23,7 @@ func RevokePolicy(accountID string, policyID uint64) (code int) {
 		return resp.CodeInternalServerError
 	}
 	if policy.CreatorID != accountID {
-		return resp.CodePolicyLabelNotYours
+		return resp.CodePolicyNotYours
 	}
 
 	fp := &dao.FilePolicy{
@@ -87,20 +87,21 @@ func PolicyList(policyID uint64, policyLabelID, creatorID, consumerID string, pa
 	return ret, resp.CodeSuccess
 }
 
-func FileDetailList(policyID uint64, creatorID, consumerID string, page, pageSize int) ([]*entity.FileDetailListResponse, int) {
+func FileDetailList(policyID uint64, page, pageSize int) ([]*entity.FileDetailListResponse, int) {
 	fp := &dao.FilePolicy{
-		PolicyID:   policyID,
-		CreatorID:  creatorID,
-		ConsumerID: consumerID,
+		PolicyID: policyID,
 	}
-	// todo 如果 CreatorID id 为空或者 PolicyID CreatorID ConsumerID 都有值则不需要去重
-	query := &dao.QueryExtra{
-		DistinctStr: []string{"file_id"},
-	}
-	filePolicyList, err := fp.FindAny(query, dao.Paginate(page, pageSize))
+	// todo 如果 CreatorID id 为空或者 PolicyID ConsumerID 都有值则不需要去重
+	//query := &dao.QueryExtra{
+	//	DistinctStr: []string{"file_id"},
+	//}
+	filePolicyList, err := fp.FindAny(nil, dao.Paginate(page, pageSize))
 	if err != nil {
-		log.Logger().WithField("filePolicy", fp).WithField("ext", query).WithField("error", err).Error("get file policy list failed")
+		log.Logger().WithField("filePolicy", fp).WithField("error", err).Error("get file policy list failed")
 		return nil, resp.CodeInternalServerError
+	}
+	if len(filePolicyList) == 0 {
+		return nil, resp.CodePolicyNotExist
 	}
 
 	filePolicyListLength := len(filePolicyList)
@@ -111,7 +112,7 @@ func FileDetailList(policyID uint64, creatorID, consumerID string, page, pageSiz
 		policyIDs = append(policyIDs, fp.PolicyID)
 	}
 
-	query = &dao.QueryExtra{
+	query := &dao.QueryExtra{
 		Conditions: map[string]interface{}{
 			"file_id in ?": fileIDs,
 		},
@@ -128,12 +129,12 @@ func FileDetailList(policyID uint64, creatorID, consumerID string, page, pageSiz
 
 	query = &dao.QueryExtra{
 		Conditions: map[string]interface{}{
-			"file_id in ?": fileIDs,
+			"id in ?": policyIDs,
 		},
 	}
 	policies, err := dao.NewPolicy().Find(query, nil)
 	if err != nil {
-		log.Logger().WithField("ext", query).WithField("error", err).Error("get file list failed")
+		log.Logger().WithField("ext", query).WithField("error", err).Error("get policy list failed")
 		return nil, resp.CodeInternalServerError
 	}
 	policyID2policy := make(map[uint64]*dao.Policy, len(files))
