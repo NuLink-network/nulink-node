@@ -1,6 +1,7 @@
 package dao
 
 import (
+	"fmt"
 	"github.com/NuLink-network/nulink-node/resource/db"
 	"github.com/NuLink-network/nulink-node/utils"
 	"gorm.io/gorm"
@@ -12,7 +13,7 @@ type File struct {
 	FileID    string `gorm:"column:file_id" json:"file_id" sql:"char(36)"`
 	MD5       string `gorm:"column:md5" json:"md5" sql:"varchar(32)"`
 	Name      string `gorm:"column:name" json:"name" sql:"varchar(32)"`
-	Suffix    string `gorm:"column:suffix" json:"suffix" sql:"varchar(8)"`
+	Suffix    string `gorm:"column:suffix" json:"suffix" sql:"varchar(16)"`
 	Category  string `gorm:"column:category" json:"category" sql:"varchar(32)"`
 	Address   string `gorm:"column:address" json:"addr" sql:"varchar(512)"`
 	Owner     string `gorm:"column:owner" json:"owner" sql:"varchar(512)"`
@@ -43,7 +44,7 @@ func (f *File) BatchCreate(fs []*File) error {
 }
 
 func (f *File) Get() (file *File, err error) {
-	err = db.GetDB().Where(f).First(file).Error
+	err = db.GetDB().Where(f).First(&file).Error
 	return file, err
 }
 
@@ -74,12 +75,15 @@ func (f *File) FindByFileIDs(fileIDs []string, pager Pager) (files []*File, err 
 }
 
 func (f *File) FindAny(ext *QueryExtra, pager Pager) (files []*File, err error) {
+	fmt.Println("============================== ext: ", ext)
 	tx := db.GetDB().Where(f)
 	if ext != nil && ext.Conditions != nil {
-		tx = tx.Where(ext.Conditions)
+		for k, v := range ext.Conditions {
+			tx = tx.Where(k, v)
+		}
 	}
 	if !utils.IsEmpty(ext.OrderStr) {
-		tx.Order(ext.OrderStr)
+		tx = tx.Order(ext.OrderStr)
 	}
 	if pager != nil {
 		tx = tx.Scopes(pager)

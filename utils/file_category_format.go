@@ -1,49 +1,49 @@
 package utils
 
 //FileCategory 文件类型
-var FileCategory = []string{
-	"philosophy",     //哲学
-	"religion",       //宗教
-	"ethics",         //伦理
-	"logic",          //逻辑
-	"aesthetics",     //美学
-	"psychology",     //心理
-	"language",       //语言
-	"literature",     //文学
-	"art",            //艺术
-	"political",      // 政治
-	"economic",       //经济
-	"military",       //军事
-	"law",            //法律
-	"education",      //教育
-	"sports",         //体育
-	"media",          //传媒
-	"information",    //资讯
-	"management",     //管理
-	"business",       //商贸
-	"history",        //历史
-	"archaeological", //考古
-	"nation",         //民族
-	"life",           //生活
-	"financial",      //财经
-	"statistics",     //统计
-	"social",         //社会
-	"music",          //音乐
-	"technology",     //科技
-	"pet",            // 宠物
+var FileCategory = map[string]struct{}{
+	"philosophy":     {}, //哲学
+	"religion":       {}, //宗教
+	"ethics":         {}, //伦理
+	"logic":          {}, //逻辑
+	"aesthetics":     {}, //美学
+	"psychology":     {}, //心理
+	"language":       {}, //语言
+	"literature":     {}, //文学
+	"art":            {}, //艺术
+	"political":      {}, // 政治
+	"economic":       {}, //经济
+	"military":       {}, //军事
+	"law":            {}, //法律
+	"education":      {}, //教育
+	"sports":         {}, //体育
+	"media":          {}, //传媒
+	"information":    {}, //资讯
+	"management":     {}, //管理
+	"business":       {}, //商贸
+	"history":        {}, //历史
+	"archaeological": {}, //考古
+	"nation":         {}, //民族
+	"life":           {}, //生活
+	"financial":      {}, //财经
+	"statistics":     {}, //统计
+	"social":         {}, //社会
+	"music":          {}, //音乐
+	"technology":     {}, //科技
+	"pet":            {}, // 宠物
 }
 
 const OtherFormat = "other"
 
 // FileFormat 文件格式
-var FileFormat = []string{
-	"text", //包括 文本文件 电子书文件 压缩文件
-	"data", //包括 数据文件
-	"video",
-	"audio",
-	"image",      //  包括 3D图像文件 位图文件 矢量图文件
-	"executable", //可执行文件
-	OtherFormat,
+var FileFormat = map[string]struct{}{
+	"text":       {}, //包括 文本文件 电子书文件 压缩文件
+	"data":       {}, //包括 数据文件
+	"video":      {},
+	"audio":      {},
+	"image":      {}, //  包括 3D图像文件 位图文件 矢量图文件
+	"executable": {}, //可执行文件
+	OtherFormat:  {},
 }
 
 var FileFormat2Suffix = map[string][]string{

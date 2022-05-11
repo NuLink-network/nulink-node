@@ -54,7 +54,9 @@ func (f *FilePolicy) Find(pager func(*gorm.DB) *gorm.DB) (fps []*FilePolicy, err
 func (f *FilePolicy) FindAny(ext *QueryExtra, pager Pager) (fps []*FilePolicy, err error) {
 	tx := db.GetDB().Where(f)
 	if ext != nil && ext.Conditions != nil {
-		tx = tx.Where(ext.Conditions)
+		for k, v := range ext.Conditions {
+			tx = tx.Where(k, v)
+		}
 	}
 	if !utils.IsEmpty(ext.OrderStr) {
 		tx.Order(ext.OrderStr)

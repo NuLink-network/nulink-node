@@ -9,7 +9,7 @@ import (
 type PolicyLabel struct {
 	ID            uint64         `gorm:"primarykey"`
 	PolicyLabelID string         `gorm:"column:policy_label_id" json:"policy_label_id" sql:"char(36)"`
-	Label         string         `gorm:"column:label" json:"label" sql:"varchar(32)"`
+	Label         string         `gorm:"column:label" json:"label" sql:"varchar(128)"`
 	Creator       string         `gorm:"column:creator" json:"creator" sql:"varchar(32)"`
 	CreatorID     string         `gorm:"column:creator_id" json:"creator_id" sql:"char(36)"`
 	EncryptedPK   string         `gorm:"column:encrypted_pk" json:"encrypted_pk" sql:"varchar(256)"`
@@ -23,7 +23,7 @@ func NewPolicyLabel() *PolicyLabel {
 }
 
 func (p *PolicyLabel) TableName() string {
-	return "policy"
+	return "policy_label"
 }
 
 func (p *PolicyLabel) Create() (id uint64, err error) {
@@ -31,9 +31,9 @@ func (p *PolicyLabel) Create() (id uint64, err error) {
 	return p.ID, err
 }
 
-func (p *PolicyLabel) Get() (policy *PolicyLabel, err error) {
-	err = db.GetDB().Where(p).First(&policy).Error
-	return policy, err
+func (p *PolicyLabel) Get() (pl *PolicyLabel, err error) {
+	err = db.GetDB().Where(p).First(&pl).Error
+	return pl, err
 }
 
 func (p *PolicyLabel) Find(pager Pager) (ps []*PolicyLabel, err error) {

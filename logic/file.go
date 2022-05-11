@@ -65,7 +65,7 @@ func CreatePolicyAndUploadFile(accountID, policyLabelID, policyLabel, encryptedP
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return resp.CodeAccountNotExist
 		}
-		log.Logger().WithField("account", acc).WithField("error", err).Error("get account failed")
+		log.Logger().WithField("account", *acc).WithField("error", err).Error("get account failed")
 		return resp.CodeInternalServerError
 	}
 
@@ -91,7 +91,7 @@ func CreatePolicyAndUploadFile(accountID, policyLabelID, policyLabel, encryptedP
 		})
 	}
 	if err = dao.Tx(pl, fs); err != nil {
-		log.Logger().WithField("policyLabel", pl).WithField("file", fs).WithField("error", err).Error("create policy label and files failed")
+		log.Logger().WithField("policyLabel", utils.JSON(pl)).WithField("files", utils.JSON(fs)).WithField("error", err).Error("create policy label and files failed")
 		return resp.CodeInternalServerError
 	}
 	return resp.CodeSuccess
@@ -100,15 +100,15 @@ func CreatePolicyAndUploadFile(accountID, policyLabelID, policyLabel, encryptedP
 func GetFileList(accountID string, fileName string, page, pageSize int) (ret []*entity.GetFileListResponse, code int) {
 	file := &dao.File{
 		OwnerID: accountID,
-		Name:    fileName,
 	}
 
 	query := &dao.QueryExtra{
 		Conditions: map[string]interface{}{},
 	}
-	if utils.IsEmpty(fileName) {
+	if !utils.IsEmpty(fileName) {
 		query.Conditions["name like ?"] = "%" + fileName + "%"
 	}
+
 	files, err := file.FindAny(query, dao.Paginate(page, pageSize))
 	if err != nil {
 		log.Logger().WithField("file", file).WithField("error", err).Error("find files failed")
@@ -137,13 +137,16 @@ func GetOthersFileList(accountID string, fileName, category, format string, desc
 	conditions := map[string]interface{}{
 		"owner_id != ?": accountID,
 	}
-	if utils.IsEmpty(fileName) {
+	if !utils.IsEmpty(fileName) {
 		conditions["name like ?"] = "%" + fileName + "%"
 	}
 	if format == utils.OtherFormat {
 		conditions["suffix not in ?"] = utils.OtherFormatExcludeSuffix
 	} else {
-		conditions["suffix in ?"] = utils.FileFormat2Suffix[format]
+		s, ok := utils.FileFormat2Suffix[format]
+		if ok {
+			conditions["suffix in ?"] = s
+		}
 	}
 	query := &dao.QueryExtra{
 		Conditions: conditions,

@@ -1,11 +1,11 @@
 package controller
 
 import (
-	"github.com/NuLink-network/nulink-node/resp"
-	"github.com/gin-gonic/gin"
-
 	"github.com/NuLink-network/nulink-node/entity"
 	"github.com/NuLink-network/nulink-node/logic"
+	"github.com/NuLink-network/nulink-node/resp"
+	"github.com/NuLink-network/nulink-node/utils"
+	"github.com/gin-gonic/gin"
 )
 
 func UploadFile(c *gin.Context) {
@@ -57,6 +57,18 @@ func GetOthersFileList(c *gin.Context) {
 		resp.ParameterErr(c)
 		return
 	}
+	if !utils.IsEmpty(req.Category) {
+		if _, ok := utils.FileCategory[req.Category]; !ok {
+			resp.ParameterErr(c)
+			return
+		}
+	}
+	if !utils.IsEmpty(req.Format) {
+		if _, ok := utils.FileFormat[req.Format]; !ok {
+			resp.ParameterErr(c)
+			return
+		}
+	}
 
 	list, code := logic.GetOthersFileList(req.AccountID, req.FileName, req.Category, req.Format, req.Desc, req.Paginate.Page, req.Paginate.PageSize)
 	if code != resp.CodeSuccess {
@@ -89,7 +101,7 @@ func FileDetail(c *gin.Context) {
 
 	ret, code := logic.FileDetail(req.FileID, req.ConsumerID)
 	if code != resp.CodeSuccess {
-		resp.InternalServerError(c)
+		resp.Error(c, code)
 		return
 	}
 	resp.Success(c, ret)

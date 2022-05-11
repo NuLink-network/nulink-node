@@ -16,7 +16,6 @@ const (
 type Policy struct {
 	ID               uint64         `gorm:"primarykey"`
 	Hrac             string         `gorm:"column:hrac" json:"hrac" sql:"varchar(256)"`
-	PolicyLabel      string         `gorm:"column:policy_label" json:"policy_label" sql:"varchar(32)"`
 	PolicyLabelID    string         `gorm:"column:policy_label_id" json:"policy_label_id" sql:"char(36)"`
 	Creator          string         `gorm:"column:creator" json:"creator" sql:"varchar(32)"`
 	CreatorID        string         `gorm:"column:creator_id" json:"creator_id" sql:"char(36)"`
@@ -25,7 +24,7 @@ type Policy struct {
 	EncryptedPK      string         `gorm:"column:encrypted_pk" json:"encrypted_pk" sql:"varchar(256)"`
 	EncryptedAddress string         `gorm:"column:encrypted_address" json:"encrypted_address" sql:"varchar(256)"`
 	Gas              string         `gorm:"column:gas" json:"gas" sql:"varchar(32)"`
-	TxHash           string         `gorm:"column:tx_hash" json:"tx_hash" sql:"char(66)"`
+	TxHash           string         `gorm:"column:tx_hash" json:"tx_hash" sql:"char(128)"`
 	StartAt          time.Time      `gorm:"column:start_at" json:"start_at" sql:"datetime"`
 	EndAt            time.Time      `gorm:"column:end_at" json:"end_at" sql:"datetime"`
 	CreatedAt        time.Time      `gorm:"column:created_at" json:"created_at" sql:"datetime"`
@@ -54,7 +53,9 @@ func (p *Policy) Get() (policy *Policy, err error) {
 func (p *Policy) Find(ext *QueryExtra, pager Pager) (ps []*Policy, err error) {
 	tx := db.GetDB().Where(p)
 	if ext != nil && ext.Conditions != nil {
-		tx = tx.Where(ext.Conditions)
+		for k, v := range ext.Conditions {
+			tx = tx.Where(k, v)
+		}
 	}
 	if !utils.IsEmpty(ext.OrderStr) {
 		tx.Order(ext.OrderStr)

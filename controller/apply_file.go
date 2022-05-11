@@ -1,7 +1,9 @@
 package controller
 
 import (
+	"github.com/NuLink-network/nulink-node/resource/log"
 	"github.com/NuLink-network/nulink-node/resp"
+	"github.com/NuLink-network/nulink-node/utils"
 	"github.com/gin-gonic/gin"
 
 	"github.com/NuLink-network/nulink-node/entity"
@@ -25,6 +27,10 @@ func ApplyFile(c *gin.Context) {
 func ApplyFileList(c *gin.Context) {
 	req := &entity.ApplyFileListRequest{}
 	if err := c.ShouldBindJSON(req); err != nil {
+		resp.ParameterErr(c)
+		return
+	}
+	if utils.IsEmpty(req.FileOwnerID) && utils.IsEmpty(req.ProposerID) {
 		resp.ParameterErr(c)
 		return
 	}
@@ -55,6 +61,7 @@ func ApproveApply(c *gin.Context) {
 	req := &entity.ApproveApplyRequest{}
 	if err := c.ShouldBindJSON(req); err != nil {
 		resp.ParameterErr(c)
+		log.Logger().Error(err.Error())
 		return
 	}
 

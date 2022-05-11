@@ -588,6 +588,8 @@ application/json
 ## 申请文件使用列表
 
 申请文件使用信息列表
+1. 文件申请不存在所有信息为空。
+2. 申请未通过仅返回申请信息策略信息为空
 
 ### 请求路径
 
@@ -606,8 +608,8 @@ application/json
 | 参数          |  类型     | 必填  | 默认值 | 说明   |
 | ------------ | -------- | ------ | ---- |------- |
 |  file_id  |  string  |   否   |   |  文件 ID |
-|  proposer_id  |  string  |   否   |   |  申请人的账户 ID |
-|  file_owner_id  |  string  |   否   |   |  文件拥有者的账户 ID |
+|  proposer_id  |  string  |   否   |   |  申请人的账户 ID (申请人的账户 ID 和文件拥有者的账户 ID 二选一) |
+|  file_owner_id  |  string  |   否   |   |  文件拥有者的账户 ID (申请人的账户 ID 和文件拥有者的账户 ID 二选一) |
 |  status  |  number  |   否   |  0 (不区分状态) |  申请状态，1: 申请中，2: 已通过, 3: 已拒绝|
 |  paginate    |  [Paginate](#Paginate-结构) |  否  |      | 分页 |
 
@@ -630,18 +632,18 @@ application/json
 
 | 参数      | 类型      | 说明     |
 | --------- | -------- | ------- |
-|  policy_id          |  number  |  策略 ID |
-|  apply_id          |  number  |  申请记录 ID |
 |  file_id          |  string  |  文件 ID |
+|  apply_id          |  number  |  申请记录 ID |
 |  proposer            |  string  |  申请人 |
 |  proposer_id          |  string  |  申请人账户 ID |
 |  file_owner          |  string  |  文件拥有者 |
 |  file_owner_id          |  string  |  文件拥有者账户 ID |
-|  policy_id        |  number  | 策略 ID  |
-|  hrac        |  string  | 策略 hrac |
+|  status          |  number  |  申请状态，1: 申请中，2: 已通过, 3: 已拒绝 |
 |  start_at          |  number  |  使用开始时间戳 |
 |  end_at          |  number  |  使用结束时间戳 |
 |  created_at          |  number  |  申请时间戳 |
+|  policy_id        |  number  | 策略 ID  |
+|  hrac        |  string  | 策略 hrac |
 
 ## 撤销文件使用申请
 
@@ -665,6 +667,7 @@ application/json
 | ------------ | -------- | ------ | ---- |------- |
 |  proposer_id  |  string  |   是   |   |  申请人的账户 ID |
 |  apply_ids  |  []number  |   是   |   |  申请记录 ID 列表 |
+|  signature   |  string  | 是     | 签名 |
 
 ### 响应参数
 
@@ -706,7 +709,6 @@ application/json
 |  hrac          |  string  |  hrac |
 |  gas          |  string  |  gas |
 |  tx_hash          |  string  |  交易 Hash |
-|  creator_id          |  string  | 交易创建者 ID  |
 |  encrypted_pk          |  string  | encrypted public key  |
 |  encrypted_address          |  string  | encrypted ipfs address  |
 

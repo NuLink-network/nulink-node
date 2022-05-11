@@ -70,6 +70,15 @@ func ParameterErr(c *gin.Context) {
 	})
 }
 
+func ParameterErr2(c *gin.Context) int {
+	c.JSON(http.StatusOK, Response{
+		Code: CodeParameterErr,
+		Msg:  code2msg[CodeParameterErr],
+		Data: EmptyStruct,
+	})
+	return 0
+}
+
 func InternalServerError(c *gin.Context) {
 	c.JSON(http.StatusOK, Response{
 		Code: CodeInternalServerError,
