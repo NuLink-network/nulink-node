@@ -44,7 +44,7 @@ application/json
 
 ### 请求方法
 
-GET
+POST
 
 ### 数据类型
 
@@ -86,7 +86,7 @@ application/json
 
 ### 请求方法
 
-GET
+POST
 
 ### 数据类型
 
@@ -237,7 +237,7 @@ application/json
 
 ### 请求方法
 
-GET
+POST
 
 ### 数据类型
 
@@ -295,7 +295,7 @@ application/json
 
 ### 请求方法
 
-GET
+POST
 
 ### 数据类型
 
@@ -365,7 +365,7 @@ application/json
 | 参数          |  类型     | 必填    | 说明   |
 | ------------ | -------- | ------ | ------- |
 |  file_id    |  string  | 是     | 文件 ID (UUID V4)|
-|  consumer_id  |  string  | 是     | 文件使用者的 ID (UUID V4) |
+|  consumer_id  |  string  | 是     | 文件使用者的 ID (UUID V4)，即当前用户的 ID |
 
 ### 响应参数
 
@@ -448,7 +448,7 @@ application/json
 
 ### 请求方法
 
-GET
+POST
 
 ### 数据类型
 
@@ -504,7 +504,7 @@ application/json
 
 ### 请求方法
 
-GET
+POST
 
 ### 数据类型
 
@@ -597,7 +597,7 @@ application/json
 
 ### 请求方法
 
-GET
+POST
 
 ### 数据类型
 
@@ -607,9 +607,10 @@ application/json
 
 | 参数          |  类型     | 必填  | 默认值 | 说明   |
 | ------------ | -------- | ------ | ---- |------- |
+|  apply_id |  number  |  否   |   |申请记录 ID，如果传递申请记录 ID 其他参数可以不传 |
 |  file_id  |  string  |   否   |   |  文件 ID |
-|  proposer_id  |  string  |   否   |   |  申请人的账户 ID (申请人的账户 ID 和文件拥有者的账户 ID 二选一) |
-|  file_owner_id  |  string  |   否   |   |  文件拥有者的账户 ID (申请人的账户 ID 和文件拥有者的账户 ID 二选一) |
+|  proposer_id  |  string  |   否   |   |  申请人的账户 ID (如果不指定申请记录 ID 申请人的账户 ID 和文件拥有者的账户 ID 二选一) |
+|  file_owner_id  |  string  |   否   |   |  文件拥有者的账户 ID (如果不指定申请记录 ID 申请人的账户 ID 和文件拥有者的账户 ID 二选一) |
 |  status  |  number  |   否   |  0 (不区分状态) |  申请状态，1: 申请中，2: 已通过, 3: 已拒绝|
 |  paginate    |  [Paginate](#Paginate-结构) |  否  |      | 分页 |
 
@@ -762,7 +763,7 @@ application/json
 
 ### 请求方法
 
-GET
+POST
 
 ### 数据类型
 

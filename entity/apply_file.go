@@ -11,6 +11,7 @@ type ApplyFileRequest struct {
 }
 
 type ApplyFileListRequest struct {
+	ApplyID     uint64   `json:"apply_id"`
 	FileID      string   `json:"file_id"`
 	Status      uint8    `json:"status" binding:"gte=0,lte=3"`
 	ProposerID  string   `json:"proposer_id"`

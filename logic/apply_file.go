@@ -93,8 +93,9 @@ func ApplyFile(fileIDs []string, proposerID string, startAt, endAt int64) (code 
 	return resp.CodeSuccess
 }
 
-func ApplyFileList(fileID string, status uint8, proposerID, fileOwnerID string, page, pageSize int) ([]*entity.ApplyFileListResponse, int) {
+func ApplyFileList(applyID uint64, fileID string, status uint8, proposerID, fileOwnerID string, page, pageSize int) ([]*entity.ApplyFileListResponse, int) {
 	af := &dao.ApplyFile{
+		ID:          applyID,
 		FileID:      fileID,
 		ProposerID:  proposerID,
 		FileOwnerID: fileOwnerID,

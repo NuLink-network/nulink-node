@@ -30,12 +30,14 @@ func ApplyFileList(c *gin.Context) {
 		resp.ParameterErr(c)
 		return
 	}
-	if utils.IsEmpty(req.FileOwnerID) && utils.IsEmpty(req.ProposerID) {
-		resp.ParameterErr(c)
-		return
+	if req.ApplyID == 0 {
+		if utils.IsEmpty(req.FileOwnerID) && utils.IsEmpty(req.ProposerID) {
+			resp.ParameterErr(c)
+			return
+		}
 	}
 
-	list, code := logic.ApplyFileList(req.FileID, req.Status, req.ProposerID, req.FileOwnerID, req.Paginate.Page, req.Paginate.PageSize)
+	list, code := logic.ApplyFileList(req.ApplyID, req.FileID, req.Status, req.ProposerID, req.FileOwnerID, req.Paginate.Page, req.Paginate.PageSize)
 	if code != resp.CodeSuccess {
 		resp.Error(c, code)
 		return
