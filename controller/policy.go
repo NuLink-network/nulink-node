@@ -3,7 +3,6 @@ package controller
 import (
 	"github.com/NuLink-network/nulink-node/entity"
 	"github.com/NuLink-network/nulink-node/logic"
-	"github.com/NuLink-network/nulink-node/resource/log"
 	"github.com/NuLink-network/nulink-node/resp"
 	"github.com/gin-gonic/gin"
 )
@@ -40,7 +39,6 @@ func PolicyList(c *gin.Context) {
 func FileDetailList(c *gin.Context) {
 	req := &entity.FileDetailListRequest{}
 	if err := c.ShouldBindJSON(req); err != nil {
-		log.Logger().WithField("error", err).Error("params error")
 		resp.ParameterErr(c)
 		return
 	}
