@@ -1,13 +1,17 @@
 package main
 
 import (
+	"time"
+
+	"github.com/fvbock/endless"
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
+
 	"github.com/NuLink-network/nulink-node/config"
 	"github.com/NuLink-network/nulink-node/resource/db"
 	"github.com/NuLink-network/nulink-node/resource/log"
 	"github.com/NuLink-network/nulink-node/router"
-	"github.com/fvbock/endless"
-	"github.com/gin-gonic/gin"
-	"github.com/spf13/viper"
 )
 
 func main() {
@@ -23,6 +27,13 @@ func main() {
 
 	engine := gin.Default()
 	engine.Use(gin.BasicAuth(accounts))
+	engine.Use(cors.New(cors.Config{
+		AllowOriginFunc:  func(origin string) bool { return true },
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "PATCH"},
+		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type"},
+		AllowCredentials: true,
+		MaxAge:           2 * time.Minute,
+	}))
 	router.Register(engine)
 
 	endless.ListenAndServe(viper.GetString("address"), engine)
