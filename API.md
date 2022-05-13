@@ -180,7 +180,7 @@ application/json
 
 | 参数          |  类型     | 必填    | 说明   |
 | ------------ | -------- | ------ | ------- |
-|  file        |  [][File](#File-结构)  | 是     | 文件列表 |
+|  files        |  [][File](#File-结构)  | 是     | 文件列表 |
 |  account_id  |  string  | 是     | 账户ID (UUID V4) |
 |  policy_label_id   |  string  | 是     | 策略 label ID (UUID V4)|
 |  policy_label   |  string  | 是     | 策略标签 |
