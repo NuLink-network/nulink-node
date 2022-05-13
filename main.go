@@ -29,7 +29,7 @@ func main() {
 	engine.Use(gin.BasicAuth(accounts))
 	engine.Use(cors.New(cors.Config{
 		AllowOriginFunc:  func(origin string) bool { return true },
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "PATCH"},
+		AllowMethods:     []string{"OPTIONS", "GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"},
 		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type"},
 		AllowCredentials: true,
 		MaxAge:           2 * time.Minute,

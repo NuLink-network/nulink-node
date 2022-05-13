@@ -1,5 +1,5 @@
 ###
-env: pro
+env: dev
 debug: true
 logDir: /tmp
 address: 0.0.0.0:8181
