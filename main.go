@@ -20,17 +20,17 @@ func main() {
 	dbConf := viper.GetStringMapString("database")
 	db.Init(dbConf["user"], dbConf["password"], dbConf["host"], dbConf["port"], dbConf["name"])
 
-	basicAuth := viper.GetStringMapString("basicAuth")
-	accounts := gin.Accounts{
-		basicAuth["user"]: basicAuth["password"],
-	}
+	//basicAuth := viper.GetStringMapString("basicAuth")
+	//accounts := gin.Accounts{
+	//	basicAuth["user"]: basicAuth["password"],
+	//}
 
 	engine := gin.Default()
-	engine.Use(gin.BasicAuth(accounts))
+	//engine.Use(gin.BasicAuth(accounts))
 	engine.Use(cors.New(cors.Config{
 		AllowOriginFunc:  func(origin string) bool { return true },
 		AllowMethods:     []string{"OPTIONS", "GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"},
-		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type"},
+		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
 		AllowCredentials: true,
 		MaxAge:           2 * time.Minute,
 	}))
