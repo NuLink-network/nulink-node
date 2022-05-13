@@ -136,7 +136,7 @@ application/json
 
 | 参数          |  类型     | 必填    | 说明   |
 | ------------ | -------- | ------ | ------- |
-|  file        |  [][File](#File-结构)  | 是     | 文件列表 |
+|  files        |  [][File](#File-结构)  | 是     | 文件列表 |
 |  account_id  |  string  | 是     | 账户 ID (UUID V4) |
 |  policy_id   |  number  | 否     | 策略 ID |
 |  signature   |  string  | 是     | 签名 |
