@@ -29,7 +29,7 @@ func CreatePolicyAndUploadFile(c *gin.Context) {
 		return
 	}
 
-	if code := logic.CreatePolicyAndUploadFile(req.AccountID, req.PolicyLabel, req.PolicyLabel, req.EncryptedPK, req.Files); code != resp.CodeSuccess {
+	if code := logic.CreatePolicyAndUploadFile(req.AccountID, req.PolicyLabelID, req.PolicyLabel, req.EncryptedPK, req.Files); code != resp.CodeSuccess {
 		resp.Error(c, code)
 		return
 	}
