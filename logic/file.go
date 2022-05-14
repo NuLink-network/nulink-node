@@ -229,6 +229,8 @@ func FileDetail(fileID, consumerID string) (ret *entity.FileDetailResponse, code
 				FileID:        file.FileID,
 				FileName:      file.Name,
 				Thumbnail:     file.Thumbnail,
+				Creator:       file.Owner,
+				CreatorID:     file.OwnerID,
 				FileCreatedAt: file.CreatedAt.Unix(),
 			}, resp.CodeSuccess
 		}

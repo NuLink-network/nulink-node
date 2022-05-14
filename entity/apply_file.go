@@ -49,16 +49,17 @@ type RejectApplyRequest struct {
 // ========================= response =========================
 
 type ApplyFileListResponse struct {
-	FileID      string `json:"file_id"`
-	ApplyID     uint64 `json:"apply_id"`
-	Proposer    string `json:"proposer"`
-	ProposerID  string `json:"proposer_id"`
-	FileOwner   string `json:"file_owner"`
-	FileOwnerID string `json:"file_owner_id"`
-	Status      uint8  `json:"status"`
-	StartAt     int64  `json:"start_at"`
-	EndAt       int64  `json:"end_at"`
-	CreatedAt   int64  `json:"created_at"`
-	PolicyID    uint64 `json:"policy_id"`
-	Harc        string `json:"harc"`
+	FileID        string `json:"file_id"`
+	ApplyID       uint64 `json:"apply_id"`
+	Proposer      string `json:"proposer"`
+	ProposerID    string `json:"proposer_id"`
+	FileOwner     string `json:"file_owner"`
+	FileOwnerID   string `json:"file_owner_id"`
+	Status        uint8  `json:"status"`
+	StartAt       int64  `json:"start_at"`
+	EndAt         int64  `json:"end_at"`
+	CreatedAt     int64  `json:"created_at"`
+	PolicyID      uint64 `json:"policy_id"`
+	PolicyLabelID string `json:"policy_label_id"`
+	Hrac          string `json:"hrac"`
 }

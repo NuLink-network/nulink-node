@@ -86,6 +86,8 @@ type FileDetailResponse struct {
 	FileID        string `json:"file_id"`
 	FileName      string `json:"file_name"`
 	Thumbnail     string `json:"thumbnail"`
+	Creator       string `json:"creator"`
+	CreatorID     string `json:"creator_id"`
 	FileCreatedAt int64  `json:"file_created_at"`
 	// 申请信息
 	ApplyID        uint64 `json:"apply_id"`
@@ -96,8 +98,6 @@ type FileDetailResponse struct {
 	// 策略信息
 	PolicyID        uint64 `json:"policy_id"`
 	Hrac            string `json:"hrac"`
-	Creator         string `json:"creator"`
-	CreatorID       string `json:"creator_id"`
 	Consumer        string `json:"consumer"`
 	ConsumerID      string `json:"consumer_id"`
 	Gas             string `json:"gas"`

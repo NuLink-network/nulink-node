@@ -110,18 +110,18 @@ func ApplyFileList(applyID uint64, fileID string, status uint8, proposerID, file
 		log.Logger().WithField("applyFile", af).WithField("error", err).Error("find apply file list failed")
 		return nil, resp.CodeInternalServerError
 	}
+	if len(afs) == 0 {
+		// todo 不存在申请信息
+		return []*entity.ApplyFileListResponse{}, resp.CodeSuccess
+	}
 	fileIDs := make([]string, 0, 0)
 	for _, af := range afs {
 		fileIDs = append(fileIDs, af.FileID)
 	}
-	if len(fileIDs) == 0 {
-		// todo 不存在申请信息
-		return []*entity.ApplyFileListResponse{}, resp.CodeSuccess
-	}
 
 	fp := dao.FilePolicy{
-		CreatorID:  fileOwnerID,
-		ConsumerID: fileOwnerID,
+		CreatorID:  afs[0].FileOwnerID,
+		ConsumerID: afs[0].ProposerID,
 	}
 	query := &dao.QueryExtra{
 		Conditions: map[string]interface{}{
@@ -179,18 +179,19 @@ func ApplyFileList(applyID uint64, fileID string, status uint8, proposerID, file
 	for _, af := range afs {
 		policy := policyID2Policy[fileID2PolicyID[af.FileID]]
 		ret = append(ret, &entity.ApplyFileListResponse{
-			FileID:      af.FileID,
-			ApplyID:     af.ID,
-			Proposer:    af.Proposer,
-			ProposerID:  af.ProposerID,
-			FileOwner:   af.FileOwner,
-			FileOwnerID: af.FileOwnerID,
-			Status:      af.Status,
-			StartAt:     af.StartAt.Unix(),
-			EndAt:       af.FinishAt.Unix(),
-			CreatedAt:   af.CreatedAt.Unix(),
-			PolicyID:    policy.ID,
-			Harc:        policy.Hrac,
+			FileID:        af.FileID,
+			ApplyID:       af.ID,
+			Proposer:      af.Proposer,
+			ProposerID:    af.ProposerID,
+			FileOwner:     af.FileOwner,
+			FileOwnerID:   af.FileOwnerID,
+			Status:        af.Status,
+			StartAt:       af.StartAt.Unix(),
+			EndAt:         af.FinishAt.Unix(),
+			CreatedAt:     af.CreatedAt.Unix(),
+			PolicyID:      policy.ID,
+			PolicyLabelID: policy.PolicyLabelID,
+			Hrac:          policy.Hrac,
 		})
 	}
 	return ret, resp.CodeSuccess

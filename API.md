@@ -383,6 +383,8 @@ application/json
 |  file_id    |   string   | 文件 ID   |
 |  file_name     |   string   |  文件名  |
 |  thumbnail     |   string   |  文件缩略图  |
+|  creator     |   string   |  文件的拥有者 (策略创建者)  |
+|  creator_id     |   string   | 文件的拥有者 ID (策略创建者 ID)   |
 |  file_created_at     |   number   | 文件上传时间戳   |
 |  申请信息   |
 |  apply_id     |   number   |  申请记录 ID  |
@@ -393,8 +395,6 @@ application/json
 |  策略信息     |
 |  policy_id     |   number   |  策略 ID  |
 |  hrac     |   string   |  策略 hrac  |
-|  creator     |   string   |  策略创建者(文件的拥有者)  |
-|  creator_id     |   string   | 策略创建者 ID   |
 |  consumer     |   string   |  策略的使用者(申请人，文件的使用者)  |
 |  consumer_id     |   string   | 策略的使用者 ID   |
 |  gas     |   string   |  策略 gas |
@@ -633,6 +633,7 @@ application/json
 
 | 参数      | 类型      | 说明     |
 | --------- | -------- | ------- |
+|  申请信息          |
 |  file_id          |  string  |  文件 ID |
 |  apply_id          |  number  |  申请记录 ID |
 |  proposer            |  string  |  申请人 |
@@ -643,7 +644,9 @@ application/json
 |  start_at          |  number  |  使用开始时间戳 |
 |  end_at          |  number  |  使用结束时间戳 |
 |  created_at          |  number  |  申请时间戳 |
+|  策略信息  |
 |  policy_id        |  number  | 策略 ID  |
+|  policy_label_id        |  string  | 策略 label ID  |
 |  hrac        |  string  | 策略 hrac |
 
 ## 撤销文件使用申请
