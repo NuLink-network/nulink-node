@@ -23,6 +23,7 @@ const (
 	CodeApplyNotExist       = 4006
 	CodeAccountNotExist     = 4007
 	CodeFileNotExist        = 4008
+	CodeDuplicateFilename   = 4009
 )
 
 const (
@@ -31,8 +32,7 @@ const (
 	CodeApplyApproved     = 4103
 	CodeApplyUnApproved   = 4104
 	CodePolicyUnpublished = 4106
-	Code                  = 4107
-	CodeFileApplied       = 4108
+	CodeFileApplied       = 4107
 )
 
 const (
@@ -44,6 +44,7 @@ const (
 	MsgApplyNotExist       = "apply does not exist"
 	MsgAccountNotExist     = "account does not exist"
 	MsgFileNotExist        = "file does not exist"
+	MsgDuplicateFilename   = "duplicate filename"
 	MsgFileApplied         = "you have already applied for file and cannot apply again"
 	MsgApplyIrrevocable    = "apply is irrevocable"
 	MsgApplyApproved       = "apply approved"
@@ -64,6 +65,7 @@ var code2msg = map[int]string{
 	CodeApplyNotExist:       MsgApplyNotExist,
 	CodeAccountNotExist:     MsgAccountNotExist,
 	CodeFileNotExist:        MsgFileNotExist,
+	CodeDuplicateFilename:   MsgDuplicateFilename,
 	CodeFileApplied:         MsgFileApplied,
 	CodeApplyIrrevocable:    MsgApplyIrrevocable,
 	CodeApplyApproved:       MsgApplyApproved,

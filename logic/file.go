@@ -13,6 +13,28 @@ import (
 	"github.com/NuLink-network/nulink-node/utils"
 )
 
+func DuplicateFilename(accountID string, fileNames []string) ([]string, int) {
+	f := &dao.File{
+		OwnerID: accountID,
+	}
+	query := &dao.QueryExtra{
+		Conditions: map[string]interface{}{
+			"name in ?": fileNames,
+		},
+	}
+	fileList, err := f.FindAny(query, nil)
+	if err != nil {
+		log.Logger().WithField("file", utils.JSON(f)).WithField("ext", utils.JSON(query)).WithField("error", err).Error("get file list failed")
+		return nil, resp.CodeInternalServerError
+	}
+
+	names := make([]string, 0)
+	for _, f := range fileList {
+		names = append(names, f.Name)
+	}
+	return names, resp.CodeSuccess
+}
+
 func UploadFile(accountID string, policyID uint64, files []entity.File) (code int) {
 	p := &dao.Policy{ID: policyID}
 	policy, err := p.Get()
@@ -52,7 +74,7 @@ func UploadFile(accountID string, policyID uint64, files []entity.File) (code in
 	}
 
 	if err = dao.Tx(fs, fps); err != nil {
-		log.Logger().WithField("file", fs).WithField("filePolicy", fps).WithField("error", err).Error("batch create file and file policy failed")
+		log.Logger().WithField("file", utils.JSON(fs)).WithField("filePolicy", utils.JSON(fps)).WithField("error", err).Error("batch create file and file policy failed")
 		return resp.CodeInternalServerError
 	}
 	return resp.CodeSuccess

@@ -15,6 +15,20 @@ func UploadFile(c *gin.Context) {
 		return
 	}
 
+	fileNames := make([]string, 0, len(req.Files))
+	for _, f := range req.Files {
+		fileNames = append(fileNames, f.Name)
+	}
+	names, code := logic.DuplicateFilename(req.AccountID, fileNames)
+	if code != resp.CodeSuccess {
+		resp.Error(c, code)
+		return
+	}
+	if len(names) > 0 {
+		resp.Resp(c, resp.CodeDuplicateFilename, names)
+		return
+	}
+
 	if code := logic.UploadFile(req.AccountID, req.PolicyID, req.Files); code != resp.CodeSuccess {
 		resp.Error(c, code)
 		return
@@ -26,6 +40,20 @@ func CreatePolicyAndUploadFile(c *gin.Context) {
 	req := &entity.CreatePolicyAndUploadFileRequest{}
 	if err := c.ShouldBindJSON(req); err != nil {
 		resp.ParameterErr(c)
+		return
+	}
+
+	fileNames := make([]string, 0, len(req.Files))
+	for _, f := range req.Files {
+		fileNames = append(fileNames, f.Name)
+	}
+	names, code := logic.DuplicateFilename(req.AccountID, fileNames)
+	if code != resp.CodeSuccess {
+		resp.Error(c, code)
+		return
+	}
+	if len(names) > 0 {
+		resp.Resp(c, resp.CodeDuplicateFilename, names)
 		return
 	}
 
