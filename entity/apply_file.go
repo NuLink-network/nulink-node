@@ -11,12 +11,15 @@ type ApplyFileRequest struct {
 }
 
 type ApplyFileListRequest struct {
-	ApplyID     uint64   `json:"apply_id"`
 	FileID      string   `json:"file_id"`
 	Status      uint8    `json:"status" binding:"gte=0,lte=3"`
 	ProposerID  string   `json:"proposer_id"`
 	FileOwnerID string   `json:"file_owner_id"`
 	Paginate    Paginate `json:"paginate"`
+}
+
+type ApplyDetailRequest struct {
+	ApplyID uint64 `json:"apply_id" binding:"required,gt=0"`
 }
 
 type RevokeApplyRequest struct {
@@ -62,4 +65,11 @@ type ApplyFileListResponse struct {
 	PolicyID      uint64 `json:"policy_id"`
 	PolicyLabelID string `json:"policy_label_id"`
 	Hrac          string `json:"hrac"`
+}
+
+type ApplyDetailResponse struct {
+	StartAt       int64  `json:"start_at"`
+	EndAt         int64  `json:"end_at"`
+	PolicyLabel   string `json:"policy_label"`
+	PolicyLabelID string `json:"policy_label_id"`
 }

@@ -607,10 +607,9 @@ application/json
 
 | 参数          |  类型     | 必填  | 默认值 | 说明   |
 | ------------ | -------- | ------ | ---- |------- |
-|  apply_id |  number  |  否   |   |申请记录 ID，如果传递申请记录 ID 其他参数可以不传 |
 |  file_id  |  string  |   否   |   |  文件 ID |
-|  proposer_id  |  string  |   否   |   |  申请人的账户 ID (如果不指定申请记录 ID 申请人的账户 ID 和文件拥有者的账户 ID 二选一) |
-|  file_owner_id  |  string  |   否   |   |  文件拥有者的账户 ID (如果不指定申请记录 ID 申请人的账户 ID 和文件拥有者的账户 ID 二选一) |
+|  proposer_id  |  string  |   否   |   |  申请人的账户 ID (申请人的账户 ID 和文件拥有者的账户 ID 二选一) |
+|  file_owner_id  |  string  |   否   |   |  文件拥有者的账户 ID (申请人的账户 ID 和文件拥有者的账户 ID 二选一) |
 |  status  |  number  |   否   |  0 (不区分状态) |  申请状态，1: 申请中，2: 已通过, 3: 已拒绝|
 |  paginate    |  [Paginate](#Paginate-结构) |  否  |      | 分页 |
 
@@ -641,13 +640,52 @@ application/json
 |  file_owner          |  string  |  文件拥有者 |
 |  file_owner_id          |  string  |  文件拥有者账户 ID |
 |  status          |  number  |  申请状态，1: 申请中，2: 已通过, 3: 已拒绝 |
-|  start_at          |  number  |  使用开始时间戳 |
-|  end_at          |  number  |  使用结束时间戳 |
+|  start_at          |  number  |  申请使用开始时间戳 |
+|  end_at          |  number  |  申请使用结束时间戳 |
 |  created_at          |  number  |  申请时间戳 |
 |  策略信息  |
 |  policy_id        |  number  | 策略 ID  |
 |  policy_label_id        |  string  | 策略 label ID  |
 |  hrac        |  string  | 策略 hrac |
+
+## 申请详情
+
+申请详细信息
+
+### 请求路径
+
+/apply/detail
+
+### 请求方法
+
+POST
+
+### 数据类型
+
+application/json
+
+### 请求参数
+
+| 参数          |  类型     | 必填  | 默认值 | 说明   |
+| ------------ | -------- | ------ | ---- |------- |
+|  apply_id |  number  |  是   |   |申请记录 ID |
+
+### 响应参数
+
+| 参数      | 类型      | 说明     |
+| --------- | -------- | ------- |
+|  code     |  number     |  响应码  |
+|  msg      |  string     |  响应信息 |
+|  data     |  object  |  响应数据 |
+
+#### data 结构
+
+| 参数      | 类型      | 说明     |
+| --------- | -------- | ------- |
+|  start_at          |  number  |  申请开始时间戳 |
+|  end_at          |  number  |  申请结束时间戳 |
+|  policy_label        |  string  | 策略 label  |
+|  policy_label_id        |  string  | 策略 label ID  |
 
 ## 撤销文件使用申请
 

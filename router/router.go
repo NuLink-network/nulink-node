@@ -40,6 +40,7 @@ func Register(engine *gin.Engine) {
 	apply := engine.Group(ApplyGroup)
 	apply.POST("/file", controller.ApplyFile)
 	apply.POST("/list", controller.ApplyFileList)
+	apply.POST("/detail", controller.ApplyDetail)
 	apply.POST("/revoke", controller.RevokeApply)
 	apply.POST("/approve", controller.ApproveApply)
 	apply.POST("/reject", controller.RejectApply)

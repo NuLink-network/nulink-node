@@ -30,19 +30,32 @@ func ApplyFileList(c *gin.Context) {
 		resp.ParameterErr(c)
 		return
 	}
-	if req.ApplyID == 0 {
-		if utils.IsEmpty(req.FileOwnerID) && utils.IsEmpty(req.ProposerID) {
-			resp.ParameterErr(c)
-			return
-		}
+	if utils.IsEmpty(req.FileOwnerID) && utils.IsEmpty(req.ProposerID) {
+		resp.ParameterErr(c)
+		return
 	}
 
-	list, code := logic.ApplyFileList(req.ApplyID, req.FileID, req.Status, req.ProposerID, req.FileOwnerID, req.Paginate.Page, req.Paginate.PageSize)
+	list, code := logic.ApplyFileList(req.FileID, req.Status, req.ProposerID, req.FileOwnerID, req.Paginate.Page, req.Paginate.PageSize)
 	if code != resp.CodeSuccess {
 		resp.Error(c, code)
 		return
 	}
 	resp.SuccessList(c, list, len(list))
+}
+
+func ApplyDetail(c *gin.Context) {
+	req := &entity.ApplyDetailRequest{}
+	if err := c.ShouldBindJSON(req); err != nil {
+		resp.ParameterErr(c)
+		return
+	}
+
+	ret, code := logic.ApplyDetail(req.ApplyID)
+	if code != resp.CodeSuccess {
+		resp.Error(c, code)
+		return
+	}
+	resp.Success(c, ret)
 }
 
 func RevokeApply(c *gin.Context) {

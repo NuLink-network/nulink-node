@@ -94,9 +94,8 @@ func ApplyFile(fileIDs []string, proposerID string, startAt, endAt int64) (code 
 	return resp.CodeSuccess
 }
 
-func ApplyFileList(applyID uint64, fileID string, status uint8, proposerID, fileOwnerID string, page, pageSize int) ([]*entity.ApplyFileListResponse, int) {
+func ApplyFileList(fileID string, status uint8, proposerID, fileOwnerID string, page, pageSize int) ([]*entity.ApplyFileListResponse, int) {
 	af := &dao.ApplyFile{
-		ID:          applyID,
 		FileID:      fileID,
 		ProposerID:  proposerID,
 		FileOwnerID: fileOwnerID,
@@ -111,30 +110,18 @@ func ApplyFileList(applyID uint64, fileID string, status uint8, proposerID, file
 		return nil, resp.CodeInternalServerError
 	}
 	if len(afs) == 0 {
-		// todo 不存在申请信息
+		// 不存在申请信息
 		return []*entity.ApplyFileListResponse{}, resp.CodeSuccess
 	}
-	fileIDs := make([]string, 0, 0)
-	for _, af := range afs {
-		fileIDs = append(fileIDs, af.FileID)
-	}
 
-	fp := dao.FilePolicy{
-		CreatorID:  afs[0].FileOwnerID,
-		ConsumerID: afs[0].ProposerID,
+	approvedFileIDs := make([]string, 0, 0)
+	for _, af := range afs {
+		if af.Status == dao.ApplyStatusApproved {
+			approvedFileIDs = append(approvedFileIDs, af.FileID)
+		}
 	}
-	query := &dao.QueryExtra{
-		Conditions: map[string]interface{}{
-			"file_id in ?": fileIDs,
-		},
-	}
-	filePolicyList, err := fp.FindAny(query, nil)
-	if err != nil {
-		log.Logger().WithField("filePolicy", utils.JSON(fp)).WithField("ext", utils.JSON(query)).WithField("error", err).Error("find file policy list failed")
-		return nil, resp.CodeInternalServerError
-	}
-	if len(filePolicyList) == 0 {
-		// todo 申请未通过仅返回申请信息
+	if len(approvedFileIDs) == 0 {
+		// 所有申请未通过仅返回申请信息
 		ret := make([]*entity.ApplyFileListResponse, 0, len(afs))
 		for _, af := range afs {
 			ret = append(ret, &entity.ApplyFileListResponse{
@@ -152,6 +139,23 @@ func ApplyFileList(applyID uint64, fileID string, status uint8, proposerID, file
 		}
 		return ret, resp.CodeSuccess
 	}
+
+	fp := dao.FilePolicy{
+		CreatorID:  fileOwnerID,
+		ConsumerID: proposerID,
+	}
+	query := &dao.QueryExtra{
+		Conditions: map[string]interface{}{
+			"file_id in ?": approvedFileIDs,
+		},
+	}
+	filePolicyList, err := fp.FindAny(query, nil)
+	if err != nil {
+		log.Logger().WithField("filePolicy", utils.JSON(fp)).WithField("ext", utils.JSON(query)).WithField("error", err).Error("find file policy list failed")
+		return nil, resp.CodeInternalServerError
+	}
+	// 理论上审核过的申请一定会有文件策略关系记录
+	// 如果未找到文件关系记录则是程序或数据异常
 
 	policyIDs := make([]uint64, 0, 0)
 	fileID2PolicyID := make(map[string]uint64, 0)
@@ -177,22 +181,26 @@ func ApplyFileList(applyID uint64, fileID string, status uint8, proposerID, file
 
 	ret := make([]*entity.ApplyFileListResponse, 0, len(afs))
 	for _, af := range afs {
-		policy := policyID2Policy[fileID2PolicyID[af.FileID]]
-		ret = append(ret, &entity.ApplyFileListResponse{
-			FileID:        af.FileID,
-			ApplyID:       af.ID,
-			Proposer:      af.Proposer,
-			ProposerID:    af.ProposerID,
-			FileOwner:     af.FileOwner,
-			FileOwnerID:   af.FileOwnerID,
-			Status:        af.Status,
-			StartAt:       af.StartAt.Unix(),
-			EndAt:         af.FinishAt.Unix(),
-			CreatedAt:     af.CreatedAt.Unix(),
-			PolicyID:      policy.ID,
-			PolicyLabelID: policy.PolicyLabelID,
-			Hrac:          policy.Hrac,
-		})
+		item := &entity.ApplyFileListResponse{
+			FileID:      af.FileID,
+			ApplyID:     af.ID,
+			Proposer:    af.Proposer,
+			ProposerID:  af.ProposerID,
+			FileOwner:   af.FileOwner,
+			FileOwnerID: af.FileOwnerID,
+			Status:      af.Status,
+			StartAt:     af.StartAt.Unix(),
+			EndAt:       af.FinishAt.Unix(),
+			CreatedAt:   af.CreatedAt.Unix(),
+		}
+		if af.Status == dao.ApplyStatusApproved {
+			if policy := policyID2Policy[fileID2PolicyID[af.FileID]]; policy != nil {
+				item.PolicyID = policy.ID
+				item.PolicyLabelID = policy.PolicyLabelID
+				item.Hrac = policy.Hrac
+			}
+		}
+		ret = append(ret, item)
 	}
 	return ret, resp.CodeSuccess
 }
@@ -229,6 +237,50 @@ func RevokeApply(proposerID string, applyIDs []uint64) (code int) {
 	}
 
 	return resp.CodeSuccess
+}
+
+func ApplyDetail(applyID uint64) (*entity.ApplyDetailResponse, int) {
+	af := &dao.ApplyFile{
+		ID: applyID,
+	}
+	apply, err := af.Get()
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, resp.CodeApplyNotExist
+		}
+		log.Logger().WithField("applyID", applyID).WithField("error", err).Error("get apply file failed")
+		return nil, resp.CodeInternalServerError
+	}
+
+	f := &dao.File{
+		FileID: apply.FileID,
+	}
+	file, err := f.Get()
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, resp.CodeFileNotExist
+		}
+		log.Logger().WithField("fileID", apply.FileID).WithField("error", err).Error("get file failed")
+		return nil, resp.CodeInternalServerError
+	}
+
+	pl := &dao.PolicyLabel{
+		PolicyLabelID: file.PolicyLabelID,
+	}
+	policyLabel, err := pl.Get()
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, resp.CodePolicyLabelNotExist
+		}
+		log.Logger().WithField("policyLabelID", file.PolicyLabelID).WithField("error", err).Error("get policy label failed")
+		return nil, resp.CodeInternalServerError
+	}
+	return &entity.ApplyDetailResponse{
+		StartAt:       apply.StartAt.Unix(),
+		EndAt:         apply.FinishAt.Unix(),
+		PolicyLabel:   policyLabel.Label,
+		PolicyLabelID: policyLabel.PolicyLabelID,
+	}, resp.CodeSuccess
 }
 
 func ApproveApply(accountID string, applyID uint64, policy entity.Policy) (code int) {
