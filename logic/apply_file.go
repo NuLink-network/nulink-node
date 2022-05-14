@@ -21,6 +21,7 @@ func ApplyFile(fileIDs []string, proposerID string, startAt, endAt int64) (code 
 	query := &dao.QueryExtra{
 		Conditions: map[string]interface{}{
 			"file_id in ?": fileIDs,
+			"status != ?":  dao.ApplyStatusRejected,
 			// todo 不判断结束时间
 			//"finish_at >= ?":    time.Unix(endAt, 0),
 		},
@@ -37,7 +38,7 @@ func ApplyFile(fileIDs []string, proposerID string, startAt, endAt int64) (code 
 	}
 	if len(ignoreFileIDs) == len(fileIDs) {
 		// todo 当前所有文件已申请
-		return resp.CodeSuccess
+		return resp.CodeFileApplied
 	}
 
 	acc := &dao.Account{AccountID: proposerID}
@@ -338,8 +339,7 @@ func ApproveApply(accountID string, applyID uint64, policy entity.Policy) (code 
 
 func RejectApply(accountID string, applyID uint64) (code int) {
 	af := &dao.ApplyFile{
-		ID:          applyID,
-		FileOwnerID: accountID,
+		ID: applyID,
 	}
 
 	apply, err := af.Get()
@@ -348,6 +348,9 @@ func RejectApply(accountID string, applyID uint64) (code int) {
 			return resp.CodeApplyNotExist
 		}
 		return resp.CodeInternalServerError
+	}
+	if apply.FileOwnerID != accountID {
+		return resp.CodeUnauthorized
 	}
 	if apply.Status == dao.ApplyStatusApproved {
 		return resp.CodeApplyApproved

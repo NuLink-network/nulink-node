@@ -2,12 +2,14 @@ package resp
 
 const (
 	CodeSuccess             = 2000
+	CodeUnauthorized        = 3000
 	CodeParameterErr        = 4000
 	CodeInternalServerError = 5000
 )
 
 const (
 	MsgSuccess             = "Success"
+	MsgUnauthorized        = "Unauthorized Operation"
 	MsgInternalServerError = "Internal Server Error"
 	MsgParameterErr        = "Invalid Parameter"
 )
@@ -29,6 +31,8 @@ const (
 	CodeApplyApproved     = 4103
 	CodeApplyUnApproved   = 4104
 	CodePolicyUnpublished = 4106
+	Code                  = 4107
+	CodeFileApplied       = 4108
 )
 
 const (
@@ -40,6 +44,7 @@ const (
 	MsgApplyNotExist       = "apply does not exist"
 	MsgAccountNotExist     = "account does not exist"
 	MsgFileNotExist        = "file does not exist"
+	MsgFileApplied         = "you have already applied for file and cannot apply again"
 	MsgApplyIrrevocable    = "apply is irrevocable"
 	MsgApplyApproved       = "apply approved"
 	MsgApplyRejected       = "apply rejected"
@@ -49,6 +54,7 @@ const (
 
 var code2msg = map[int]string{
 	CodeSuccess:             MsgSuccess,
+	CodeUnauthorized:        MsgUnauthorized,
 	CodeParameterErr:        MsgParameterErr,
 	CodeInternalServerError: MsgInternalServerError,
 	CodePolicyLabelNotExist: MsgPolicyLabelNotExist,
@@ -58,6 +64,7 @@ var code2msg = map[int]string{
 	CodeApplyNotExist:       MsgApplyNotExist,
 	CodeAccountNotExist:     MsgAccountNotExist,
 	CodeFileNotExist:        MsgFileNotExist,
+	CodeFileApplied:         MsgFileApplied,
 	CodeApplyIrrevocable:    MsgApplyIrrevocable,
 	CodeApplyApproved:       MsgApplyApproved,
 	CodeApplyUnApproved:     MsgApplyUnapproved,

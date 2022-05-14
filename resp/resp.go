@@ -48,7 +48,7 @@ func SuccessList(c *gin.Context, list interface{}, total int) {
 
 func Error(c *gin.Context, code int) {
 	c.JSON(http.StatusOK, Response{
-		Code: CodeSuccess,
+		Code: code,
 		Msg:  code2msg[code],
 		Data: EmptyStruct,
 	})
