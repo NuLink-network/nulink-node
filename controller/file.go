@@ -25,7 +25,10 @@ func UploadFile(c *gin.Context) {
 		return
 	}
 	if len(names) > 0 {
-		resp.Resp(c, resp.CodeDuplicateFilename, names)
+		ret := map[string][]string{
+			"filenames": names,
+		}
+		resp.Resp(c, resp.CodeDuplicateFilename, ret)
 		return
 	}
 
@@ -53,7 +56,10 @@ func CreatePolicyAndUploadFile(c *gin.Context) {
 		return
 	}
 	if len(names) > 0 {
-		resp.Resp(c, resp.CodeDuplicateFilename, names)
+		ret := map[string][]string{
+			"filenames": names,
+		}
+		resp.Resp(c, resp.CodeDuplicateFilename, ret)
 		return
 	}
 
