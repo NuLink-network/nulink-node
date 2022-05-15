@@ -207,7 +207,6 @@ application/json
 |-----------|---------------|-------------|
 | filenames | Array[string] | 重复的文件名列表    |
 
-
 ## 删除文件
 
 删除文件
@@ -551,18 +550,19 @@ application/json
 
 #### list 结构
 
-| 参数      | 类型      | 说明     |
-| --------- | -------- | ------- |
-|  hrac        |  string  |  hrac |
-|  policy_id        |  number  | 策略 ID  |
-|  creator        |  string  |  策略创建者 |
-|  creator_id       |  string  |  策略创建者 ID |
-|  consumer      |  string  | 策略使用者  |
-|  consumer_id       |  string  | 策略使用者 ID  |
-|  gas     |  string  |  gas |
+| 参数      | 类型      | 说明       |
+| --------- | -------- |----------|
+|  hrac        |  string  | hrac     |
+|  policy_id        |  number  | 策略 ID    |
+|  creator        |  string  | 策略创建者    |
+|  creator_id       |  string  | 策略创建者 ID |
+|  consumer      |  string  | 策略使用者    |
+|  consumer_id       |  string  | 策略使用者 ID |
+|  gas     |  string  | gas      |
 |  tx_hash     |  string  | 交易 hash  |
-|  start_at   |  number  |  策略开始时间戳 |
-|  end_at     |  number  |  策略结束时间戳 |
+|  encrypted_pk     |  string  | 策略加密公钥   |
+|  start_at   |  number  | 策略开始时间戳  |
+|  end_at     |  number  | 策略结束时间戳  |
 |  created_at      |  number  | 策略创建时间戳  |
 
 ## 申请文件使用
@@ -602,6 +602,7 @@ application/json
 ## 申请文件使用列表
 
 申请文件使用信息列表
+
 1. 文件申请不存在所有信息为空。
 2. 申请未通过仅返回申请信息策略信息为空
 

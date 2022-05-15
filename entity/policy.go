@@ -24,17 +24,18 @@ type FileDetailListRequest struct {
 // ========================= response =========================
 
 type PolicyListResponse struct {
-	Hrac       string `json:"hrac"`
-	PolicyID   uint64 `json:"policy_id"`
-	Creator    string `json:"creator"`
-	CreatorID  string `json:"creator_id"`
-	Consumer   string `json:"consumer"`
-	ConsumerID string `json:"consumer_id"`
-	Gas        string `json:"gas"`
-	TxHash     string `json:"tx_hash"`
-	StartAt    int64  `json:"start_at"`
-	EndAt      int64  `json:"end_at"`
-	CreatedAt  int64  `json:"created_at"`
+	Hrac        string `json:"hrac"`
+	PolicyID    uint64 `json:"policy_id"`
+	Creator     string `json:"creator"`
+	CreatorID   string `json:"creator_id"`
+	Consumer    string `json:"consumer"`
+	ConsumerID  string `json:"consumer_id"`
+	Gas         string `json:"gas"`
+	TxHash      string `json:"tx_hash"`
+	EncryptedPK string `json:"encrypted_pk"`
+	StartAt     int64  `json:"start_at"`
+	EndAt       int64  `json:"end_at"`
+	CreatedAt   int64  `json:"created_at"`
 }
 
 type FileDetailListResponse struct {
