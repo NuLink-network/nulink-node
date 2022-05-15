@@ -249,35 +249,13 @@ func FileDetail(fileID, consumerID string) (ret *entity.FileDetailResponse, code
 		},
 	}
 	applyFile, err := af.GetAny(query)
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			// 未申请文件使用仅返回文件信息
-			return &entity.FileDetailResponse{
-				FileID:        file.FileID,
-				FileName:      file.Name,
-				Thumbnail:     file.Thumbnail,
-				Creator:       file.Owner,
-				CreatorID:     file.OwnerID,
-				FileCreatedAt: file.CreatedAt.Unix(),
-			}, resp.CodeSuccess
-		}
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		log.Logger().WithField("applyFile", af).WithField("error", err).Error("get apply file failed")
 		return nil, resp.CodeInternalServerError
 	}
-	if applyFile.Status != dao.ApplyStatusApproved {
-		return &entity.FileDetailResponse{
-			FileID:         file.FileID,
-			FileName:       file.Name,
-			Thumbnail:      file.Thumbnail,
-			FileCreatedAt:  file.CreatedAt.Unix(),
-			ApplyID:        applyFile.ID,
-			Status:         applyFile.Status,
-			ApplyStartAt:   applyFile.StartAt.Unix(),
-			ApplyEndAt:     applyFile.FinishAt.Unix(),
-			ApplyCreatedAt: applyFile.CreatedAt.Unix(),
-		}, resp.CodeSuccess
-	}
 
+	// 因为上传文件时关联已发布策略策略的使用者自动获得该文件的使用
+	// 这种情况不存在申请记录表只存在文件策略关联纪律
 	fp := &dao.FilePolicy{
 		FileID:     fileID,
 		ConsumerID: consumerID,
@@ -289,6 +267,37 @@ func FileDetail(fileID, consumerID string) (ret *entity.FileDetailResponse, code
 		}
 		log.Logger().WithField("filePolicy", fp).WithField("error", err).Error("get file policy failed")
 		return nil, resp.CodeInternalServerError
+	}
+
+	// 0 0
+	// 申请记录和文件策略关联纪律都不存在，直接返回文件信息
+	if applyFile.ID == 0 && filePolicy.ID == 0 {
+		return &entity.FileDetailResponse{
+			FileID:        file.FileID,
+			FileName:      file.Name,
+			Thumbnail:     file.Thumbnail,
+			Creator:       file.Owner,
+			CreatorID:     file.OwnerID,
+			FileCreatedAt: file.CreatedAt.Unix(),
+		}, resp.CodeSuccess
+	}
+
+	// 1 0
+	// 申请未通过(表示申请记录存在，文件策略关联记录还未创建)，返回文件信息和申请信息
+	if applyFile.Status != dao.ApplyStatusApproved {
+		return &entity.FileDetailResponse{
+			FileID:         file.FileID,
+			FileName:       file.Name,
+			Thumbnail:      file.Thumbnail,
+			Creator:        file.Owner,
+			CreatorID:      file.OwnerID,
+			FileCreatedAt:  file.CreatedAt.Unix(),
+			ApplyID:        applyFile.ID,
+			Status:         applyFile.Status,
+			ApplyStartAt:   applyFile.StartAt.Unix(),
+			ApplyEndAt:     applyFile.FinishAt.Unix(),
+			ApplyCreatedAt: applyFile.CreatedAt.Unix(),
+		}, resp.CodeSuccess
 	}
 
 	p := &dao.Policy{
@@ -303,26 +312,53 @@ func FileDetail(fileID, consumerID string) (ret *entity.FileDetailResponse, code
 		return nil, resp.CodeInternalServerError
 	}
 
-	ret = &entity.FileDetailResponse{
-		FileID:          file.FileID,
-		FileName:        file.Name,
-		Thumbnail:       file.Thumbnail,
-		FileCreatedAt:   file.CreatedAt.Unix(),
-		ApplyID:         applyFile.ID,
-		Status:          applyFile.Status,
-		ApplyStartAt:    applyFile.StartAt.Unix(),
-		ApplyEndAt:      applyFile.FinishAt.Unix(),
-		ApplyCreatedAt:  applyFile.CreatedAt.Unix(),
-		PolicyID:        policy.ID,
-		Hrac:            policy.Hrac,
-		Creator:         policy.Creator,
-		CreatorID:       policy.CreatorID,
-		Consumer:        policy.Consumer,
-		ConsumerID:      policy.ConsumerID,
-		Gas:             policy.Gas,
-		TxHash:          policy.TxHash,
-		PolicyCreatedAt: policy.CreatedAt.Unix(),
+	// 0 1
+	// 申请记录不存在文件策略记录存在表示使用者是自动获取的文件使用权限
+	// 返回文件信息，策略信息
+	if applyFile.ID == 0 && filePolicy.ID == 1 {
+		ret = &entity.FileDetailResponse{
+			FileID:          file.FileID,
+			FileName:        file.Name,
+			Thumbnail:       file.Thumbnail,
+			Creator:         file.Owner,
+			CreatorID:       file.OwnerID,
+			FileCreatedAt:   file.CreatedAt.Unix(),
+			PolicyID:        policy.ID,
+			Hrac:            policy.Hrac,
+			Consumer:        policy.Consumer,
+			ConsumerID:      policy.ConsumerID,
+			Gas:             policy.Gas,
+			TxHash:          policy.TxHash,
+			PolicyCreatedAt: policy.CreatedAt.Unix(),
+		}
 	}
+
+	// 1 1
+	// 申请记录和文件策略关联记录都存在表示用户是通过申请获取到的文件使用权限
+	// 返回文件信息，申请信息，策略信息
+	if applyFile.ID == 1 && filePolicy.ID == 1 {
+		ret = &entity.FileDetailResponse{
+			FileID:          file.FileID,
+			FileName:        file.Name,
+			Thumbnail:       file.Thumbnail,
+			Creator:         file.Owner,
+			CreatorID:       file.OwnerID,
+			FileCreatedAt:   file.CreatedAt.Unix(),
+			ApplyID:         applyFile.ID,
+			Status:          applyFile.Status,
+			ApplyStartAt:    applyFile.StartAt.Unix(),
+			ApplyEndAt:      applyFile.FinishAt.Unix(),
+			ApplyCreatedAt:  applyFile.CreatedAt.Unix(),
+			PolicyID:        policy.ID,
+			Hrac:            policy.Hrac,
+			Consumer:        policy.Consumer,
+			ConsumerID:      policy.ConsumerID,
+			Gas:             policy.Gas,
+			TxHash:          policy.TxHash,
+			PolicyCreatedAt: policy.CreatedAt.Unix(),
+		}
+	}
+
 	// apply has expired
 	if applyFile.FinishAt.Before(time.Now()) {
 		return ret, resp.CodeSuccess
