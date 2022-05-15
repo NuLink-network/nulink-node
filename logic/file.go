@@ -315,7 +315,7 @@ func FileDetail(fileID, consumerID string) (ret *entity.FileDetailResponse, code
 	// 0 1
 	// 申请记录不存在，文件策略记录存在表示使用者是自动获取的文件使用权限
 	// 返回文件信息，策略信息
-	if applyFile.ID == 0 && filePolicy.ID == 1 {
+	if applyFile.ID == 0 && filePolicy.ID != 0 {
 		ret = &entity.FileDetailResponse{
 			FileID:          file.FileID,
 			FileName:        file.Name,
@@ -336,7 +336,7 @@ func FileDetail(fileID, consumerID string) (ret *entity.FileDetailResponse, code
 	// 1 1
 	// 申请记录和文件策略关联记录都存在表示用户是通过申请获取到的文件使用权限
 	// 返回文件信息，申请信息，策略信息
-	if applyFile.ID == 1 && filePolicy.ID == 1 {
+	if applyFile.ID != 0 && filePolicy.ID != 0 {
 		ret = &entity.FileDetailResponse{
 			FileID:          file.FileID,
 			FileName:        file.Name,
@@ -359,8 +359,8 @@ func FileDetail(fileID, consumerID string) (ret *entity.FileDetailResponse, code
 		}
 	}
 
-	// apply has expired
-	if applyFile.FinishAt.Before(time.Now()) {
+	// has expired
+	if filePolicy.EndAt.Before(time.Now()) {
 		return ret, resp.CodeSuccess
 	}
 
