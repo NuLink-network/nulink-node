@@ -283,8 +283,8 @@ func FileDetail(fileID, consumerID string) (ret *entity.FileDetailResponse, code
 	}
 
 	// 1 0
-	// 申请未通过(表示申请记录存在，文件策略关联记录还未创建)，返回文件信息和申请信息
-	if applyFile.Status != dao.ApplyStatusApproved {
+	// 申请记录存在但未通过，文件策略关联记录还未创建，返回文件信息和申请信息
+	if applyFile.ID != 0 && applyFile.Status != dao.ApplyStatusApproved {
 		return &entity.FileDetailResponse{
 			FileID:         file.FileID,
 			FileName:       file.Name,
@@ -313,7 +313,7 @@ func FileDetail(fileID, consumerID string) (ret *entity.FileDetailResponse, code
 	}
 
 	// 0 1
-	// 申请记录不存在文件策略记录存在表示使用者是自动获取的文件使用权限
+	// 申请记录不存在，文件策略记录存在表示使用者是自动获取的文件使用权限
 	// 返回文件信息，策略信息
 	if applyFile.ID == 0 && filePolicy.ID == 1 {
 		ret = &entity.FileDetailResponse{
