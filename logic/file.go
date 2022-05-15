@@ -243,7 +243,12 @@ func FileDetail(fileID, consumerID string) (ret *entity.FileDetailResponse, code
 		FileID:     fileID,
 		ProposerID: consumerID,
 	}
-	applyFile, err := af.Get()
+	query := &dao.QueryExtra{
+		Conditions: map[string]interface{}{
+			"status != ?": dao.ApplyStatusRejected,
+		},
+	}
+	applyFile, err := af.GetAny(query)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			// 未申请文件使用仅返回文件信息

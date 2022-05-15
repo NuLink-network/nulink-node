@@ -52,6 +52,22 @@ func (a *ApplyFile) Get() (af *ApplyFile, err error) {
 	return af, err
 }
 
+func (a *ApplyFile) GetAny(ext *QueryExtra) (af *ApplyFile, err error) {
+	tx := db.GetDB().Where(a)
+	if ext != nil {
+		if ext.Conditions != nil {
+			for k, v := range ext.Conditions {
+				tx = tx.Where(k, v)
+			}
+		}
+		if !utils.IsEmpty(ext.OrderStr) {
+			tx.Order(ext.OrderStr)
+		}
+	}
+	err = tx.First(&af).Error
+	return af, err
+}
+
 func (a *ApplyFile) Find(pager Pager) (afs []*ApplyFile, err error) {
 	tx := db.GetDB().Where(a)
 	if pager != nil {
