@@ -261,10 +261,7 @@ func FileDetail(fileID, consumerID string) (ret *entity.FileDetailResponse, code
 		ConsumerID: consumerID,
 	}
 	filePolicy, err := fp.Get()
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, resp.CodeApplyUnApproved
-		}
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		log.Logger().WithField("filePolicy", fp).WithField("error", err).Error("get file policy failed")
 		return nil, resp.CodeInternalServerError
 	}
