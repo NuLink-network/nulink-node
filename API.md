@@ -558,8 +558,10 @@ application/json
 |  policy_id        |  number  | 策略 ID    |
 |  creator        |  string  | 策略创建者    |
 |  creator_id       |  string  | 策略创建者 ID |
+|  creator_address       |  string  | 策略创建者的以太坊地址 |
 |  consumer      |  string  | 策略使用者    |
 |  consumer_id       |  string  | 策略使用者 ID |
+|  consumer_address       |  string  | 策略使用者的以太坊地址 |
 |  gas     |  string  | gas      |
 |  tx_hash     |  string  | 交易 hash  |
 |  encrypted_pk     |  string  | 策略加密公钥   |

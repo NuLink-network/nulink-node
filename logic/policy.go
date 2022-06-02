@@ -71,18 +71,20 @@ func PolicyList(policyID uint64, policyLabelID, creatorID, consumerID string, pa
 	ret := make([]*entity.PolicyListResponse, 0, len(ps))
 	for _, p := range ps {
 		ret = append(ret, &entity.PolicyListResponse{
-			Hrac:        p.Hrac,
-			PolicyID:    p.ID,
-			Creator:     p.Creator,
-			CreatorID:   p.CreatorID,
-			Consumer:    p.Consumer,
-			ConsumerID:  p.ConsumerID,
-			Gas:         p.Gas,
-			TxHash:      p.TxHash,
-			EncryptedPK: p.EncryptedPK,
-			StartAt:     p.StartAt.Unix(),
-			EndAt:       p.EndAt.Unix(),
-			CreatedAt:   p.CreatedAt.Unix(),
+			Hrac:            p.Hrac,
+			PolicyID:        p.ID,
+			Creator:         p.Creator,
+			CreatorID:       p.CreatorID,
+			CreatorAddress:  p.CreatorAddress,
+			Consumer:        p.Consumer,
+			ConsumerID:      p.ConsumerID,
+			ConsumerAddress: p.ConsumerAddress,
+			Gas:             p.Gas,
+			TxHash:          p.TxHash,
+			EncryptedPK:     p.EncryptedPK,
+			StartAt:         p.StartAt.Unix(),
+			EndAt:           p.EndAt.Unix(),
+			CreatedAt:       p.CreatedAt.Unix(),
 		})
 	}
 	return ret, resp.CodeSuccess
