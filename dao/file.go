@@ -8,17 +8,17 @@ import (
 )
 
 type File struct {
-	ID        uint64 `gorm:"primarykey"`
-	FileID    string `gorm:"column:file_id" json:"file_id" sql:"char(36)"`
-	MD5       string `gorm:"column:md5" json:"md5" sql:"varchar(32)"`
-	Name      string `gorm:"column:name" json:"name" sql:"varchar(32)"`
-	Suffix    string `gorm:"column:suffix" json:"suffix" sql:"varchar(16)"`
-	Category  string `gorm:"column:category" json:"category" sql:"varchar(32)"`
-	Address   string `gorm:"column:address" json:"addr" sql:"varchar(512)"`
-	Owner     string `gorm:"column:owner" json:"owner" sql:"varchar(512)"`
-	OwnerID   string `gorm:"column:owner_id" json:"owner_id" sql:"char(36)"`
-	Thumbnail string `gorm:"column:thumbnail" json:"thumbnail" sql:"varchar(512)"`
-	//PolicyID      uint64         `gorm:"column:policy_id" json:"policy_id" sql:"bigint(20)"`
+	ID            uint64         `gorm:"primarykey"`
+	FileID        string         `gorm:"column:file_id" json:"file_id" sql:"char(36)"`
+	MD5           string         `gorm:"column:md5" json:"md5" sql:"varchar(32)"`
+	Name          string         `gorm:"column:name" json:"name" sql:"varchar(32)"`
+	Suffix        string         `gorm:"column:suffix" json:"suffix" sql:"varchar(16)"`
+	Category      string         `gorm:"column:category" json:"category" sql:"varchar(32)"`
+	Address       string         `gorm:"column:address" json:"addr" sql:"varchar(512)"`
+	Owner         string         `gorm:"column:owner" json:"owner" sql:"varchar(512)"`
+	OwnerID       string         `gorm:"column:owner_id" json:"owner_id" sql:"char(36)"`
+	OwnerAddress  string         `gorm:"column:owner_address" json:"owner_address" sql:"char(42)"`
+	Thumbnail     string         `gorm:"column:thumbnail" json:"thumbnail" sql:"varchar(512)"`
 	PolicyLabelID string         `gorm:"column:policy_label_id" json:"policy_label_id" sql:"char(36)"`
 	CreatedAt     time.Time      `gorm:"column:created_at" json:"created_at,omitempty" sql:"datetime"`
 	UpdatedAt     time.Time      `gorm:"column:updated_at" json:"updated_at,omitempty" sql:"datetime"`

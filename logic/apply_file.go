@@ -64,11 +64,13 @@ func ApplyFile(fileIDs []string, proposerID string, startAt, endAt int64) (code 
 		return resp.CodeFileNotExist
 	}
 
-	fileOwner := make(map[string]map[string]string, len(files))
+	fileInfo := make(map[string]map[string]string, len(files))
 	for _, file := range files {
-		fileOwner[file.FileID] = map[string]string{
-			"owner":    file.Owner,
-			"owner_id": file.OwnerID,
+		fileInfo[file.FileID] = map[string]string{
+			"name":          file.Name,
+			"owner":         file.Owner,
+			"owner_id":      file.OwnerID,
+			"owner_address": file.OwnerAddress,
 		}
 	}
 
@@ -79,13 +81,16 @@ func ApplyFile(fileIDs []string, proposerID string, startAt, endAt int64) (code 
 			continue
 		}
 		afs = append(afs, &dao.ApplyFile{
-			FileID:      fid,
-			Proposer:    account.Name,
-			ProposerID:  proposerID,
-			FileOwner:   fileOwner[fid]["owner"],
-			FileOwnerID: fileOwner[fid]["owner_id"],
-			StartAt:     time.Unix(startAt, 0),
-			FinishAt:    time.Unix(endAt, 0),
+			FileID:           fid,
+			FileName:         fileInfo[fid]["name"],
+			Proposer:         account.Name,
+			ProposerID:       proposerID,
+			ProposerAddress:  account.EthereumAddr,
+			FileOwner:        fileInfo[fid]["owner"],
+			FileOwnerID:      fileInfo[fid]["owner_id"],
+			FileOwnerAddress: fileInfo[fid]["owner_address"],
+			StartAt:          time.Unix(startAt, 0),
+			FinishAt:         time.Unix(endAt, 0),
 		})
 	}
 	if err := dao.NewAppleFile().BatchCreate(afs); err != nil {
@@ -125,16 +130,20 @@ func ApplyFileList(fileID string, status uint8, proposerID, fileOwnerID string, 
 		ret := make([]*entity.ApplyFileListResponse, 0, len(afs))
 		for _, af := range afs {
 			ret = append(ret, &entity.ApplyFileListResponse{
-				FileID:      af.FileID,
-				ApplyID:     af.ID,
-				Proposer:    af.Proposer,
-				ProposerID:  af.ProposerID,
-				FileOwner:   af.FileOwner,
-				FileOwnerID: af.FileOwnerID,
-				Status:      af.Status,
-				StartAt:     af.StartAt.Unix(),
-				EndAt:       af.FinishAt.Unix(),
-				CreatedAt:   af.CreatedAt.Unix(),
+				FileID:           af.FileID,
+				FileName:         af.FileName,
+				ApplyID:          af.ID,
+				Proposer:         af.Proposer,
+				ProposerID:       af.ProposerID,
+				ProposerAddress:  af.ProposerAddress,
+				FileOwner:        af.FileOwner,
+				FileOwnerID:      af.FileOwnerID,
+				FileOwnerAddress: af.FileOwnerAddress,
+				Status:           af.Status,
+				Remark:           af.Remark,
+				StartAt:          af.StartAt.Unix(),
+				EndAt:            af.FinishAt.Unix(),
+				CreatedAt:        af.CreatedAt.Unix(),
 			})
 		}
 		return ret, resp.CodeSuccess
@@ -182,16 +191,20 @@ func ApplyFileList(fileID string, status uint8, proposerID, fileOwnerID string, 
 	ret := make([]*entity.ApplyFileListResponse, 0, len(afs))
 	for _, af := range afs {
 		item := &entity.ApplyFileListResponse{
-			FileID:      af.FileID,
-			ApplyID:     af.ID,
-			Proposer:    af.Proposer,
-			ProposerID:  af.ProposerID,
-			FileOwner:   af.FileOwner,
-			FileOwnerID: af.FileOwnerID,
-			Status:      af.Status,
-			StartAt:     af.StartAt.Unix(),
-			EndAt:       af.FinishAt.Unix(),
-			CreatedAt:   af.CreatedAt.Unix(),
+			FileID:           af.FileID,
+			FileName:         af.FileName,
+			ApplyID:          af.ID,
+			Proposer:         af.Proposer,
+			ProposerID:       af.ProposerID,
+			ProposerAddress:  af.ProposerAddress,
+			FileOwner:        af.FileOwner,
+			FileOwnerID:      af.FileOwnerID,
+			FileOwnerAddress: af.FileOwnerAddress,
+			Status:           af.Status,
+			Remark:           af.Remark,
+			StartAt:          af.StartAt.Unix(),
+			EndAt:            af.FinishAt.Unix(),
+			CreatedAt:        af.CreatedAt.Unix(),
 		}
 		if af.Status == dao.ApplyStatusApproved {
 			if policy := policyID2Policy[fileID2PolicyID[af.FileID]]; policy != nil {
@@ -283,7 +296,7 @@ func ApplyDetail(applyID uint64) (*entity.ApplyDetailResponse, int) {
 	}, resp.CodeSuccess
 }
 
-func ApproveApply(accountID string, applyID uint64, policy entity.Policy) (code int) {
+func ApproveApply(accountID string, applyID uint64, remark string, policy entity.Policy) (code int) {
 	af := &dao.ApplyFile{
 		ID:          applyID,
 		FileOwnerID: accountID,
@@ -333,8 +346,10 @@ func ApproveApply(accountID string, applyID uint64, policy entity.Policy) (code 
 			PolicyLabelID:    file.PolicyLabelID,
 			Creator:          apply.FileOwner,
 			CreatorID:        apply.FileOwnerID,
+			CreatorAddress:   apply.FileOwnerAddress,
 			Consumer:         apply.Proposer,
 			ConsumerID:       apply.ProposerID,
+			ConsumerAddress:  apply.ProposerAddress,
 			EncryptedPK:      policy.EncryptedPK,
 			EncryptedAddress: policy.EncryptedAddress,
 			Gas:              policy.Gas,
@@ -383,14 +398,17 @@ func ApproveApply(accountID string, applyID uint64, policy entity.Policy) (code 
 		}
 	}
 
-	newAf := &dao.ApplyFile{Status: dao.ApplyStatusApproved}
+	newAf := &dao.ApplyFile{
+		Status: dao.ApplyStatusApproved,
+		Remark: remark,
+	}
 	if err := af.Updates(newAf); err != nil {
 		return resp.CodeInternalServerError
 	}
 	return resp.CodeSuccess
 }
 
-func RejectApply(accountID string, applyID uint64) (code int) {
+func RejectApply(accountID string, applyID uint64, remark string) (code int) {
 	af := &dao.ApplyFile{
 		ID: applyID,
 	}
@@ -412,7 +430,10 @@ func RejectApply(accountID string, applyID uint64) (code int) {
 		return resp.CodeSuccess
 	}
 
-	newAf := &dao.ApplyFile{Status: dao.ApplyStatusRejected}
+	newAf := &dao.ApplyFile{
+		Status: dao.ApplyStatusRejected,
+		Remark: remark,
+	}
 	if err := af.Updates(newAf); err != nil {
 		return resp.CodeInternalServerError
 	}

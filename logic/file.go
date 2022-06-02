@@ -60,6 +60,7 @@ func UploadFile(accountID string, policyID uint64, files []entity.File) (code in
 			Address:       f.Address,
 			Owner:         policy.Creator,
 			OwnerID:       accountID,
+			OwnerAddress:  policy.CreatorAddress,
 			PolicyLabelID: policy.PolicyLabelID,
 		})
 
@@ -109,6 +110,7 @@ func CreatePolicyAndUploadFile(accountID, policyLabelID, policyLabel, encryptedP
 			Address:       f.Address,
 			Owner:         account.Name,
 			OwnerID:       accountID,
+			OwnerAddress:  account.EthereumAddr,
 			PolicyLabelID: policyLabelID,
 		})
 	}
@@ -266,6 +268,16 @@ func FileDetail(fileID, consumerID string) (ret *entity.FileDetailResponse, code
 		return nil, resp.CodeInternalServerError
 	}
 
+	acc := &dao.Account{AccountID: file.OwnerID}
+	owner, err := acc.Get()
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, resp.CodeAccountNotExist
+		}
+		log.Logger().WithField("accountID", file.OwnerID).WithField("error", err).Error("get account failed")
+		return nil, resp.CodeInternalServerError
+	}
+
 	// 0 0
 	// 申请记录和文件策略关联纪律都不存在，直接返回文件信息
 	if applyFile.ID == 0 && filePolicy.ID == 0 {
@@ -275,6 +287,7 @@ func FileDetail(fileID, consumerID string) (ret *entity.FileDetailResponse, code
 			Thumbnail:       file.Thumbnail,
 			Creator:         file.Owner,
 			CreatorID:       file.OwnerID,
+			CreatorAddress:  owner.EthereumAddr,
 			FileIPFSAddress: file.Address,
 			FileCreatedAt:   file.CreatedAt.Unix(),
 		}, resp.CodeSuccess
@@ -289,9 +302,11 @@ func FileDetail(fileID, consumerID string) (ret *entity.FileDetailResponse, code
 			Thumbnail:       file.Thumbnail,
 			Creator:         file.Owner,
 			CreatorID:       file.OwnerID,
+			CreatorAddress:  owner.EthereumAddr,
 			FileIPFSAddress: file.Address,
 			FileCreatedAt:   file.CreatedAt.Unix(),
 			ApplyID:         applyFile.ID,
+			ProposerAddress: applyFile.ProposerAddress,
 			Status:          applyFile.Status,
 			ApplyStartAt:    applyFile.StartAt.Unix(),
 			ApplyEndAt:      applyFile.FinishAt.Unix(),
@@ -321,6 +336,7 @@ func FileDetail(fileID, consumerID string) (ret *entity.FileDetailResponse, code
 			Thumbnail:       file.Thumbnail,
 			Creator:         file.Owner,
 			CreatorID:       file.OwnerID,
+			CreatorAddress:  owner.EthereumAddr,
 			FileIPFSAddress: file.Address,
 			FileCreatedAt:   file.CreatedAt.Unix(),
 			PolicyID:        policy.ID,
@@ -343,9 +359,11 @@ func FileDetail(fileID, consumerID string) (ret *entity.FileDetailResponse, code
 			Thumbnail:       file.Thumbnail,
 			Creator:         file.Owner,
 			CreatorID:       file.OwnerID,
+			CreatorAddress:  owner.EthereumAddr,
 			FileIPFSAddress: file.Address,
 			FileCreatedAt:   file.CreatedAt.Unix(),
 			ApplyID:         applyFile.ID,
+			ProposerAddress: applyFile.ProposerAddress,
 			Status:          applyFile.Status,
 			ApplyStartAt:    applyFile.StartAt.Unix(),
 			ApplyEndAt:      applyFile.FinishAt.Unix(),
@@ -363,15 +381,6 @@ func FileDetail(fileID, consumerID string) (ret *entity.FileDetailResponse, code
 	// has expired
 	if filePolicy.EndAt.Before(time.Now()) {
 		return ret, resp.CodeSuccess
-	}
-
-	acc := &dao.Account{
-		AccountID: file.OwnerID,
-	}
-	owner, err := acc.Get()
-	if err != nil {
-		log.Logger().WithField("policy", p).WithField("error", err).Error("get policy failed")
-		return nil, resp.CodeInternalServerError
 	}
 
 	//ret.FileIPFSAddress = file.Address

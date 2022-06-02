@@ -79,8 +79,12 @@ func ApproveApply(c *gin.Context) {
 		log.Logger().Error(err.Error())
 		return
 	}
+	if len(req.Remark) > 128 {
+		resp.ParameterErr(c)
+		return
+	}
 
-	if code := logic.ApproveApply(req.AccountID, req.ApplyID, req.Policy); code != resp.CodeSuccess {
+	if code := logic.ApproveApply(req.AccountID, req.ApplyID, req.Remark, req.Policy); code != resp.CodeSuccess {
 		resp.Error(c, code)
 		return
 	}
@@ -93,8 +97,12 @@ func RejectApply(c *gin.Context) {
 		resp.ParameterErr(c)
 		return
 	}
+	if len(req.Remark) > 128 {
+		resp.ParameterErr(c)
+		return
+	}
 
-	if code := logic.RejectApply(req.AccountID, req.ApplyID); code != resp.CodeSuccess {
+	if code := logic.RejectApply(req.AccountID, req.ApplyID, req.Remark); code != resp.CodeSuccess {
 		resp.Error(c, code)
 		return
 	}

@@ -83,18 +83,20 @@ type GetOthersFileListResponse struct {
 
 type FileDetailResponse struct {
 	// 文件信息
-	FileID        string `json:"file_id"`
-	FileName      string `json:"file_name"`
-	Thumbnail     string `json:"thumbnail"`
-	Creator       string `json:"creator"`
-	CreatorID     string `json:"creator_id"`
-	FileCreatedAt int64  `json:"file_created_at"`
+	FileID         string `json:"file_id"`
+	FileName       string `json:"file_name"`
+	Thumbnail      string `json:"thumbnail"`
+	Creator        string `json:"creator"`
+	CreatorID      string `json:"creator_id"`
+	CreatorAddress string `json:"creator_address"`
+	FileCreatedAt  int64  `json:"file_created_at"`
 	// 申请信息
-	ApplyID        uint64 `json:"apply_id"`
-	Status         uint8  `json:"status"`
-	ApplyStartAt   int64  `json:"apply_start_at"`
-	ApplyEndAt     int64  `json:"apply_end_at"`
-	ApplyCreatedAt int64  `json:"apply_created_at"`
+	ApplyID         uint64 `json:"apply_id"`
+	ProposerAddress string `json:"proposer_address"`
+	Status          uint8  `json:"status"`
+	ApplyStartAt    int64  `json:"apply_start_at"`
+	ApplyEndAt      int64  `json:"apply_end_at"`
+	ApplyCreatedAt  int64  `json:"apply_created_at"`
 	// 策略信息
 	PolicyID        uint64 `json:"policy_id"`
 	Hrac            string `json:"hrac"`
