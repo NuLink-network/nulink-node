@@ -270,12 +270,13 @@ func FileDetail(fileID, consumerID string) (ret *entity.FileDetailResponse, code
 	// 申请记录和文件策略关联纪律都不存在，直接返回文件信息
 	if applyFile.ID == 0 && filePolicy.ID == 0 {
 		return &entity.FileDetailResponse{
-			FileID:        file.FileID,
-			FileName:      file.Name,
-			Thumbnail:     file.Thumbnail,
-			Creator:       file.Owner,
-			CreatorID:     file.OwnerID,
-			FileCreatedAt: file.CreatedAt.Unix(),
+			FileID:          file.FileID,
+			FileName:        file.Name,
+			Thumbnail:       file.Thumbnail,
+			Creator:         file.Owner,
+			CreatorID:       file.OwnerID,
+			FileIPFSAddress: file.Address,
+			FileCreatedAt:   file.CreatedAt.Unix(),
 		}, resp.CodeSuccess
 	}
 
@@ -283,17 +284,18 @@ func FileDetail(fileID, consumerID string) (ret *entity.FileDetailResponse, code
 	// 申请记录存在但未通过，文件策略关联记录还未创建，返回文件信息和申请信息
 	if applyFile.ID != 0 && applyFile.Status != dao.ApplyStatusApproved {
 		return &entity.FileDetailResponse{
-			FileID:         file.FileID,
-			FileName:       file.Name,
-			Thumbnail:      file.Thumbnail,
-			Creator:        file.Owner,
-			CreatorID:      file.OwnerID,
-			FileCreatedAt:  file.CreatedAt.Unix(),
-			ApplyID:        applyFile.ID,
-			Status:         applyFile.Status,
-			ApplyStartAt:   applyFile.StartAt.Unix(),
-			ApplyEndAt:     applyFile.FinishAt.Unix(),
-			ApplyCreatedAt: applyFile.CreatedAt.Unix(),
+			FileID:          file.FileID,
+			FileName:        file.Name,
+			Thumbnail:       file.Thumbnail,
+			Creator:         file.Owner,
+			CreatorID:       file.OwnerID,
+			FileIPFSAddress: file.Address,
+			FileCreatedAt:   file.CreatedAt.Unix(),
+			ApplyID:         applyFile.ID,
+			Status:          applyFile.Status,
+			ApplyStartAt:    applyFile.StartAt.Unix(),
+			ApplyEndAt:      applyFile.FinishAt.Unix(),
+			ApplyCreatedAt:  applyFile.CreatedAt.Unix(),
 		}, resp.CodeSuccess
 	}
 
@@ -319,6 +321,7 @@ func FileDetail(fileID, consumerID string) (ret *entity.FileDetailResponse, code
 			Thumbnail:       file.Thumbnail,
 			Creator:         file.Owner,
 			CreatorID:       file.OwnerID,
+			FileIPFSAddress: file.Address,
 			FileCreatedAt:   file.CreatedAt.Unix(),
 			PolicyID:        policy.ID,
 			Hrac:            policy.Hrac,
@@ -340,6 +343,7 @@ func FileDetail(fileID, consumerID string) (ret *entity.FileDetailResponse, code
 			Thumbnail:       file.Thumbnail,
 			Creator:         file.Owner,
 			CreatorID:       file.OwnerID,
+			FileIPFSAddress: file.Address,
 			FileCreatedAt:   file.CreatedAt.Unix(),
 			ApplyID:         applyFile.ID,
 			Status:          applyFile.Status,
@@ -370,7 +374,7 @@ func FileDetail(fileID, consumerID string) (ret *entity.FileDetailResponse, code
 		return nil, resp.CodeInternalServerError
 	}
 
-	ret.FileIPFSAddress = file.Address
+	//ret.FileIPFSAddress = file.Address
 	ret.PolicyEncryptedPK = policy.EncryptedPK
 	ret.PolicyEncryptedAddress = policy.EncryptedAddress
 	ret.AliceVerifyPK = owner.VerifyPK
