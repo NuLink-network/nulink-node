@@ -398,9 +398,11 @@ application/json
 |  thumbnail     |   string   |  文件缩略图  |
 |  creator     |   string   |  文件的拥有者 (策略创建者)  |
 |  creator_id     |   string   | 文件的拥有者 ID (策略创建者 ID)   |
+|  creator_address     |   string   | 文件的拥有者以太坊地址 (策略创建者的以太坊地址)   |
 |  file_created_at     |   number   | 文件上传时间戳   |
 |  申请信息   |
 |  apply_id     |   number   |  申请记录 ID  |
+|  proposer_address     |   string   | 文件的使用者以太坊地址 (策略使用者的以太坊地址)   |
 |  status     |   number   |  申请状态，0: 未申请，1: 申请中，2: 已通过, 3: 已拒绝  |
 |  apply_start_at     |   string   |  申请开始时间戳(策略的开始时间戳)  |
 |  apply_end_at     |   string   |  申请结束时间戳(策略的结束时间戳)  |
@@ -649,12 +651,16 @@ application/json
 | --------- | -------- | ------- |
 |  申请信息          |
 |  file_id          |  string  |  文件 ID |
+|  file_name          |  string  |  文件名 |
 |  apply_id          |  number  |  申请记录 ID |
 |  proposer            |  string  |  申请人 |
 |  proposer_id          |  string  |  申请人账户 ID |
+|  proposer_address          |  string  |  申请人账户的以太坊地址 |
 |  file_owner          |  string  |  文件拥有者 |
 |  file_owner_id          |  string  |  文件拥有者账户 ID |
+|  file_owner_address          |  string  |  文件拥有者账户的以太坊地址 |
 |  status          |  number  |  申请状态，1: 申请中，2: 已通过, 3: 已拒绝 |
+|  remark          |  string  |  审批备注 |
 |  start_at          |  number  |  申请使用开始时间戳 |
 |  end_at          |  number  |  申请使用结束时间戳 |
 |  created_at          |  number  |  申请时间戳 |
@@ -756,6 +762,7 @@ application/json
 | ------------ | -------- | ------ | ---- |------- |
 |  account_id  |  string  |   是   |   |  审批人的账户 ID |
 |  apply_id  |  number  |   是   |   |  申请记录 ID |
+|  remark  |  string  |   否   |   |  审批备注，(长度不能大于 128) |
 |  policy  |  Policy  |   是   |   |  申请记录 ID |
 |  signature   |  string  | 是     | 签名 |
 
@@ -799,6 +806,7 @@ application/json
 | ------------ | -------- | ------ | ---- |------- |
 |  account_id  |  string  |   是   |   |  审批人的账户 ID |
 |  apply_id  |  number  |   是   |   |  申请记录 ID |
+|  remark  |  string  |   否   |   |  审批备注，(长度不能大于 128) |
 |  signature   |  string  | 是     | 签名 |
 
 ### 响应参数
