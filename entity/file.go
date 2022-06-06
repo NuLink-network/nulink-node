@@ -3,12 +3,13 @@ package entity
 // ========================= request =========================
 
 type File struct {
-	ID       string `json:"id" binding:"required"`
-	MD5      string `json:"md5" binding:"required"`
-	Name     string `json:"name" binding:"required"`
-	Suffix   string `json:"suffix"`
-	Category string `json:"category" binding:"required"`
-	Address  string `json:"address" binding:"required"`
+	ID        string `json:"id" binding:"required"`
+	MD5       string `json:"md5" binding:"required"`
+	Name      string `json:"name" binding:"required"`
+	Suffix    string `json:"suffix"`
+	Category  string `json:"category" binding:"required"`
+	Address   string `json:"address" binding:"required"`
+	Thumbnail string `json:"thumbnail"`
 }
 
 type UploadFileRequest struct {
