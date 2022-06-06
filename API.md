@@ -143,14 +143,15 @@ application/json
 
 #### File 结构
 
-| 参数       | 类型     | 必填    | 说明   |
-| --------- | -------- | ------ | ------- |
-|  id     |  string  | 是     | 文件 ID (UUID V4) |
-|  md5     |  string  | 是     | 文件 MD5 |
-|  name     |  string  | 是     | 文件名称 |
-|  suffix     |  string  | 否     | 文件后缀 |
-|  category     |  string  | 是     | 文件类型 |
-|  address  |  string  | 是     | 文件地址 |
+| 参数       | 类型     | 必填  | 说明              |
+| --------- | -------- |-----|-----------------|
+|  id     |  string  | 是   | 文件 ID (UUID V4) |
+|  md5     |  string  | 是   | 文件 MD5          |
+|  name     |  string  | 是   | 文件名称            |
+|  suffix     |  string  | 否   | 文件后缀            |
+|  category     |  string  | 是   | 文件类型            |
+|  address  |  string  | 是   | 文件地址            |
+|  thumbnail  |  string  | 否   | 文件缩率图           |
 
 ### 响应参数
 
@@ -649,27 +650,28 @@ application/json
 
 #### list 结构
 
-| 参数      | 类型      | 说明     |
-| --------- | -------- | ------- |
+| 参数      | 类型      | 说明                         |
+| --------- | -------- |----------------------------|
 |  申请信息          |
-|  file_id          |  string  |  文件 ID |
-|  file_name          |  string  |  文件名 |
-|  apply_id          |  number  |  申请记录 ID |
-|  proposer            |  string  |  申请人 |
-|  proposer_id          |  string  |  申请人账户 ID |
-|  proposer_address          |  string  |  申请人账户的以太坊地址 |
-|  file_owner          |  string  |  文件拥有者 |
-|  file_owner_id          |  string  |  文件拥有者账户 ID |
-|  file_owner_address          |  string  |  文件拥有者账户的以太坊地址 |
-|  status          |  number  |  申请状态，1: 申请中，2: 已通过, 3: 已拒绝 |
-|  remark          |  string  |  审批备注 |
-|  start_at          |  number  |  申请使用开始时间戳 |
-|  end_at          |  number  |  申请使用结束时间戳 |
-|  created_at          |  number  |  申请时间戳 |
+|  file_id          |  string  | 文件 ID                      |
+|  file_name          |  string  | 文件名                        |
+|  thumbnail          |  string  | 文件缩略图                      |
+|  apply_id          |  number  | 申请记录 ID                    |
+|  proposer            |  string  | 申请人                        |
+|  proposer_id          |  string  | 申请人账户 ID                   |
+|  proposer_address          |  string  | 申请人账户的以太坊地址                |
+|  file_owner          |  string  | 文件拥有者                      |
+|  file_owner_id          |  string  | 文件拥有者账户 ID                 |
+|  file_owner_address          |  string  | 文件拥有者账户的以太坊地址              |
+|  status          |  number  | 申请状态，1: 申请中，2: 已通过, 3: 已拒绝 |
+|  remark          |  string  | 审批备注                       |
+|  start_at          |  number  | 申请使用开始时间戳                  |
+|  end_at          |  number  | 申请使用结束时间戳                  |
+|  created_at          |  number  | 申请时间戳                      |
 |  策略信息  |
-|  policy_id        |  number  | 策略 ID  |
-|  policy_label_id        |  string  | 策略 label ID  |
-|  hrac        |  string  | 策略 hrac |
+|  policy_id        |  number  | 策略 ID                      |
+|  policy_label_id        |  string  | 策略 label ID                |
+|  hrac        |  string  | 策略 hrac                    |
 
 ## 申请详情
 

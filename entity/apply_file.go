@@ -56,6 +56,7 @@ type RejectApplyRequest struct {
 type ApplyFileListResponse struct {
 	FileID           string `json:"file_id"`
 	FileName         string `json:"file_name"`
+	Thumbnail        string `json:"thumbnail"`
 	ApplyID          uint64 `json:"apply_id"`
 	Proposer         string `json:"proposer"`
 	ProposerID       string `json:"proposer_id"`

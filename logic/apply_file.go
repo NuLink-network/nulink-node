@@ -119,12 +119,30 @@ func ApplyFileList(fileID string, status uint8, proposerID, fileOwnerID string, 
 		return []*entity.ApplyFileListResponse{}, resp.CodeSuccess
 	}
 
+	fileIDs := make([]string, 0, len(afs))
 	approvedFileIDs := make([]string, 0, 0)
 	for _, af := range afs {
+		fileIDs = append(fileIDs, af.FileID)
 		if af.Status == dao.ApplyStatusApproved {
 			approvedFileIDs = append(approvedFileIDs, af.FileID)
 		}
 	}
+
+	query := &dao.QueryExtra{
+		Conditions: map[string]interface{}{
+			"file_id in ?": fileIDs,
+		},
+	}
+	files, err := dao.NewFile().FindAny(query, nil)
+	if err != nil {
+		log.Logger().WithField("ext", query).WithField("error", err).Error("get file list failed")
+		return nil, resp.CodeInternalServerError
+	}
+	fileID2Thumbnail := make(map[string]string, 0)
+	for _, f := range files {
+		fileID2Thumbnail[f.FileID] = f.Thumbnail
+	}
+
 	if len(approvedFileIDs) == 0 {
 		// 所有申请未通过仅返回申请信息
 		ret := make([]*entity.ApplyFileListResponse, 0, len(afs))
@@ -132,6 +150,7 @@ func ApplyFileList(fileID string, status uint8, proposerID, fileOwnerID string, 
 			ret = append(ret, &entity.ApplyFileListResponse{
 				FileID:           af.FileID,
 				FileName:         af.FileName,
+				Thumbnail:        fileID2Thumbnail[af.FileID],
 				ApplyID:          af.ID,
 				Proposer:         af.Proposer,
 				ProposerID:       af.ProposerID,
@@ -153,7 +172,7 @@ func ApplyFileList(fileID string, status uint8, proposerID, fileOwnerID string, 
 		CreatorID:  fileOwnerID,
 		ConsumerID: proposerID,
 	}
-	query := &dao.QueryExtra{
+	query = &dao.QueryExtra{
 		Conditions: map[string]interface{}{
 			"file_id in ?": approvedFileIDs,
 		},
@@ -193,6 +212,7 @@ func ApplyFileList(fileID string, status uint8, proposerID, fileOwnerID string, 
 		item := &entity.ApplyFileListResponse{
 			FileID:           af.FileID,
 			FileName:         af.FileName,
+			Thumbnail:        fileID2Thumbnail[af.FileID],
 			ApplyID:          af.ID,
 			Proposer:         af.Proposer,
 			ProposerID:       af.ProposerID,
