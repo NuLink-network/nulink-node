@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"strings"
+
 	"github.com/NuLink-network/nulink-node/entity"
 	"github.com/NuLink-network/nulink-node/logic"
 	"github.com/NuLink-network/nulink-node/resp"
@@ -91,20 +93,22 @@ func GetOthersFileList(c *gin.Context) {
 		resp.ParameterErr(c)
 		return
 	}
-	if !utils.IsEmpty(req.Category) {
-		if _, ok := utils.FileCategory[req.Category]; !ok {
+	category := strings.ToLower(req.Category)
+	if !utils.IsEmpty(category) {
+		if _, ok := utils.FileCategory[category]; !ok {
 			resp.ParameterErr(c)
 			return
 		}
 	}
-	if !utils.IsEmpty(req.Format) {
-		if _, ok := utils.FileFormat[req.Format]; !ok {
+	format := strings.ToLower(req.Format)
+	if !utils.IsEmpty(format) {
+		if _, ok := utils.FileFormat[format]; !ok {
 			resp.ParameterErr(c)
 			return
 		}
 	}
 
-	list, code := logic.GetOthersFileList(req.AccountID, req.FileName, req.Category, req.Format, req.Desc, req.Paginate.Page, req.Paginate.PageSize)
+	list, code := logic.GetOthersFileList(req.AccountID, req.FileName, category, format, req.Desc, req.Paginate.Page, req.Paginate.PageSize)
 	if code != resp.CodeSuccess {
 		resp.Error(c, code)
 		return
