@@ -108,7 +108,7 @@ func GetOthersFileList(c *gin.Context) {
 		}
 	}
 
-	list, code := logic.GetOthersFileList(req.AccountID, req.FileName, category, format, req.Desc, req.Paginate.Page, req.Paginate.PageSize)
+	list, code := logic.GetOthersFileList(req.AccountID, req.Include, req.FileName, category, format, req.Desc, req.Paginate.Page, req.Paginate.PageSize)
 	if code != resp.CodeSuccess {
 		resp.Error(c, code)
 		return

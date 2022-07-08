@@ -34,3 +34,7 @@ func NotInQuery(column string, s []string) string {
 	}
 	return fmt.Sprintf("%s not in (%s)", column, strings.TrimSuffix(inStr, ","))
 }
+
+func IsDuplicateError(err string) bool {
+	return strings.Contains(err, "Duplicate entry")
+}

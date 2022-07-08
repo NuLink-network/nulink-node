@@ -19,11 +19,13 @@ const (
 	CodePolicyLabelNotYours = 4002
 	CodePolicyNotExist      = 4003
 	CodePolicyNotYours      = 4004
-	CodePolicyIsExist       = 4105
+	CodePolicyIsExist       = 4005
 	CodeApplyNotExist       = 4006
 	CodeAccountNotExist     = 4007
 	CodeFileNotExist        = 4008
 	CodeDuplicateFilename   = 4009
+	CodeAccountIsExist      = 4010
+	CodePolicyLabelIsExist  = 4011
 )
 
 const (
@@ -45,12 +47,14 @@ const (
 	MsgAccountNotExist     = "account does not exist"
 	MsgFileNotExist        = "file does not exist"
 	MsgDuplicateFilename   = "duplicate filename"
+	MsgAccountIsExist      = "account already exists"
 	MsgFileApplied         = "you have already applied for file and cannot apply again"
 	MsgApplyIrrevocable    = "apply is irrevocable"
 	MsgApplyApproved       = "apply approved"
 	MsgApplyRejected       = "apply rejected"
 	MsgApplyUnapproved     = "apply unapproved"
 	MsgPolicyUnpublished   = "policy unpublished"
+	MsgPolicyLabelIsExist  = "policy label already exists"
 )
 
 var code2msg = map[int]string{
@@ -66,6 +70,7 @@ var code2msg = map[int]string{
 	CodeAccountNotExist:     MsgAccountNotExist,
 	CodeFileNotExist:        MsgFileNotExist,
 	CodeDuplicateFilename:   MsgDuplicateFilename,
+	CodeAccountIsExist:      MsgAccountIsExist,
 	CodeFileApplied:         MsgFileApplied,
 	CodeApplyIrrevocable:    MsgApplyIrrevocable,
 	CodeApplyApproved:       MsgApplyApproved,
@@ -73,4 +78,5 @@ var code2msg = map[int]string{
 	CodeApplyRejected:       MsgApplyRejected,
 	CodePolicyIsExist:       MsgPolicyIsExist,
 	CodePolicyUnpublished:   MsgPolicyUnpublished,
+	CodePolicyLabelIsExist:  MsgPolicyLabelIsExist,
 }

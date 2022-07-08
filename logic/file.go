@@ -89,8 +89,18 @@ func CreatePolicyAndUploadFile(accountID, policyLabelID, policyLabel, encryptedP
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return resp.CodeAccountNotExist
 		}
-		log.Logger().WithField("account", *acc).WithField("error", err).Error("get account failed")
+		log.Logger().WithField("account", utils.JSON(acc)).WithField("error", err).Error("get account failed")
 		return resp.CodeInternalServerError
+	}
+
+	p := &dao.PolicyLabel{PolicyLabelID: policyLabelID}
+	isExist, err := p.IsExist()
+	if err != nil {
+		log.Logger().WithField("policyLabel", utils.JSON(p)).WithField("error", err).Error("get policy label failed")
+		return resp.CodeInternalServerError
+	}
+	if isExist {
+		return resp.CodePolicyLabelIsExist
 	}
 
 	pl := &dao.PolicyLabel{
@@ -137,7 +147,7 @@ func GetFileList(accountID string, fileName string, page, pageSize int) (ret []*
 
 	files, err := file.FindAny(query, dao.Paginate(page, pageSize))
 	if err != nil {
-		log.Logger().WithField("file", file).WithField("error", err).Error("find files failed")
+		log.Logger().WithField("file", utils.JSON(file)).WithField("error", err).Error("find files failed")
 		return nil, resp.CodeInternalServerError
 	}
 
@@ -156,12 +166,14 @@ func GetFileList(accountID string, fileName string, page, pageSize int) (ret []*
 	return ret, resp.CodeSuccess
 }
 
-func GetOthersFileList(accountID string, fileName, category, format string, desc bool, page, pageSize int) (ret []*entity.GetOthersFileListResponse, code int) {
+func GetOthersFileList(accountID string, include bool, fileName, category, format string, desc bool, page, pageSize int) (ret []*entity.GetOthersFileListResponse, code int) {
 	file := &dao.File{
 		Category: category,
 	}
-	conditions := map[string]interface{}{
-		"owner_id != ?": accountID,
+
+	conditions := make(map[string]interface{})
+	if !include {
+		conditions["owner_id != ?"] = accountID
 	}
 	if !utils.IsEmpty(fileName) {
 		conditions["name like ?"] = "%" + fileName + "%"
@@ -186,9 +198,26 @@ func GetOthersFileList(accountID string, fileName, category, format string, desc
 		return nil, resp.CodeInternalServerError
 	}
 
-	ret = make([]*entity.GetOthersFileListResponse, 0, len(files))
+	if !include {
+		ret = make([]*entity.GetOthersFileListResponse, 0, len(files))
+		for _, f := range files {
+			ret = append(ret, &entity.GetOthersFileListResponse{
+				FileID:    f.FileID,
+				FileName:  f.Name,
+				Address:   f.Address,
+				Thumbnail: f.Thumbnail,
+				Owner:     f.Owner,
+				OwnerID:   f.OwnerID,
+				CreatedAt: f.CreatedAt.Unix(),
+			})
+		}
+		return ret, resp.CodeSuccess
+	}
+
+	r1 := make([]*entity.GetOthersFileListResponse, 0)
+	r2 := make([]*entity.GetOthersFileListResponse, 0)
 	for _, f := range files {
-		ret = append(ret, &entity.GetOthersFileListResponse{
+		r := &entity.GetOthersFileListResponse{
 			FileID:    f.FileID,
 			FileName:  f.Name,
 			Address:   f.Address,
@@ -196,8 +225,14 @@ func GetOthersFileList(accountID string, fileName, category, format string, desc
 			Owner:     f.Owner,
 			OwnerID:   f.OwnerID,
 			CreatedAt: f.CreatedAt.Unix(),
-		})
+		}
+		if f.OwnerID == accountID {
+			r1 = append(r1, r)
+			continue
+		}
+		r2 = append(r2, r)
 	}
+	ret = append(r1, r2...)
 	return ret, resp.CodeSuccess
 }
 

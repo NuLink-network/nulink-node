@@ -11,10 +11,16 @@ import (
 type Account struct {
 	ID           uint64         `gorm:"primarykey"`
 	AccountID    string         `gorm:"column:account_id" json:"account_id" sql:"char(36)"`
-	Name         string         `gorm:"column:name" json:"name" sql:"varchar(32)"` // // todo length?
+	Name         string         `gorm:"column:name" json:"name" sql:"varchar(32)"`
+	Avatar       string         `gorm:"column:avatar" json:"avatar" sql:"varchar(1024)"`
+	UserSite     string         `gorm:"column:user_site" json:"user_site" sql:"varchar(1024)"`
+	Twitter      string         `gorm:"column:twitter" json:"twitter" sql:"varchar(1024)"`
+	Instagram    string         `gorm:"column:instagram" json:"instagram" sql:"varchar(1024)"`
+	Facebook     string         `gorm:"column:facebook" json:"facebook" sql:"varchar(1024)"`
+	Profile      string         `gorm:"column:profile" json:"profile" sql:"varchar(1024)"`
 	EthereumAddr string         `gorm:"column:ethereum_addr" json:"ethereum_addr" sql:"char(42)"`
-	EncryptedPK  string         `gorm:"column:encrypted_pk" json:"encrypted_pk" sql:"varchar(256)"` // todo length?
-	VerifyPK     string         `gorm:"verify_pk:" json:"verify_pk" sql:"varchar(256)"`             // todo length?
+	EncryptedPK  string         `gorm:"column:encrypted_pk" json:"encrypted_pk" sql:"varchar(256)"`
+	VerifyPK     string         `gorm:"column:verify_pk" json:"verify_pk" sql:"varchar(256)"`
 	Status       int8           `gorm:"column:status;default:1" json:"status" sql:"tinyint(4)" comment:"1: default, "`
 	CreatedAt    time.Time      `gorm:"column:created_at" json:"created_at" sql:"datetime"`
 	UpdatedAt    time.Time      `gorm:"column:updated_at" json:"updated_at" sql:"datetime"`
@@ -34,11 +40,6 @@ func NewAccount(name, account, ethereumAddr, encryptedPK, verifyPK string) *Acco
 func (a *Account) TableName() string {
 	return "account"
 }
-
-//func (a *AccountID) BeforeFind(tx *gorm.DB) (err error) {
-//	tx.Where("deleted_at not null")
-//	return
-//}
 
 func (a *Account) Create() (id uint64, err error) {
 	err = db.GetDB().Create(a).Error
@@ -65,4 +66,8 @@ func (a *Account) IsExist() (isExist bool, err error) {
 	}
 
 	return true, nil
+}
+
+func (a *Account) Updates(new *Account) error {
+	return db.GetDB().Where(a).Updates(new).Error
 }

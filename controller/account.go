@@ -51,3 +51,17 @@ func AccountIsExist(c *gin.Context) {
 	}
 	resp.Success(c, response)
 }
+
+func UpdateAccount(c *gin.Context) {
+	req := &entity.UpdateAccountRequest{}
+	if err := c.ShouldBindJSON(req); err != nil {
+		resp.ParameterErr(c)
+		return
+	}
+
+	if code := logic.UpdateAccount(req.AccountID, req); code != resp.CodeSuccess {
+		resp.Error(c, code)
+		return
+	}
+	resp.SuccessNil(c)
+}

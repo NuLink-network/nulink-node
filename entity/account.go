@@ -22,6 +22,17 @@ type AccountIsExistRequest struct {
 	VerifyPK     string `json:"verify_pk" binding:"required"`
 }
 
+type UpdateAccountRequest struct {
+	AccountID string `json:"account_id" binding:"required"`
+	Avatar    string `json:"avatar"`
+	Name      string `json:"name"`
+	UserSite  string `json:"user_site"`
+	Twitter   string `json:"twitter"`
+	Instagram string `json:"instagram"`
+	Facebook  string `json:"facebook"`
+	Profile   string `json:"profile"`
+}
+
 // ========================= response =========================
 
 type GetAccountResponse struct {
@@ -31,6 +42,12 @@ type GetAccountResponse struct {
 	EncryptedPK  string `json:"encrypted_pk"`
 	VerifyPK     string `json:"verify_pk"`
 	Status       int8   `json:"status"`
+	Avatar       string `json:"avatar"`
+	UserSite     string `json:"user_site"`
+	Twitter      string `json:"twitter"`
+	Instagram    string `json:"instagram"`
+	Facebook     string `json:"facebook"`
+	Profile      string `json:"profile"`
 	CreatedAt    int64  `json:"created_at"`
 }
 

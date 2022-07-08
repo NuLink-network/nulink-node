@@ -42,6 +42,7 @@ type GetFileListRequest struct {
 
 type GetOthersFileListRequest struct {
 	AccountID string   `json:"account_id" binding:"required"`
+	Include   bool     `json:"include"`
 	FileName  string   `json:"file_name"`
 	Category  string   `json:"category"`
 	Format    string   `json:"format"`

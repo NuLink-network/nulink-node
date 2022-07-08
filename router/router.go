@@ -20,6 +20,7 @@ func Register(engine *gin.Engine) {
 	account.POST("/create", controller.CreateAccount)
 	account.POST("/get", controller.GetAccount)
 	account.POST("/isexist", controller.AccountIsExist)
+	account.POST("/update", controller.UpdateAccount)
 
 	label := engine.Group(LabelGroup)
 	label.POST("/list", controller.PolicyLabelList)
