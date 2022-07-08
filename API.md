@@ -81,6 +81,7 @@ application/json
 | facebook      | string | facebook 地址   |
 | profile       | string | 个人资料        |
 | created_at    | number | 账户创建时间戳  |
+
 ## 判断用户是否存在
 
 判断用户是否存在
@@ -361,7 +362,7 @@ application/json
 | 参数          |  类型     | 必填  | 默认值 | 说明   |
 | ------------ | -------- | ------ | ---- |------- |
 |  account_id  |  string  |  是    |      |  账户ID (UUID V4) |
-|  include  |  bool  |  否    |      |  是否排除当前账户文件 |
+|  include  |  bool  |  否    |      |  是否包含当前账户文件 |
 |  file_name   |  string  |  否    |      |  文件名称, 支持模糊匹配|
 |  category   |  string  |  否    |      |  文件类型|
 |  format   |  string  |  否    |      |  文件格式|
