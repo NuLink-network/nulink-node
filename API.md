@@ -66,16 +66,21 @@ application/json
 
 #### data 结构
 
-| 参数      | 类型      | 说明     |
-| --------- | -------- | ------- |
-|  name          |  string  |  账户名称 |
-|  account_id    |  string  |  账户ID(UUID v4) |
-|  ethereum_addr |  string  |  以太坊地址 |
-|  encrypted_pk  |  string  |  加密的公钥 |
-|  verify_pk     |  string  |  验证公钥 |
-|  status        |  number  |  账户状态 |
-|  created_at    |  number  |  账户创建时间戳 |
-
+| 参数          | 类型   | 说明            |
+| ------------- | ------ | --------------- |
+| name          | string | 账户名称        |
+| account_id    | string | 账户ID(UUID v4) |
+| ethereum_addr | string | 以太坊地址      |
+| encrypted_pk  | string | 加密的公钥      |
+| verify_pk     | string | 验证公钥        |
+| status        | number | 账户状态        |
+| avatar        | string | 头像 IPFS 地址  |
+| user_site     | string | 用主站点地址    |
+| twitter       | string | twitter 地址    |
+| instagram     | string | instagram 地址  |
+| facebook      | string | facebook 地址   |
+| profile       | string | 个人资料        |
+| created_at    | number | 账户创建时间戳  |
 ## 判断用户是否存在
 
 判断用户是否存在
@@ -114,7 +119,44 @@ application/json
 
 | 参数      | 类型      | 说明     |       
 | --------- | -------- | ------- |  
-| is_exist  |  bool  |    账户是否存在   |      
+| is_exist  |  bool  |    账户是否存在   | 
+
+## 更新用户信息
+
+通过账户 ID 更新用户信息
+
+### 请求路径
+
+/account/update
+
+### 请求方法
+
+POST
+
+### 数据类型
+
+application/json
+
+### 请求参数
+
+| 参数       | 类型   | 必填 | 说明            |
+| ---------- | ------ | ---- |
+| account_id | string | 是   | 账户ID(UUID v4) |
+| name       | string | 否   | 账户名称        |
+| avatar     | string | 否   | 头像 IPFS 地址  |
+| user_site  | string | 否   | 个人站点地址    |
+| twitter    | string | 否   | twitter 地址    |
+| instagram  | string | 否   | instagram 地址  |
+| facebook   | string | 否   | facebook 地址   |
+| profile    | string | 否   | 个人资料        |
+
+### 响应参数
+
+| 参数 | 类型   | 说明     |
+| ---- | ------ | -------- |
+| code | int    | 响应码   |
+| msg  | int    | 响应信息 |
+| data | object | 响应数据 |
 
 ## 上传文件
 
@@ -300,7 +342,7 @@ application/json
 
 ## 其他人的文件列表
 
-返回符合条件的其他人上传的文件信息列表 (不包含自己上传的文件)
+返回符合条件的文件信息列表，如果 include = false 则排除当前账户的文件，否则当前用户的文件排在列表的最前端
 
 ### 请求路径
 
@@ -319,6 +361,7 @@ application/json
 | 参数          |  类型     | 必填  | 默认值 | 说明   |
 | ------------ | -------- | ------ | ---- |------- |
 |  account_id  |  string  |  是    |      |  账户ID (UUID V4) |
+|  include  |  bool  |  否    |      |  是否排除当前账户文件 |
 |  file_name   |  string  |  否    |      |  文件名称, 支持模糊匹配|
 |  category   |  string  |  否    |      |  文件类型|
 |  format   |  string  |  否    |      |  文件格式|
