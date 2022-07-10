@@ -26,18 +26,17 @@ func ApplyFile(fileIDs []string, proposerID string, startAt, endAt int64) (code 
 			//"finish_at >= ?":    time.Unix(endAt, 0),
 		},
 	}
-	filePolicyList, err := fp.FindAny(query, nil)
+	applyFileList, err := fp.FindAny(query, nil)
 	if err != nil {
 		log.Logger().WithField("file policy", fp).WithField("query", query).WithField("error", err).Error("find file policy list failed")
 		return resp.CodeInternalServerError
 	}
-	// todo 自己的文件是否可以申请？？？
-	ignoreFileIDs := make(map[string]struct{}, len(filePolicyList))
-	for _, fp := range filePolicyList {
+
+	ignoreFileIDs := make(map[string]struct{}, len(applyFileList))
+	for _, fp := range applyFileList {
 		ignoreFileIDs[fp.FileID] = struct{}{}
 	}
 	if len(ignoreFileIDs) == len(fileIDs) {
-		// todo 当前所有文件已申请
 		return resp.CodeFileApplied
 	}
 
@@ -66,12 +65,21 @@ func ApplyFile(fileIDs []string, proposerID string, startAt, endAt int64) (code 
 
 	fileInfo := make(map[string]map[string]string, len(files))
 	for _, file := range files {
+		// 自己的文件不需要申请
+		if file.OwnerID == proposerID {
+			ignoreFileIDs[file.FileID] = struct{}{}
+			continue
+		}
 		fileInfo[file.FileID] = map[string]string{
 			"name":          file.Name,
 			"owner":         file.Owner,
 			"owner_id":      file.OwnerID,
 			"owner_address": file.OwnerAddress,
 		}
+	}
+	if len(fileInfo) == 0 {
+		log.Logger().Debug("ignored all file apply")
+		return resp.CodeSuccess
 	}
 
 	afs := make([]*dao.ApplyFile, 0, len(fileIDs))

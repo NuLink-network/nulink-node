@@ -278,6 +278,43 @@ func FileDetail(fileID, consumerID string) (ret *entity.FileDetailResponse, code
 		return nil, resp.CodeInternalServerError
 	}
 
+	acc := &dao.Account{AccountID: file.OwnerID}
+	owner, err := acc.Get()
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, resp.CodeAccountNotExist
+		}
+		log.Logger().WithField("accountID", file.OwnerID).WithField("error", err).Error("get account failed")
+		return nil, resp.CodeInternalServerError
+	}
+
+	// 自己的文件，直接返回文件信息和部分下载信息
+	if file.OwnerID == consumerID {
+		policyLabel := &dao.PolicyLabel{
+			PolicyLabelID: file.PolicyLabelID,
+		}
+		pl, err := policyLabel.Get()
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return nil, resp.CodePolicyLabelNotExist
+			}
+			log.Logger().WithField("policyLabelID", utils.JSON(policyLabel)).WithField("error", err).Error("get policy label failed")
+			return nil, resp.CodeInternalServerError
+		}
+		return &entity.FileDetailResponse{
+			FileID:            file.FileID,
+			FileName:          file.Name,
+			Thumbnail:         file.Thumbnail,
+			Creator:           file.Owner,
+			CreatorID:         file.OwnerID,
+			CreatorAddress:    owner.EthereumAddr,
+			FileIPFSAddress:   file.Address,
+			FileCreatedAt:     file.CreatedAt.Unix(),
+			PolicyEncryptedPK: pl.EncryptedPK,
+			AliceVerifyPK:     owner.VerifyPK,
+		}, resp.CodeSuccess
+	}
+
 	af := &dao.ApplyFile{
 		FileID:     fileID,
 		ProposerID: consumerID,
@@ -302,16 +339,6 @@ func FileDetail(fileID, consumerID string) (ret *entity.FileDetailResponse, code
 	filePolicy, err := fp.Get()
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		log.Logger().WithField("filePolicy", fp).WithField("error", err).Error("get file policy failed")
-		return nil, resp.CodeInternalServerError
-	}
-
-	acc := &dao.Account{AccountID: file.OwnerID}
-	owner, err := acc.Get()
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, resp.CodeAccountNotExist
-		}
-		log.Logger().WithField("accountID", file.OwnerID).WithField("error", err).Error("get account failed")
 		return nil, resp.CodeInternalServerError
 	}
 

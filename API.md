@@ -359,15 +359,15 @@ application/json
 
 ### 请求参数
 
-| 参数          |  类型     | 必填  | 默认值 | 说明   |
-| ------------ | -------- | ------ | ---- |------- |
-|  account_id  |  string  |  是    |      |  账户ID (UUID V4) |
-|  include  |  bool  |  否    |      |  是否包含当前账户文件 |
-|  file_name   |  string  |  否    |      |  文件名称, 支持模糊匹配|
-|  category   |  string  |  否    |      |  文件类型|
-|  format   |  string  |  否    |      |  文件格式|
-|  desc   |  bool  |  否    |  false    |  是否按照上传时间倒序 |
-|  paginate    |  [Paginate](#Paginate-结构) |  否  |      | 分页信息 |
+| 参数       | 类型                       | 必填 | 默认值 | 说明                   |
+| ---------- | -------------------------- | ---- | ------ | ---------------------- |
+| account_id | string                     | 是   |        | 账户ID (UUID V4)       |
+| include    | bool                       | 否   |        | 是否包含当前账户文件   |
+| file_name  | string                     | 否   |        | 文件名称, 支持模糊匹配 |
+| category   | string                     | 否   |        | 文件类型               |
+| format     | string                     | 否   |        | 文件格式               |
+| desc       | bool                       | 否   | false  | 是否按照上传时间倒序   |
+| paginate   | [Paginate](#Paginate-结构) | 否   |        | 分页信息               |
 
 ### 响应参数
 
