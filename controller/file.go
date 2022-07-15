@@ -79,12 +79,12 @@ func GetFileList(c *gin.Context) {
 		return
 	}
 
-	list, code := logic.GetFileList(req.AccountID, req.FileName, req.Paginate.Page, req.Paginate.PageSize)
+	list, count, code := logic.GetFileList(req.AccountID, req.FileName, req.Paginate.Page, req.Paginate.PageSize)
 	if code != resp.CodeSuccess {
 		resp.Error(c, code)
 		return
 	}
-	resp.SuccessList(c, list, len(list))
+	resp.SuccessList(c, list, count)
 }
 
 func GetOthersFileList(c *gin.Context) {
@@ -108,12 +108,12 @@ func GetOthersFileList(c *gin.Context) {
 		}
 	}
 
-	list, code := logic.GetOthersFileList(req.AccountID, req.Include, req.FileName, category, format, req.Desc, req.Paginate.Page, req.Paginate.PageSize)
+	list, count, code := logic.GetOthersFileList(req.AccountID, req.Include, req.FileName, category, format, req.Desc, req.Paginate.Page, req.Paginate.PageSize)
 	if code != resp.CodeSuccess {
 		resp.Error(c, code)
 		return
 	}
-	resp.SuccessList(c, list, len(list))
+	resp.SuccessList(c, list, count)
 }
 
 func DeleteFile(c *gin.Context) {

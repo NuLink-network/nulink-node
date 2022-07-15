@@ -16,7 +16,7 @@ type Response struct {
 
 type ListData struct {
 	List  interface{} `json:"list"`
-	Total int         `json:"total"`
+	Total int64       `json:"total"`
 }
 
 func SuccessNil(c *gin.Context) {
@@ -35,7 +35,7 @@ func Success(c *gin.Context, data interface{}) {
 	})
 }
 
-func SuccessList(c *gin.Context, list interface{}, total int) {
+func SuccessList(c *gin.Context, list interface{}, total int64) {
 	c.JSON(http.StatusOK, Response{
 		Code: CodeSuccess,
 		Msg:  MsgSuccess,

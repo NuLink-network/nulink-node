@@ -15,7 +15,7 @@ import (
 
 func ApplyFile(fileIDs []string, proposerID string, startAt, endAt int64) (code int) {
 	// todo
-	fp := &dao.ApplyFile{
+	af := &dao.ApplyFile{
 		ProposerID: proposerID,
 	}
 	query := &dao.QueryExtra{
@@ -26,9 +26,9 @@ func ApplyFile(fileIDs []string, proposerID string, startAt, endAt int64) (code 
 			//"finish_at >= ?":    time.Unix(endAt, 0),
 		},
 	}
-	applyFileList, err := fp.FindAny(query, nil)
+	applyFileList, _, err := af.FindAny(query, nil)
 	if err != nil {
-		log.Logger().WithField("file policy", fp).WithField("query", query).WithField("error", err).Error("find file policy list failed")
+		log.Logger().WithField("proposerID", proposerID).WithField("query", query).WithField("error", err).Error("find apply file list failed")
 		return resp.CodeInternalServerError
 	}
 
@@ -40,8 +40,9 @@ func ApplyFile(fileIDs []string, proposerID string, startAt, endAt int64) (code 
 		return resp.CodeFileApplied
 	}
 
+	// todo isExist
 	acc := &dao.Account{AccountID: proposerID}
-	account, err := acc.Get()
+	_, err = acc.Get()
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return resp.CodeAccountNotExist
@@ -55,7 +56,7 @@ func ApplyFile(fileIDs []string, proposerID string, startAt, endAt int64) (code 
 			"file_id in ?": fileIDs,
 		},
 	}
-	files, err := dao.NewFile().FindAny(query, nil)
+	files, _, err := dao.NewFile().FindAny(query, nil)
 	if err != nil {
 		return resp.CodeInternalServerError
 	}
@@ -71,10 +72,10 @@ func ApplyFile(fileIDs []string, proposerID string, startAt, endAt int64) (code 
 			continue
 		}
 		fileInfo[file.FileID] = map[string]string{
-			"name":          file.Name,
-			"owner":         file.Owner,
-			"owner_id":      file.OwnerID,
-			"owner_address": file.OwnerAddress,
+			"name": file.Name,
+			//"owner":         file.Owner,
+			"owner_id": file.OwnerID,
+			//"owner_address": file.OwnerAddress,
 		}
 	}
 	if len(fileInfo) == 0 {
@@ -88,17 +89,22 @@ func ApplyFile(fileIDs []string, proposerID string, startAt, endAt int64) (code 
 		if ok {
 			continue
 		}
+		file := fileInfo[fid]
+		// 文件不存在
+		if file == nil {
+			continue
+		}
 		afs = append(afs, &dao.ApplyFile{
-			FileID:           fid,
-			FileName:         fileInfo[fid]["name"],
-			Proposer:         account.Name,
-			ProposerID:       proposerID,
-			ProposerAddress:  account.EthereumAddr,
-			FileOwner:        fileInfo[fid]["owner"],
-			FileOwnerID:      fileInfo[fid]["owner_id"],
-			FileOwnerAddress: fileInfo[fid]["owner_address"],
-			StartAt:          time.Unix(startAt, 0),
-			FinishAt:         time.Unix(endAt, 0),
+			FileID:   fid,
+			FileName: file["name"],
+			//Proposer:         account.Name,
+			ProposerID: proposerID,
+			//ProposerAddress:  account.EthereumAddr,
+			//FileOwner:        fileInfo[fid]["owner"],
+			FileOwnerID: file["owner_id"],
+			//FileOwnerAddress: fileInfo[fid]["owner_address"],
+			StartAt:  time.Unix(startAt, 0),
+			FinishAt: time.Unix(endAt, 0),
 		})
 	}
 	if err := dao.NewAppleFile().BatchCreate(afs); err != nil {
@@ -107,7 +113,7 @@ func ApplyFile(fileIDs []string, proposerID string, startAt, endAt int64) (code 
 	return resp.CodeSuccess
 }
 
-func ApplyFileList(fileID string, status uint8, proposerID, fileOwnerID string, page, pageSize int) ([]*entity.ApplyFileListResponse, int) {
+func ApplyFileList(fileID string, status uint8, proposerID, fileOwnerID string, page, pageSize int) ([]*entity.ApplyFileListResponse, int64, int) {
 	af := &dao.ApplyFile{
 		FileID:      fileID,
 		ProposerID:  proposerID,
@@ -117,20 +123,23 @@ func ApplyFileList(fileID string, status uint8, proposerID, fileOwnerID string, 
 	if status != dao.ApplyStatusAll {
 		af.Status = status
 	}
-	afs, err := af.Find(dao.Paginate(page, pageSize))
+	afs, count, err := af.FindAny(nil, dao.Paginate(page, pageSize))
 	if err != nil {
-		log.Logger().WithField("applyFile", af).WithField("error", err).Error("find apply file list failed")
-		return nil, resp.CodeInternalServerError
+		log.Logger().WithField("applyFile", utils.JSON(af)).WithField("error", err).Error("find apply file list failed")
+		return nil, 0, resp.CodeInternalServerError
 	}
-	if len(afs) == 0 {
+	if count == 0 || len(afs) == 0 {
 		// 不存在申请信息
-		return []*entity.ApplyFileListResponse{}, resp.CodeSuccess
+		return []*entity.ApplyFileListResponse{}, 0, resp.CodeSuccess
 	}
 
 	fileIDs := make([]string, 0, len(afs))
+	accountIDs := make([]string, 0, len(afs))
 	approvedFileIDs := make([]string, 0, 0)
 	for _, af := range afs {
 		fileIDs = append(fileIDs, af.FileID)
+		accountIDs = append(accountIDs, af.ProposerID)
+		accountIDs = append(accountIDs, af.FileOwnerID)
 		if af.Status == dao.ApplyStatusApproved {
 			approvedFileIDs = append(approvedFileIDs, af.FileID)
 		}
@@ -141,31 +150,48 @@ func ApplyFileList(fileID string, status uint8, proposerID, fileOwnerID string, 
 			"file_id in ?": fileIDs,
 		},
 	}
-	files, err := dao.NewFile().FindAny(query, nil)
+	files, _, err := dao.NewFile().FindAny(query, nil)
 	if err != nil {
-		log.Logger().WithField("ext", query).WithField("error", err).Error("get file list failed")
-		return nil, resp.CodeInternalServerError
+		log.Logger().WithField("query", query).WithField("error", err).Error("get file list failed")
+		return nil, 0, resp.CodeInternalServerError
 	}
 	fileID2Thumbnail := make(map[string]string, 0)
 	for _, f := range files {
 		fileID2Thumbnail[f.FileID] = f.Thumbnail
 	}
 
+	accounts, err := dao.NewAccount().FindAccountByAccountIDs(accountIDs)
+	if err != nil {
+		log.Logger().WithField("accountIDs", accountIDs).WithField("error", err).Error("find account by account ids failed")
+		return nil, 0, resp.CodeInternalServerError
+	}
+	if len(accounts) == 0 {
+		return nil, 0, resp.CodeAccountNotExist
+	}
+
 	if len(approvedFileIDs) == 0 {
 		// 所有申请未通过仅返回申请信息
 		ret := make([]*entity.ApplyFileListResponse, 0, len(afs))
 		for _, af := range afs {
+			proposer := accounts[af.ProposerID]
+			if proposer == nil {
+				return nil, 0, resp.CodeAccountNotExist
+			}
+			fileOwner := accounts[af.FileOwnerID]
+			if fileOwner == nil {
+				return nil, 0, resp.CodeAccountNotExist
+			}
 			ret = append(ret, &entity.ApplyFileListResponse{
 				FileID:           af.FileID,
 				FileName:         af.FileName,
 				Thumbnail:        fileID2Thumbnail[af.FileID],
 				ApplyID:          af.ID,
-				Proposer:         af.Proposer,
+				Proposer:         proposer.Name,
 				ProposerID:       af.ProposerID,
-				ProposerAddress:  af.ProposerAddress,
-				FileOwner:        af.FileOwner,
+				ProposerAddress:  proposer.EthereumAddr,
+				FileOwner:        fileOwner.Name,
 				FileOwnerID:      af.FileOwnerID,
-				FileOwnerAddress: af.FileOwnerAddress,
+				FileOwnerAddress: fileOwner.EthereumAddr,
 				Status:           af.Status,
 				Remark:           af.Remark,
 				StartAt:          af.StartAt.Unix(),
@@ -173,7 +199,7 @@ func ApplyFileList(fileID string, status uint8, proposerID, fileOwnerID string, 
 				CreatedAt:        af.CreatedAt.Unix(),
 			})
 		}
-		return ret, resp.CodeSuccess
+		return ret, count, resp.CodeSuccess
 	}
 
 	fp := dao.FilePolicy{
@@ -185,15 +211,15 @@ func ApplyFileList(fileID string, status uint8, proposerID, fileOwnerID string, 
 			"file_id in ?": approvedFileIDs,
 		},
 	}
-	filePolicyList, err := fp.FindAny(query, nil)
+	filePolicyList, _, err := fp.FindAny(query, nil)
 	if err != nil {
 		log.Logger().WithField("filePolicy", utils.JSON(fp)).WithField("ext", utils.JSON(query)).WithField("error", err).Error("find file policy list failed")
-		return nil, resp.CodeInternalServerError
+		return nil, 0, resp.CodeInternalServerError
 	}
 	// 理论上审核过的申请一定会有文件策略关系记录
 	// 如果未找到文件关系记录则是程序或数据异常
 
-	policyIDs := make([]uint64, 0, 0)
+	policyIDs := make([]uint64, 0, len(filePolicyList))
 	fileID2PolicyID := make(map[string]uint64, 0)
 	for _, fp := range filePolicyList {
 		policyIDs = append(policyIDs, fp.PolicyID)
@@ -205,10 +231,10 @@ func ApplyFileList(fileID string, status uint8, proposerID, fileOwnerID string, 
 			"id in ?": policyIDs,
 		},
 	}
-	policies, err := dao.NewPolicy().Find(query, nil)
+	policies, _, err := dao.NewPolicy().Find(query, nil)
 	if err != nil {
 		log.Logger().WithField("ext", utils.JSON(query)).WithField("error", err).Error("find policy list failed")
-		return nil, resp.CodeInternalServerError
+		return nil, 0, resp.CodeInternalServerError
 	}
 	policyID2Policy := make(map[uint64]*dao.Policy)
 	for _, p := range policies {
@@ -217,17 +243,25 @@ func ApplyFileList(fileID string, status uint8, proposerID, fileOwnerID string, 
 
 	ret := make([]*entity.ApplyFileListResponse, 0, len(afs))
 	for _, af := range afs {
+		proposer := accounts[af.ProposerID]
+		if proposer == nil {
+			return nil, 0, resp.CodeAccountNotExist
+		}
+		fileOwner := accounts[af.FileOwnerID]
+		if fileOwner == nil {
+			return nil, 0, resp.CodeAccountNotExist
+		}
 		item := &entity.ApplyFileListResponse{
 			FileID:           af.FileID,
 			FileName:         af.FileName,
 			Thumbnail:        fileID2Thumbnail[af.FileID],
 			ApplyID:          af.ID,
-			Proposer:         af.Proposer,
+			Proposer:         proposer.Name,
 			ProposerID:       af.ProposerID,
-			ProposerAddress:  af.ProposerAddress,
-			FileOwner:        af.FileOwner,
+			ProposerAddress:  proposer.EthereumAddr,
+			FileOwner:        fileOwner.Name,
 			FileOwnerID:      af.FileOwnerID,
-			FileOwnerAddress: af.FileOwnerAddress,
+			FileOwnerAddress: fileOwner.EthereumAddr,
 			Status:           af.Status,
 			Remark:           af.Remark,
 			StartAt:          af.StartAt.Unix(),
@@ -243,7 +277,7 @@ func ApplyFileList(fileID string, status uint8, proposerID, fileOwnerID string, 
 		}
 		ret = append(ret, item)
 	}
-	return ret, resp.CodeSuccess
+	return ret, count, resp.CodeSuccess
 }
 
 func RevokeApply(proposerID string, applyIDs []uint64) (code int) {
@@ -256,7 +290,7 @@ func RevokeApply(proposerID string, applyIDs []uint64) (code int) {
 			"id in ?": applyIDs,
 		},
 	}
-	applyFileList, err := af.FindAny(query, nil)
+	applyFileList, _, err := af.FindAny(query, nil)
 	if err != nil {
 		log.Logger().WithField("applyFile", utils.JSON(af)).WithField("ext", utils.JSON(query)).WithField("error", err).Error("find apply file list failed")
 		return resp.CodeInternalServerError
@@ -326,8 +360,8 @@ func ApplyDetail(applyID uint64) (*entity.ApplyDetailResponse, int) {
 
 func ApproveApply(accountID string, applyID uint64, remark string, policy entity.Policy) (code int) {
 	af := &dao.ApplyFile{
-		ID:          applyID,
-		FileOwnerID: accountID,
+		ID: applyID,
+		//FileOwnerID: accountID,
 	}
 	apply, err := af.Get()
 	if err != nil {
@@ -336,6 +370,9 @@ func ApproveApply(accountID string, applyID uint64, remark string, policy entity
 			return resp.CodeApplyNotExist
 		}
 		return resp.CodeInternalServerError
+	}
+	if apply.FileOwnerID != accountID {
+		return resp.CodeUnauthorized
 	}
 	if apply.Status == dao.ApplyStatusRejected {
 		return resp.CodeApplyRejected
@@ -351,7 +388,7 @@ func ApproveApply(accountID string, applyID uint64, remark string, policy entity
 	}
 	filePolicy, err := fp.Get()
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		log.Logger().WithField("file policy", fp).WithField("error", err).Error("get file policy failed")
+		log.Logger().WithField("filePolicy", utils.JSON(fp)).WithField("error", err).Error("get file policy failed")
 		return resp.CodeInternalServerError
 	}
 
@@ -370,14 +407,14 @@ func ApproveApply(accountID string, applyID uint64, remark string, policy entity
 		}
 
 		p := &dao.Policy{
-			Hrac:             policy.Hrac,
-			PolicyLabelID:    file.PolicyLabelID,
-			Creator:          apply.FileOwner,
-			CreatorID:        apply.FileOwnerID,
-			CreatorAddress:   apply.FileOwnerAddress,
-			Consumer:         apply.Proposer,
-			ConsumerID:       apply.ProposerID,
-			ConsumerAddress:  apply.ProposerAddress,
+			Hrac:          policy.Hrac,
+			PolicyLabelID: file.PolicyLabelID,
+			//Creator:          apply.FileOwner,
+			CreatorID: apply.FileOwnerID,
+			//CreatorAddress:   apply.FileOwnerAddress,
+			//Consumer:         apply.Proposer,
+			ConsumerID: apply.ProposerID,
+			//ConsumerAddress:  apply.ProposerAddress,
 			EncryptedPK:      policy.EncryptedPK,
 			EncryptedAddress: policy.EncryptedAddress,
 			Gas:              policy.Gas,
@@ -387,7 +424,7 @@ func ApproveApply(accountID string, applyID uint64, remark string, policy entity
 		}
 		policyID, err := p.Create()
 		if err != nil {
-			log.Logger().WithField("policy", p).WithField("error", err).Error("create policy failed")
+			log.Logger().WithField("policy", utils.JSON(p)).WithField("error", err).Error("create policy failed")
 			return resp.CodeInternalServerError
 		}
 
@@ -400,7 +437,7 @@ func ApproveApply(accountID string, applyID uint64, remark string, policy entity
 			EndAt:      apply.FinishAt,
 		}
 		if _, err := fp.Create(); err != nil {
-			log.Logger().WithField("file policy", fp).WithField("error", err).Error("create file policy failed")
+			log.Logger().WithField("filePolicy", utils.JSON(fp)).WithField("error", err).Error("create file policy failed")
 			return resp.CodeInternalServerError
 		}
 
@@ -413,7 +450,7 @@ func ApproveApply(accountID string, applyID uint64, remark string, policy entity
 			EndAt: apply.FinishAt,
 		}
 		if err := p.Updates(newPolicy); err != nil {
-			log.Logger().WithField("policy", p).WithField("new policy", newPolicy).WithField("error", err).Error("update policy failed")
+			log.Logger().WithField("policy", utils.JSON(p)).WithField("new policy", newPolicy).WithField("error", err).Error("update policy failed")
 			return resp.CodeInternalServerError
 		}
 
@@ -421,7 +458,7 @@ func ApproveApply(accountID string, applyID uint64, remark string, policy entity
 			EndAt: apply.FinishAt,
 		}
 		if err := fp.Updates(newFilePolicy); err != nil {
-			log.Logger().WithField("file policy", p).WithField("new file policy", newFilePolicy).WithField("error", err).Error("update file policy failed")
+			log.Logger().WithField("filePolicy", utils.JSON(fp)).WithField("new file policy", newFilePolicy).WithField("error", err).Error("update file policy failed")
 			return resp.CodeInternalServerError
 		}
 	}

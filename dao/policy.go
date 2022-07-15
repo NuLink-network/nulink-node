@@ -14,15 +14,15 @@ const (
 )
 
 type Policy struct {
-	ID               uint64         `gorm:"primarykey"`
-	Hrac             string         `gorm:"column:hrac" json:"hrac" sql:"varchar(256)"`
-	PolicyLabelID    string         `gorm:"column:policy_label_id" json:"policy_label_id" sql:"char(36)"`
-	Creator          string         `gorm:"column:creator" json:"creator" sql:"varchar(32)"`
-	CreatorID        string         `gorm:"column:creator_id" json:"creator_id" sql:"char(36)"`
-	CreatorAddress   string         `gorm:"column:creator_address" json:"creator_address" sql:"char(42)"`
-	Consumer         string         `gorm:"column:consumer" json:"consumer" sql:"varchar(32)"`
-	ConsumerID       string         `gorm:"column:consumer_id" json:"consumer_id" sql:"char(36)"`
-	ConsumerAddress  string         `gorm:"column:consumer_address" json:"consumer_address" sql:"char(42)"`
+	ID            uint64 `gorm:"primarykey"`
+	Hrac          string `gorm:"column:hrac" json:"hrac" sql:"varchar(256)"`
+	PolicyLabelID string `gorm:"column:policy_label_id" json:"policy_label_id" sql:"char(36)"`
+	//Creator          string         `gorm:"column:creator" json:"creator" sql:"varchar(32)"`
+	CreatorID string `gorm:"column:creator_id" json:"creator_id" sql:"char(36)"`
+	//CreatorAddress   string         `gorm:"column:creator_address" json:"creator_address" sql:"char(42)"`
+	//Consumer         string         `gorm:"column:consumer" json:"consumer" sql:"varchar(32)"`
+	ConsumerID string `gorm:"column:consumer_id" json:"consumer_id" sql:"char(36)"`
+	//ConsumerAddress  string         `gorm:"column:consumer_address" json:"consumer_address" sql:"char(42)"`
 	EncryptedPK      string         `gorm:"column:encrypted_pk" json:"encrypted_pk" sql:"varchar(256)"`
 	EncryptedAddress string         `gorm:"column:encrypted_address" json:"encrypted_address" sql:"varchar(256)"`
 	Gas              string         `gorm:"column:gas" json:"gas" sql:"varchar(32)"`
@@ -52,7 +52,7 @@ func (p *Policy) Get() (policy *Policy, err error) {
 	return policy, err
 }
 
-func (p *Policy) Find(ext *QueryExtra, pager Pager) (ps []*Policy, err error) {
+func (p *Policy) Find(ext *QueryExtra, pager Pager) (ps []*Policy, count int64, err error) {
 	tx := db.GetDB().Where(p)
 	if ext != nil {
 		if ext.Conditions != nil {
@@ -66,10 +66,16 @@ func (p *Policy) Find(ext *QueryExtra, pager Pager) (ps []*Policy, err error) {
 	}
 
 	if pager != nil {
+		if err := tx.Model(p).Count(&count).Error; err != nil {
+			return ps, count, err
+		}
+		if count == 0 {
+			return ps, 0, nil
+		}
 		tx = tx.Scopes(pager)
 	}
 	err = tx.Find(&ps).Error
-	return ps, err
+	return ps, count, err
 }
 
 func (p *Policy) FindPolicyIDs() (policyIDs []string, err error) {

@@ -90,6 +90,7 @@ type FileDetailResponse struct {
 	Thumbnail      string `json:"thumbnail"`
 	Creator        string `json:"creator"`
 	CreatorID      string `json:"creator_id"`
+	CreatorAvatar  string `json:"creator_avatar"`
 	CreatorAddress string `json:"creator_address"`
 	FileCreatedAt  int64  `json:"file_created_at"`
 	// 申请信息

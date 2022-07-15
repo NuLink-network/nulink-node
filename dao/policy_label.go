@@ -36,13 +36,19 @@ func (p *PolicyLabel) Get() (pl *PolicyLabel, err error) {
 	return pl, err
 }
 
-func (p *PolicyLabel) Find(pager Pager) (ps []*PolicyLabel, err error) {
+func (p *PolicyLabel) Find(pager Pager) (ps []*PolicyLabel, count int64, err error) {
 	tx := db.GetDB().Where(p)
 	if pager != nil {
+		if err := tx.Model(p).Count(&count).Error; err != nil {
+			return ps, count, err
+		}
+		if count == 0 {
+			return ps, 0, nil
+		}
 		tx = tx.Scopes(pager)
 	}
 	err = tx.Find(&ps).Error
-	return ps, err
+	return ps, count, err
 }
 
 func (p *PolicyLabel) FindPolicyIDs() (policyIDs []string, err error) {

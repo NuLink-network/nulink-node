@@ -42,16 +42,16 @@ func (f *FilePolicy) Get() (fp *FilePolicy, err error) {
 	return fp, err
 }
 
-func (f *FilePolicy) Find(pager func(*gorm.DB) *gorm.DB) (fps []*FilePolicy, err error) {
-	tx := db.GetDB().Where(f)
-	if pager != nil {
-		tx = tx.Scopes(pager)
-	}
-	err = tx.Find(&fps).Error
-	return fps, err
-}
+//func (f *FilePolicy) Find(pager func(*gorm.DB) *gorm.DB) (fps []*FilePolicy, err error) {
+//	tx := db.GetDB().Where(f)
+//	if pager != nil {
+//		tx = tx.Scopes(pager)
+//	}
+//	err = tx.Find(&fps).Error
+//	return fps, err
+//}
 
-func (f *FilePolicy) FindAny(ext *QueryExtra, pager Pager) (fps []*FilePolicy, err error) {
+func (f *FilePolicy) FindAny(ext *QueryExtra, pager Pager) (fps []*FilePolicy, count int64, err error) {
 	tx := db.GetDB().Where(f)
 	if ext != nil {
 		if ext.Conditions != nil {
@@ -68,10 +68,16 @@ func (f *FilePolicy) FindAny(ext *QueryExtra, pager Pager) (fps []*FilePolicy, e
 	}
 
 	if pager != nil {
+		if err := tx.Model(f).Count(&count).Error; err != nil {
+			return fps, count, err
+		}
+		if count == 0 {
+			return fps, 0, nil
+		}
 		tx = tx.Scopes(pager)
 	}
 	err = tx.Find(&fps).Error
-	return fps, err
+	return fps, count, err
 }
 
 func (f *FilePolicy) FindFileIDsByPolicyIDs(policyIDs []string, pager func(*gorm.DB) *gorm.DB) (fileIDs []string, err error) {

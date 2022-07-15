@@ -2,22 +2,30 @@ package logic
 
 import (
 	"errors"
+
+	"gorm.io/gorm"
+
 	"github.com/NuLink-network/nulink-node/dao"
 	"github.com/NuLink-network/nulink-node/entity"
 	"github.com/NuLink-network/nulink-node/resource/log"
 	"github.com/NuLink-network/nulink-node/resp"
 	"github.com/NuLink-network/nulink-node/utils"
-	"gorm.io/gorm"
 )
 
 func CreateAccount(name, account, ethereumAddr, encryptedPK, verifyPK string) (code int) {
-	acc := dao.NewAccount(name, account, ethereumAddr, encryptedPK, verifyPK)
+	acc := &dao.Account{
+		Name:         name,
+		AccountID:    account,
+		EthereumAddr: ethereumAddr,
+		EncryptedPK:  encryptedPK,
+		VerifyPK:     verifyPK,
+	}
 	_, err := acc.Create()
 	if err != nil {
 		if utils.IsDuplicateError(err.Error()) {
 			return resp.CodeAccountIsExist
 		}
-		log.Logger().WithField("account", acc).WithField("error", err).Error("create account failed")
+		log.Logger().WithField("account", utils.JSON(acc)).WithField("error", err).Error("create account failed")
 		return resp.CodeInternalServerError
 	}
 	return resp.CodeSuccess

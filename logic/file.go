@@ -22,7 +22,7 @@ func DuplicateFilename(accountID string, fileNames []string) ([]string, int) {
 			"name in ?": fileNames,
 		},
 	}
-	fileList, err := f.FindAny(query, nil)
+	fileList, _, err := f.FindAny(query, nil)
 	if err != nil {
 		log.Logger().WithField("file", utils.JSON(f)).WithField("ext", utils.JSON(query)).WithField("error", err).Error("get file list failed")
 		return nil, resp.CodeInternalServerError
@@ -52,16 +52,16 @@ func UploadFile(accountID string, policyID uint64, files []entity.File) (code in
 	fps := make([]*dao.FilePolicy, 0, len(files))
 	for _, f := range files {
 		fs = append(fs, &dao.File{
-			FileID:        f.ID,
-			MD5:           f.MD5,
-			Name:          f.Name,
-			Suffix:        f.Suffix,
-			Category:      f.Category,
-			Address:       f.Address,
-			Thumbnail:     f.Thumbnail,
-			Owner:         policy.Creator,
-			OwnerID:       accountID,
-			OwnerAddress:  policy.CreatorAddress,
+			FileID:    f.ID,
+			MD5:       f.MD5,
+			Name:      f.Name,
+			Suffix:    f.Suffix,
+			Category:  f.Category,
+			Address:   f.Address,
+			Thumbnail: f.Thumbnail,
+			//Owner:         policy.Creator,
+			OwnerID: accountID,
+			//OwnerAddress:  policy.CreatorAddress,
 			PolicyLabelID: policy.PolicyLabelID,
 		})
 
@@ -84,7 +84,8 @@ func UploadFile(accountID string, policyID uint64, files []entity.File) (code in
 
 func CreatePolicyAndUploadFile(accountID, policyLabelID, policyLabel, encryptedPK string, files []entity.File) (code int) {
 	acc := &dao.Account{AccountID: accountID}
-	account, err := acc.Get()
+	// todo isExist
+	_, err := acc.Get()
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return resp.CodeAccountNotExist
@@ -113,16 +114,16 @@ func CreatePolicyAndUploadFile(accountID, policyLabelID, policyLabel, encryptedP
 	fs := make([]*dao.File, 0, len(files))
 	for _, f := range files {
 		fs = append(fs, &dao.File{
-			FileID:        f.ID,
-			MD5:           f.MD5,
-			Name:          f.Name,
-			Suffix:        f.Suffix,
-			Category:      f.Category,
-			Address:       f.Address,
-			Thumbnail:     f.Thumbnail,
-			Owner:         account.Name,
-			OwnerID:       accountID,
-			OwnerAddress:  account.EthereumAddr,
+			FileID:    f.ID,
+			MD5:       f.MD5,
+			Name:      f.Name,
+			Suffix:    f.Suffix,
+			Category:  f.Category,
+			Address:   f.Address,
+			Thumbnail: f.Thumbnail,
+			//Owner:         account.Name,
+			OwnerID: accountID,
+			//OwnerAddress:  account.EthereumAddr,
 			PolicyLabelID: policyLabelID,
 		})
 	}
@@ -133,7 +134,7 @@ func CreatePolicyAndUploadFile(accountID, policyLabelID, policyLabel, encryptedP
 	return resp.CodeSuccess
 }
 
-func GetFileList(accountID string, fileName string, page, pageSize int) (ret []*entity.GetFileListResponse, code int) {
+func GetFileList(accountID string, fileName string, page, pageSize int) (ret []*entity.GetFileListResponse, count int64, code int) {
 	file := &dao.File{
 		OwnerID: accountID,
 	}
@@ -145,28 +146,44 @@ func GetFileList(accountID string, fileName string, page, pageSize int) (ret []*
 		query.Conditions["name like ?"] = "%" + fileName + "%"
 	}
 
-	files, err := file.FindAny(query, dao.Paginate(page, pageSize))
+	files, count, err := file.FindAny(query, dao.Paginate(page, pageSize))
 	if err != nil {
-		log.Logger().WithField("file", utils.JSON(file)).WithField("error", err).Error("find files failed")
-		return nil, resp.CodeInternalServerError
+		log.Logger().WithField("file", file).WithField("error", err).Error("find files failed")
+		return nil, count, resp.CodeInternalServerError
+	}
+	if count == 0 || len(files) == 0 {
+		return []*entity.GetFileListResponse{}, count, resp.CodeSuccess
 	}
 
-	ret = make([]*entity.GetFileListResponse, 0, 10)
+	accountIDs := make([]string, 0, len(files))
+	for _, f := range files {
+		accountIDs = append(accountIDs, f.OwnerID)
+	}
+	accounts, err := dao.NewAccount().FindAccountByAccountIDs(accountIDs)
+	if err != nil {
+		log.Logger().WithField("accountIDs", accountIDs).WithField("error", err).Error("find account by account ids failed")
+		return nil, 0, resp.CodeInternalServerError
+	}
+	if len(accounts) == 0 {
+		return nil, 0, resp.CodeAccountNotExist
+	}
+
+	ret = make([]*entity.GetFileListResponse, 0, len(files))
 	for _, f := range files {
 		ret = append(ret, &entity.GetFileListResponse{
 			FileID:    f.FileID,
 			FileName:  f.Name,
 			Address:   f.Address,
 			Thumbnail: f.Thumbnail,
-			Owner:     f.Owner,
+			Owner:     accounts[f.OwnerID].Name,
 			OwnerID:   f.OwnerID,
 			CreatedAt: f.CreatedAt.Unix(),
 		})
 	}
-	return ret, resp.CodeSuccess
+	return ret, count, resp.CodeSuccess
 }
 
-func GetOthersFileList(accountID string, include bool, fileName, category, format string, desc bool, page, pageSize int) (ret []*entity.GetOthersFileListResponse, code int) {
+func GetOthersFileList(accountID string, include bool, fileName, category, format string, desc bool, page, pageSize int) (ret []*entity.GetOthersFileListResponse, count int64, code int) {
 	file := &dao.File{
 		Category: category,
 	}
@@ -192,10 +209,26 @@ func GetOthersFileList(accountID string, include bool, fileName, category, forma
 	if desc {
 		query.OrderStr = "id desc"
 	}
-	files, err := file.FindAny(query, dao.Paginate(page, pageSize))
+	files, count, err := file.FindAny(query, dao.Paginate(page, pageSize))
 	if err != nil {
 		log.Logger().WithField("file", file).WithField("error", err).Error("find others file failed")
-		return nil, resp.CodeInternalServerError
+		return nil, count, resp.CodeInternalServerError
+	}
+	if count == 0 || len(files) == 0 {
+		return []*entity.GetOthersFileListResponse{}, count, resp.CodeSuccess
+	}
+
+	accountIDs := make([]string, 0, len(files))
+	for _, f := range files {
+		accountIDs = append(accountIDs, f.OwnerID)
+	}
+	accounts, err := dao.NewAccount().FindAccountByAccountIDs(accountIDs)
+	if err != nil {
+		log.Logger().WithField("accountIDs", accountIDs).WithField("error", err).Error("find account by account ids failed")
+		return nil, 0, resp.CodeInternalServerError
+	}
+	if len(accounts) == 0 {
+		return nil, 0, resp.CodeAccountNotExist
 	}
 
 	if !include {
@@ -206,12 +239,12 @@ func GetOthersFileList(accountID string, include bool, fileName, category, forma
 				FileName:  f.Name,
 				Address:   f.Address,
 				Thumbnail: f.Thumbnail,
-				Owner:     f.Owner,
+				Owner:     accounts[f.OwnerID].Name,
 				OwnerID:   f.OwnerID,
 				CreatedAt: f.CreatedAt.Unix(),
 			})
 		}
-		return ret, resp.CodeSuccess
+		return ret, count, resp.CodeSuccess
 	}
 
 	r1 := make([]*entity.GetOthersFileListResponse, 0)
@@ -222,7 +255,7 @@ func GetOthersFileList(accountID string, include bool, fileName, category, forma
 			FileName:  f.Name,
 			Address:   f.Address,
 			Thumbnail: f.Thumbnail,
-			Owner:     f.Owner,
+			Owner:     accounts[f.OwnerID].Name,
 			OwnerID:   f.OwnerID,
 			CreatedAt: f.CreatedAt.Unix(),
 		}
@@ -233,7 +266,7 @@ func GetOthersFileList(accountID string, include bool, fileName, category, forma
 		r2 = append(r2, r)
 	}
 	ret = append(r1, r2...)
-	return ret, resp.CodeSuccess
+	return ret, count, resp.CodeSuccess
 }
 
 func DeleteFile(accountID string, fileIDs []string) (code int) {
@@ -265,7 +298,17 @@ func DeleteFile(accountID string, fileIDs []string) (code int) {
 }
 
 func FileDetail(fileID, consumerID string) (ret *entity.FileDetailResponse, code int) {
-	// 返回文件信息，策略信息，申请信息，文件拥有者 VerifyPK
+	// ApplyFile.ProposerID == Policy.ConsumerID == FilePolicy.ConsumerID
+	acc := &dao.Account{AccountID: consumerID}
+	proposer, err := acc.Get()
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, resp.CodeAccountNotExist
+		}
+		log.Logger().WithField("accountID", consumerID).WithField("error", err).Error("get account failed")
+		return nil, resp.CodeInternalServerError
+	}
+
 	f := &dao.File{
 		FileID: fileID,
 	}
@@ -278,7 +321,7 @@ func FileDetail(fileID, consumerID string) (ret *entity.FileDetailResponse, code
 		return nil, resp.CodeInternalServerError
 	}
 
-	acc := &dao.Account{AccountID: file.OwnerID}
+	acc = &dao.Account{AccountID: file.OwnerID}
 	owner, err := acc.Get()
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -305,8 +348,9 @@ func FileDetail(fileID, consumerID string) (ret *entity.FileDetailResponse, code
 			FileID:            file.FileID,
 			FileName:          file.Name,
 			Thumbnail:         file.Thumbnail,
-			Creator:           file.Owner,
+			Creator:           owner.Name,
 			CreatorID:         file.OwnerID,
+			CreatorAvatar:     owner.Avatar,
 			CreatorAddress:    owner.EthereumAddr,
 			FileIPFSAddress:   file.Address,
 			FileCreatedAt:     file.CreatedAt.Unix(),
@@ -330,6 +374,28 @@ func FileDetail(fileID, consumerID string) (ret *entity.FileDetailResponse, code
 		return nil, resp.CodeInternalServerError
 	}
 
+	// 1 0
+	// 申请记录存在但未通过，文件策略关联记录还未创建，返回文件信息和申请信息
+	if applyFile.ID != 0 && applyFile.Status != dao.ApplyStatusApproved {
+		return &entity.FileDetailResponse{
+			FileID:          file.FileID,
+			FileName:        file.Name,
+			Thumbnail:       file.Thumbnail,
+			Creator:         owner.Name,
+			CreatorID:       file.OwnerID,
+			CreatorAvatar:   owner.Avatar,
+			CreatorAddress:  owner.EthereumAddr,
+			FileIPFSAddress: file.Address,
+			FileCreatedAt:   file.CreatedAt.Unix(),
+			ApplyID:         applyFile.ID,
+			ProposerAddress: proposer.EthereumAddr,
+			Status:          applyFile.Status,
+			ApplyStartAt:    applyFile.StartAt.Unix(),
+			ApplyEndAt:      applyFile.FinishAt.Unix(),
+			ApplyCreatedAt:  applyFile.CreatedAt.Unix(),
+		}, resp.CodeSuccess
+	}
+
 	// 因为上传文件时关联已发布策略策略的使用者自动获得该文件的使用
 	// 这种情况不存在申请记录表只存在文件策略关联纪律
 	fp := &dao.FilePolicy{
@@ -349,32 +415,12 @@ func FileDetail(fileID, consumerID string) (ret *entity.FileDetailResponse, code
 			FileID:          file.FileID,
 			FileName:        file.Name,
 			Thumbnail:       file.Thumbnail,
-			Creator:         file.Owner,
+			Creator:         owner.Name,
 			CreatorID:       file.OwnerID,
+			CreatorAvatar:   owner.Avatar,
 			CreatorAddress:  owner.EthereumAddr,
 			FileIPFSAddress: file.Address,
 			FileCreatedAt:   file.CreatedAt.Unix(),
-		}, resp.CodeSuccess
-	}
-
-	// 1 0
-	// 申请记录存在但未通过，文件策略关联记录还未创建，返回文件信息和申请信息
-	if applyFile.ID != 0 && applyFile.Status != dao.ApplyStatusApproved {
-		return &entity.FileDetailResponse{
-			FileID:          file.FileID,
-			FileName:        file.Name,
-			Thumbnail:       file.Thumbnail,
-			Creator:         file.Owner,
-			CreatorID:       file.OwnerID,
-			CreatorAddress:  owner.EthereumAddr,
-			FileIPFSAddress: file.Address,
-			FileCreatedAt:   file.CreatedAt.Unix(),
-			ApplyID:         applyFile.ID,
-			ProposerAddress: applyFile.ProposerAddress,
-			Status:          applyFile.Status,
-			ApplyStartAt:    applyFile.StartAt.Unix(),
-			ApplyEndAt:      applyFile.FinishAt.Unix(),
-			ApplyCreatedAt:  applyFile.CreatedAt.Unix(),
 		}, resp.CodeSuccess
 	}
 
@@ -392,24 +438,26 @@ func FileDetail(fileID, consumerID string) (ret *entity.FileDetailResponse, code
 
 	// 0 1
 	// 申请记录不存在，文件策略记录存在表示使用者是自动获取的文件使用权限
-	// 返回文件信息，策略信息
+	// 返回文件信息，申请信息，策略信息
 	if applyFile.ID == 0 && filePolicy.ID != 0 {
 		ret = &entity.FileDetailResponse{
 			FileID:          file.FileID,
 			FileName:        file.Name,
 			Thumbnail:       file.Thumbnail,
-			Creator:         file.Owner,
+			Creator:         owner.Avatar,
 			CreatorID:       file.OwnerID,
+			CreatorAvatar:   owner.Avatar,
 			CreatorAddress:  owner.EthereumAddr,
 			FileIPFSAddress: file.Address,
 			FileCreatedAt:   file.CreatedAt.Unix(),
+			ProposerAddress: proposer.EthereumAddr,
 			Status:          dao.ApplyStatusApproved,
 			ApplyStartAt:    filePolicy.StartAt.Unix(),
 			ApplyEndAt:      filePolicy.EndAt.Unix(),
 			ApplyCreatedAt:  filePolicy.CreatedAt.Unix(),
 			PolicyID:        policy.ID,
 			Hrac:            policy.Hrac,
-			Consumer:        policy.Consumer,
+			Consumer:        proposer.Name,
 			ConsumerID:      policy.ConsumerID,
 			Gas:             policy.Gas,
 			TxHash:          policy.TxHash,
@@ -425,20 +473,21 @@ func FileDetail(fileID, consumerID string) (ret *entity.FileDetailResponse, code
 			FileID:          file.FileID,
 			FileName:        file.Name,
 			Thumbnail:       file.Thumbnail,
-			Creator:         file.Owner,
+			Creator:         owner.Name,
 			CreatorID:       file.OwnerID,
+			CreatorAvatar:   owner.Avatar,
 			CreatorAddress:  owner.EthereumAddr,
 			FileIPFSAddress: file.Address,
 			FileCreatedAt:   file.CreatedAt.Unix(),
 			ApplyID:         applyFile.ID,
-			ProposerAddress: applyFile.ProposerAddress,
+			ProposerAddress: proposer.EthereumAddr,
 			Status:          applyFile.Status,
 			ApplyStartAt:    applyFile.StartAt.Unix(),
 			ApplyEndAt:      applyFile.FinishAt.Unix(),
 			ApplyCreatedAt:  applyFile.CreatedAt.Unix(),
 			PolicyID:        policy.ID,
 			Hrac:            policy.Hrac,
-			Consumer:        policy.Consumer,
+			Consumer:        proposer.Name,
 			ConsumerID:      policy.ConsumerID,
 			Gas:             policy.Gas,
 			TxHash:          policy.TxHash,

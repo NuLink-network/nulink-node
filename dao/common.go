@@ -5,6 +5,9 @@ import (
 	"gorm.io/gorm"
 )
 
+// ApplyFile.FileOwnerID = Policy.CreatorID = FilePolicy.CreatorID
+// ApplyFile.ProposerID = Policy.ConsumerID = FilePolicy.ConsumerID
+
 type QueryExtra struct {
 	Conditions  map[string]interface{}
 	OrderStr    string

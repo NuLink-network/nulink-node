@@ -8,17 +8,17 @@ import (
 )
 
 type File struct {
-	ID            uint64         `gorm:"primarykey"`
-	FileID        string         `gorm:"column:file_id" json:"file_id" sql:"char(36)"`
-	MD5           string         `gorm:"column:md5" json:"md5" sql:"varchar(32)"`
-	Name          string         `gorm:"column:name" json:"name" sql:"varchar(32)"`
-	Suffix        string         `gorm:"column:suffix" json:"suffix" sql:"varchar(16)"`
-	Category      string         `gorm:"column:category" json:"category" sql:"varchar(32)"`
-	Address       string         `gorm:"column:address" json:"addr" sql:"varchar(512)"`
-	Thumbnail     string         `gorm:"column:thumbnail" json:"thumbnail" sql:"varchar(512)"`
-	Owner         string         `gorm:"column:owner" json:"owner" sql:"varchar(512)"`
-	OwnerID       string         `gorm:"column:owner_id" json:"owner_id" sql:"char(36)"`
-	OwnerAddress  string         `gorm:"column:owner_address" json:"owner_address" sql:"char(42)"`
+	ID        uint64 `gorm:"primarykey"`
+	FileID    string `gorm:"column:file_id" json:"file_id" sql:"char(36)"`
+	MD5       string `gorm:"column:md5" json:"md5" sql:"varchar(32)"`
+	Name      string `gorm:"column:name" json:"name" sql:"varchar(32)"`
+	Suffix    string `gorm:"column:suffix" json:"suffix" sql:"varchar(16)"`
+	Category  string `gorm:"column:category" json:"category" sql:"varchar(32)"`
+	Address   string `gorm:"column:address" json:"addr" sql:"varchar(512)"`
+	Thumbnail string `gorm:"column:thumbnail" json:"thumbnail" sql:"varchar(512)"`
+	//Owner         string         `gorm:"column:owner" json:"owner" sql:"varchar(512)"`
+	OwnerID string `gorm:"column:owner_id" json:"owner_id" sql:"char(36)"`
+	//OwnerAddress  string         `gorm:"column:owner_address" json:"owner_address" sql:"char(42)"`
 	PolicyLabelID string         `gorm:"column:policy_label_id" json:"policy_label_id" sql:"char(36)"`
 	CreatedAt     time.Time      `gorm:"column:created_at" json:"created_at,omitempty" sql:"datetime"`
 	UpdatedAt     time.Time      `gorm:"column:updated_at" json:"updated_at,omitempty" sql:"datetime"`
@@ -47,33 +47,33 @@ func (f *File) Get() (file *File, err error) {
 	return file, err
 }
 
-func (f *File) Find(pager Pager) (files []*File, err error) {
-	name := f.Name
-	f.Name = ""
-
-	tx := db.GetDB().Where("name like ?", name).Where(f)
-	if pager != nil {
-		tx = tx.Scopes(pager)
-	}
-	err = tx.Find(&files).Error
-	return files, err
-}
+//func (f *File) Find(pager Pager) (files []*File, err error) {
+//	name := f.Name
+//	f.Name = ""
+//
+//	tx := db.GetDB().Where("name like ?", name).Where(f)
+//	if pager != nil {
+//		tx = tx.Scopes(pager)
+//	}
+//	err = tx.Find(&files).Error
+//	return files, err
+//}
 
 //func (f *File) FindAny(query interface{}, args ...interface{}) (files []File, err error) {
 //	err = db.GetDB().Where(query, args).Find(&files).Error
 //	return files, err
 //}
 
-func (f *File) FindByFileIDs(fileIDs []string, pager Pager) (files []*File, err error) {
-	tx := db.GetDB().Where("file_id in ?", fileIDs)
-	if pager != nil {
-		tx = tx.Scopes(pager)
-	}
-	err = tx.Find(&files).Error
-	return files, err
-}
+//func (f *File) FindByFileIDs(fileIDs []string, pager Pager) (files []*File, err error) {
+//	tx := db.GetDB().Where("file_id in ?", fileIDs)
+//	if pager != nil {
+//		tx = tx.Scopes(pager)
+//	}
+//	err = tx.Find(&files).Error
+//	return files, err
+//}
 
-func (f *File) FindAny(ext *QueryExtra, pager Pager) (files []*File, err error) {
+func (f *File) FindAny(ext *QueryExtra, pager Pager) (files []*File, count int64, err error) {
 	tx := db.GetDB().Where(f)
 	if ext != nil {
 		if ext.Conditions != nil {
@@ -87,10 +87,16 @@ func (f *File) FindAny(ext *QueryExtra, pager Pager) (files []*File, err error) 
 	}
 
 	if pager != nil {
+		if err := tx.Model(f).Count(&count).Error; err != nil {
+			return files, count, err
+		}
+		if count == 0 {
+			return files, 0, nil
+		}
 		tx = tx.Scopes(pager)
 	}
 	err = tx.Find(&files).Error
-	return files, err
+	return files, count, err
 }
 
 func (f *File) Delete() error {

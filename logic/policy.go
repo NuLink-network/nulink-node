@@ -55,30 +55,55 @@ func RevokePolicy(accountID string, policyID uint64) (code int) {
 	return resp.CodeSuccess
 }
 
-func PolicyList(policyID uint64, policyLabelID, creatorID, consumerID string, page, pageSize int) ([]*entity.PolicyListResponse, int) {
+func PolicyList(policyID uint64, policyLabelID, creatorID, consumerID string, page, pageSize int) (ret []*entity.PolicyListResponse, count int64, codee int) {
 	p := &dao.Policy{
 		ID:            policyID,
 		PolicyLabelID: policyLabelID,
 		CreatorID:     creatorID,
 		ConsumerID:    consumerID,
 	}
-	ps, err := p.Find(nil, dao.Paginate(page, pageSize))
+	ps, count, err := p.Find(nil, dao.Paginate(page, pageSize))
 	if err != nil {
 		log.Logger().WithField("policy", p).WithField("error", err).Error("find policy failed")
-		return nil, resp.CodeInternalServerError
+		return nil, count, resp.CodeInternalServerError
+	}
+	if count == 0 || len(ps) == 0 {
+		return []*entity.PolicyListResponse{}, 0, resp.CodeSuccess
 	}
 
-	ret := make([]*entity.PolicyListResponse, 0, len(ps))
+	accountIDs := make([]string, 0, len(ps))
 	for _, p := range ps {
+		accountIDs = append(accountIDs, p.CreatorID)
+		accountIDs = append(accountIDs, p.ConsumerID)
+	}
+	accounts, err := dao.NewAccount().FindAccountByAccountIDs(accountIDs)
+	if err != nil {
+		log.Logger().WithField("accountIDs", accountIDs).WithField("error", err).Error("find account by account ids failed")
+		return nil, 0, resp.CodeInternalServerError
+	}
+	if len(accounts) == 0 {
+		return nil, 0, resp.CodeAccountNotExist
+	}
+
+	ret = make([]*entity.PolicyListResponse, 0, len(ps))
+	for _, p := range ps {
+		creator := accounts[p.CreatorID]
+		if creator == nil {
+			return nil, 0, resp.CodeAccountNotExist
+		}
+		consumer := accounts[p.ConsumerID]
+		if consumer == nil {
+			return nil, 0, resp.CodeAccountNotExist
+		}
 		ret = append(ret, &entity.PolicyListResponse{
 			Hrac:            p.Hrac,
 			PolicyID:        p.ID,
-			Creator:         p.Creator,
+			Creator:         accounts[p.CreatorID].Name,
 			CreatorID:       p.CreatorID,
-			CreatorAddress:  p.CreatorAddress,
-			Consumer:        p.Consumer,
+			CreatorAddress:  accounts[p.CreatorID].EthereumAddr,
+			Consumer:        accounts[p.ConsumerID].Name,
 			ConsumerID:      p.ConsumerID,
-			ConsumerAddress: p.ConsumerAddress,
+			ConsumerAddress: accounts[p.ConsumerID].EthereumAddr,
 			Gas:             p.Gas,
 			TxHash:          p.TxHash,
 			EncryptedPK:     p.EncryptedPK,
@@ -87,32 +112,38 @@ func PolicyList(policyID uint64, policyLabelID, creatorID, consumerID string, pa
 			CreatedAt:       p.CreatedAt.Unix(),
 		})
 	}
-	return ret, resp.CodeSuccess
+	return ret, count, resp.CodeSuccess
 }
 
-func FileDetailList(policyID uint64, page, pageSize int) ([]*entity.FileDetailListResponse, int) {
+func FileDetailList(policyID uint64, page, pageSize int) (ret []*entity.FileDetailListResponse, count int64, code int) {
+	p := &dao.Policy{
+		ID: policyID,
+	}
+	policy, err := p.Get()
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, 0, resp.CodePolicyNotExist
+		}
+		log.Logger().WithField("id", policyID).WithField("error", err).Error("get policy failed")
+		return nil, 0, resp.CodeInternalServerError
+	}
+
 	fp := &dao.FilePolicy{
 		PolicyID: policyID,
 	}
-	// todo 如果 CreatorID id 为空或者 PolicyID ConsumerID 都有值则不需要去重
-	//query := &dao.QueryExtra{
-	//	DistinctStr: []string{"file_id"},
-	//}
-	filePolicyList, err := fp.FindAny(nil, dao.Paginate(page, pageSize))
+	filePolicyList, count, err := fp.FindAny(nil, dao.Paginate(page, pageSize))
 	if err != nil {
-		log.Logger().WithField("filePolicy", fp).WithField("error", err).Error("get file policy list failed")
-		return nil, resp.CodeInternalServerError
+		log.Logger().WithField("policyID", policyID).WithField("error", err).Error("get file policy list failed")
+		return nil, 0, resp.CodeInternalServerError
 	}
-	if len(filePolicyList) == 0 {
-		return nil, resp.CodePolicyNotExist
+	if count == 0 || len(filePolicyList) == 0 {
+		return []*entity.FileDetailListResponse{}, count, resp.CodeSuccess
 	}
 
 	filePolicyListLength := len(filePolicyList)
 	fileIDs := make([]string, 0, filePolicyListLength)
-	policyIDs := make([]uint64, 0, filePolicyListLength)
 	for _, fp := range filePolicyList {
 		fileIDs = append(fileIDs, fp.FileID)
-		policyIDs = append(policyIDs, fp.PolicyID)
 	}
 
 	query := &dao.QueryExtra{
@@ -120,39 +151,41 @@ func FileDetailList(policyID uint64, page, pageSize int) ([]*entity.FileDetailLi
 			"file_id in ?": fileIDs,
 		},
 	}
-	files, err := dao.NewFile().FindAny(query, nil)
+	files, _, err := dao.NewFile().FindAny(query, nil)
 	if err != nil {
-		log.Logger().WithField("ext", query).WithField("error", err).Error("get file list failed")
-		return nil, resp.CodeInternalServerError
+		log.Logger().WithField("query", query).WithField("error", err).Error("get file list failed")
+		return nil, 0, resp.CodeInternalServerError
 	}
+	if len(files) == 0 {
+		return nil, 0, resp.CodeFileNotExist
+	}
+
+	accountIDs := make([]string, 0, len(files))
 	fileID2file := make(map[string]*dao.File, len(files))
 	for _, f := range files {
+		accountIDs = append(accountIDs, f.OwnerID)
 		fileID2file[f.FileID] = f
 	}
 
-	query = &dao.QueryExtra{
-		Conditions: map[string]interface{}{
-			"id in ?": policyIDs,
-		},
-	}
-	policies, err := dao.NewPolicy().Find(query, nil)
+	accounts, err := dao.NewAccount().FindAccountByAccountIDs(accountIDs)
 	if err != nil {
-		log.Logger().WithField("ext", query).WithField("error", err).Error("get policy list failed")
-		return nil, resp.CodeInternalServerError
+		log.Logger().WithField("accountIDs", accountIDs).WithField("error", err).Error("find account by account ids failed")
+		return nil, 0, resp.CodeInternalServerError
 	}
-	policyID2policy := make(map[uint64]*dao.Policy, len(files))
-	for _, p := range policies {
-		policyID2policy[p.ID] = p
+	if len(accounts) == 0 {
+		return nil, 0, resp.CodeAccountNotExist
 	}
 
-	ret := make([]*entity.FileDetailListResponse, 0, filePolicyListLength)
+	ret = make([]*entity.FileDetailListResponse, 0, filePolicyListLength)
 	for _, fp := range filePolicyList {
 		file := fileID2file[fp.FileID]
-		policy := policyID2policy[fp.PolicyID]
+		if file == nil {
+			return nil, 0, resp.CodeFileNotExist
+		}
 		ret = append(ret, &entity.FileDetailListResponse{
 			FileID:        fp.FileID,
 			FileName:      file.Name,
-			Owner:         file.Owner,
+			Owner:         accounts[file.OwnerID].Name,
 			OwnerID:       file.OwnerID,
 			Address:       file.Address,
 			Thumbnail:     file.Thumbnail,
@@ -163,5 +196,5 @@ func FileDetailList(policyID uint64, page, pageSize int) ([]*entity.FileDetailLi
 			PolicyEndAt:   policy.EndAt.Unix(),
 		})
 	}
-	return ret, resp.CodeSuccess
+	return ret, count, resp.CodeSuccess
 }

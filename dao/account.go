@@ -1,6 +1,7 @@
 package dao
 
 import (
+	"github.com/NuLink-network/nulink-node/utils"
 	"time"
 
 	"gorm.io/gorm"
@@ -27,14 +28,14 @@ type Account struct {
 	DeletedAt    gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at" sql:"datetime"`
 }
 
-func NewAccount(name, account, ethereumAddr, encryptedPK, verifyPK string) *Account {
-	return &Account{
-		Name:         name,
-		AccountID:    account,
-		EthereumAddr: ethereumAddr,
-		EncryptedPK:  encryptedPK,
-		VerifyPK:     verifyPK,
-	}
+type AccountPart struct {
+	Name         string
+	Avatar       string
+	EthereumAddr string
+}
+
+func NewAccount() *Account {
+	return &Account{}
 }
 
 func (a *Account) TableName() string {
@@ -49,6 +50,31 @@ func (a *Account) Create() (id uint64, err error) {
 func (a *Account) Get() (account *Account, err error) {
 	err = db.GetDB().Where(a).First(&account).Error
 	return account, err
+}
+func (a *Account) FindAny(ext *QueryExtra, pager Pager) (accounts []*Account, count int64, err error) {
+	tx := db.GetDB().Where(a)
+	if ext != nil {
+		if ext.Conditions != nil {
+			for k, v := range ext.Conditions {
+				tx = tx.Where(k, v)
+			}
+		}
+		if !utils.IsEmpty(ext.OrderStr) {
+			tx = tx.Order(ext.OrderStr)
+		}
+	}
+
+	if pager != nil {
+		if err := tx.Model(a).Count(&count).Error; err != nil {
+			return nil, count, err
+		}
+		if count == 0 {
+			return nil, 0, nil
+		}
+		tx = tx.Scopes(pager)
+	}
+	err = tx.Find(&accounts).Error
+	return accounts, count, err
 }
 
 func (a *Account) Count() (n int64, err error) {
@@ -70,4 +96,25 @@ func (a *Account) IsExist() (isExist bool, err error) {
 
 func (a *Account) Updates(new *Account) error {
 	return db.GetDB().Where(a).Updates(new).Error
+}
+
+func (a *Account) FindAccountByAccountIDs(accountIDs []string) (accounts map[string]*AccountPart, err error) {
+	query := &QueryExtra{
+		Conditions: map[string]interface{}{
+			"account_id in ?": accountIDs,
+		},
+	}
+	as, _, err := a.FindAny(query, nil)
+	if err != nil {
+		return nil, err
+	}
+	accounts = make(map[string]*AccountPart, 0)
+	for _, a := range as {
+		accounts[a.AccountID] = &AccountPart{
+			Name:         a.Name,
+			Avatar:       a.Avatar,
+			EthereumAddr: a.EthereumAddr,
+		}
+	}
+	return accounts, nil
 }

@@ -35,12 +35,12 @@ func ApplyFileList(c *gin.Context) {
 		return
 	}
 
-	list, code := logic.ApplyFileList(req.FileID, req.Status, req.ProposerID, req.FileOwnerID, req.Paginate.Page, req.Paginate.PageSize)
+	list, count, code := logic.ApplyFileList(req.FileID, req.Status, req.ProposerID, req.FileOwnerID, req.Paginate.Page, req.Paginate.PageSize)
 	if code != resp.CodeSuccess {
 		resp.Error(c, code)
 		return
 	}
-	resp.SuccessList(c, list, len(list))
+	resp.SuccessList(c, list, count)
 }
 
 func ApplyDetail(c *gin.Context) {

@@ -6,6 +6,7 @@ import (
 	"github.com/NuLink-network/nulink-node/entity"
 	"github.com/NuLink-network/nulink-node/logic"
 	"github.com/NuLink-network/nulink-node/resp"
+	"github.com/NuLink-network/nulink-node/utils"
 )
 
 func CreateAccount(c *gin.Context) {
@@ -56,6 +57,13 @@ func UpdateAccount(c *gin.Context) {
 	req := &entity.UpdateAccountRequest{}
 	if err := c.ShouldBindJSON(req); err != nil {
 		resp.ParameterErr(c)
+		return
+	}
+
+	if utils.IsEmpty(req.Avatar) && utils.IsEmpty(req.Name) &&
+		utils.IsEmpty(req.UserSite) && utils.IsEmpty(req.Twitter) &&
+		utils.IsEmpty(req.Instagram) && utils.IsEmpty(req.Facebook) && utils.IsEmpty(req.Profile) {
+		resp.SuccessNil(c)
 		return
 	}
 
