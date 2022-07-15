@@ -392,6 +392,7 @@ application/json
 |  file_name          |  string  |  文件名称 |
 |  owner          |  string  |  文件拥有者 |
 |  owner_id          |  string  |  文件拥有者账户 ID |
+|  owner_avatar          |  string  |  文件拥有者头像 |
 |  address            |  string  |  文件地址 |
 |  thumbnail          |  string  |  文件缩略图 |
 |  created_at          |  number  |  文件上传时间戳 |
@@ -545,6 +546,7 @@ application/json
 | file_name | string | 文件名称 | 
 | owner | string | 文件拥有者 | 
 | owner_id | string | 文件拥有者账户 ID |
+| owner_avatar | string | 文件拥有者头像 |
 | address | string | 文件地址 | 
 | thumbnail | string | 文件缩略图 |
 | created_at | number | 文件上传时间戳 |

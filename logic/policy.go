@@ -187,6 +187,7 @@ func FileDetailList(policyID uint64, page, pageSize int) (ret []*entity.FileDeta
 			FileName:      file.Name,
 			Owner:         accounts[file.OwnerID].Name,
 			OwnerID:       file.OwnerID,
+			OwnerAvatar:   accounts[file.OwnerID].Avatar,
 			Address:       file.Address,
 			Thumbnail:     file.Thumbnail,
 			CreatedAt:     file.CreatedAt.Unix(),

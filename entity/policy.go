@@ -45,6 +45,7 @@ type FileDetailListResponse struct {
 	FileName      string `json:"file_name"`
 	Owner         string `json:"owner"`
 	OwnerID       string `json:"owner_id"`
+	OwnerAvatar   string `json:"owner_avatar"`
 	Address       string `json:"address"`
 	Thumbnail     string `json:"thumbnail"`
 	CreatedAt     int64  `json:"created_at"`

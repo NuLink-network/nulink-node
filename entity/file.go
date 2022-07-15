@@ -74,13 +74,14 @@ type GetFileListResponse struct {
 }
 
 type GetOthersFileListResponse struct {
-	FileID    string `json:"file_id"`
-	FileName  string `json:"file_name"`
-	Address   string `json:"address"`
-	Owner     string `json:"owner"`
-	OwnerID   string `json:"owner_id"`
-	Thumbnail string `json:"thumbnail"`
-	CreatedAt int64  `json:"created_at"`
+	FileID      string `json:"file_id"`
+	FileName    string `json:"file_name"`
+	Address     string `json:"address"`
+	Owner       string `json:"owner"`
+	OwnerID     string `json:"owner_id"`
+	OwnerAvatar string `json:"owner_avatar"`
+	Thumbnail   string `json:"thumbnail"`
+	CreatedAt   int64  `json:"created_at"`
 }
 
 type FileDetailResponse struct {

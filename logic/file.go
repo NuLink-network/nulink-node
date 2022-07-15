@@ -235,13 +235,14 @@ func GetOthersFileList(accountID string, include bool, fileName, category, forma
 		ret = make([]*entity.GetOthersFileListResponse, 0, len(files))
 		for _, f := range files {
 			ret = append(ret, &entity.GetOthersFileListResponse{
-				FileID:    f.FileID,
-				FileName:  f.Name,
-				Address:   f.Address,
-				Thumbnail: f.Thumbnail,
-				Owner:     accounts[f.OwnerID].Name,
-				OwnerID:   f.OwnerID,
-				CreatedAt: f.CreatedAt.Unix(),
+				FileID:      f.FileID,
+				FileName:    f.Name,
+				Address:     f.Address,
+				Thumbnail:   f.Thumbnail,
+				Owner:       accounts[f.OwnerID].Name,
+				OwnerID:     f.OwnerID,
+				OwnerAvatar: accounts[f.OwnerID].Avatar,
+				CreatedAt:   f.CreatedAt.Unix(),
 			})
 		}
 		return ret, count, resp.CodeSuccess
@@ -251,13 +252,14 @@ func GetOthersFileList(accountID string, include bool, fileName, category, forma
 	r2 := make([]*entity.GetOthersFileListResponse, 0)
 	for _, f := range files {
 		r := &entity.GetOthersFileListResponse{
-			FileID:    f.FileID,
-			FileName:  f.Name,
-			Address:   f.Address,
-			Thumbnail: f.Thumbnail,
-			Owner:     accounts[f.OwnerID].Name,
-			OwnerID:   f.OwnerID,
-			CreatedAt: f.CreatedAt.Unix(),
+			FileID:      f.FileID,
+			FileName:    f.Name,
+			Address:     f.Address,
+			Thumbnail:   f.Thumbnail,
+			Owner:       accounts[f.OwnerID].Name,
+			OwnerID:     f.OwnerID,
+			OwnerAvatar: accounts[f.OwnerID].Avatar,
+			CreatedAt:   f.CreatedAt.Unix(),
 		}
 		if f.OwnerID == accountID {
 			r1 = append(r1, r)
