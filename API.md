@@ -443,6 +443,7 @@ application/json
 |  thumbnail     |   string   |  文件缩略图  |
 |  creator     |   string   |  文件的拥有者 (策略创建者)  |
 |  creator_id     |   string   | 文件的拥有者 ID (策略创建者 ID)   |
+|  creator_avatar     |   string   | 文件的拥有者头像 (策略创建者头像)   |
 |  creator_address     |   string   | 文件的拥有者以太坊地址 (策略创建者的以太坊地址)   |
 |  file_created_at     |   number   | 文件上传时间戳   |
 |  申请信息   |
@@ -518,8 +519,6 @@ application/json
 
 | 参数          |  类型     | 必填  | 默认值 | 说明   |
 | ------------ | -------- | ------ | ---- |------- |
-|  creator_id  |  string  | 否     | 策略的创建者账户ID (UUID V4) |
-|  consumer_id  |  string  | 否     | 策略的使用者账户ID (UUID V4) |
 |  policy_id  |  number  | 是     | 策略ID  |
 |  paginate    |  [Paginate](#Paginate-结构) |  否  |      | 分页 |
 
